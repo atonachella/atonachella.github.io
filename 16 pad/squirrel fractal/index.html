@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Nature-Binary Fractal Zoom</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #020804;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Layer Setup */
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #fractalCanvas { z-index: 1; }
+        #matrixCanvas { z-index: 2; opacity: 0.25; mix-blend-mode: screen; }
+        #natureCanvas { z-index: 3; pointer-events: none; }
+
+        /* The Prominent Central Squirrel */
+        #squirrel-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 4;
+            width: 35vh;
+            height: 35vh;
+            pointer-events: none;
+            filter: drop-shadow(0 0 20px rgba(52, 211, 153, 0.6));
+            animation: pulse 6s ease-in-out infinite, float 8s ease-in-out infinite;
+        }
+
+        #squirrel-svg {
+            width: 100%;
+            height: 100%;
+            fill: url(#nature-binary-gradient);
+        }
+
+        /* UI Control Panel */
+        #ui-layer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            text-align: center;
+        }
+
+        button {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 2px solid #34d399;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+        }
+
+        button:hover {
+            background: rgba(52, 211, 153, 0.4);
+            box-shadow: 0 0 25px rgba(52, 211, 153, 0.6);
+            color: #fff;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 20px rgba(52, 211, 153, 0.5)); }
+            50% { transform: translate(-50%, -50%) scale(1.08); filter: drop-shadow(0 0 35px rgba(16, 185, 129, 0.8)); }
+        }
+        @keyframes float {
+            0%, 100% { margin-top: 0px; }
+            50% { margin-top: -15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <canvas id="fractalCanvas"></canvas>
+        <canvas id="matrixCanvas"></canvas>
+        <canvas id="natureCanvas"></canvas>
+
+        <div id="squirrel-container">
+            <svg id="squirrel-svg" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="nature-binary-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#059669" />
+                        <stop offset="50%" stop-color="#34d399" />
+                        <stop offset="100%" stop-color="#064e3b" />
+                    </linearGradient>
+                </defs>
+                <path d="M440.3,184.9c13.7-28.7,16.5-68.4-6.4-96.2c-15.6-19-41.9-25.6-64.8-17.7c-26.6,9.2-46.7,31.7-56.1,57.7 c-17-7.5-36.2-10.2-54.8-6.1c-19.1,4.2-36.7,15-49.1,29.9c-8.9,10.7-14.8,23.8-16.5,37.6c-17.3,0.3-34.6,6.3-48.4,17.4 c-17.1,13.8-26.6,35.1-28.9,57c-2,19.3,2.2,38.8,11,55.9c-12,14.6-18.7,33.2-18.9,52.2c-0.2,28.7,14.6,56.3,38.8,71.8 c21.6,13.8,48.3,17.7,73.1,12.7c17.5-3.5,33.9-12.2,46.3-25c27.1,11,58.3,10.7,85.1-1.6c21.8-10,40.1-27.1,51.1-48.8 c14.2-28,16.6-61.2,8.9-91.7C421.3,219,431.9,202.4,440.3,184.9z M390,340c-15,30-47,46-80,39c-5-1-8-6-7-11s6-8,11-7 c26,5,52-8,64-32c14-28,5-62-20-79c-5-3-6-10-3-15s10-6,15-3C402,255,411,300,390,340z"/>
+            </svg>
+        </div>
+
+        <div id="ui-layer">
+            <button id="audioBtn" onclick="toggleAudio()">🌸 Begin Journey & Sounds 🌸</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Canvas Setups ---
+        const fCanvas = document.getElementById('fractalCanvas');
+        const fCtx = fCanvas.getContext('2d');
+        const mCanvas = document.getElementById('matrixCanvas');
+        const mCtx = mCanvas.getContext('2d');
+        const nCanvas = document.getElementById('natureCanvas');
+        const nCtx = nCanvas.getContext('2d');
+
+        let width, height;
+        function resize() {
+            width = fCanvas.width = mCanvas.width = nCanvas.width = window.innerWidth;
+            height = fCanvas.height = mCanvas.height = nCanvas.height = window.innerHeight;
+            initMatrix();
+        }
+        window.addEventListener('resize', resize);
+
+        // --- 1. Infinite Fractal Zoom (Mandelbrot Engine) ---
+        let zoom = 1.0;
+        let zoomSpeed = 1.03; 
+        // Target coordinates revealing beautiful leafy / organic looking structures
+        const targetX = -0.743643887037158704752191506114774;
+        const targetY = 0.131825904205311970493132056385139;
+
+        function drawFractal() {
+            zoom *= zoomSpeed;
+            // Reset loop simulation if zoom passes reasonable standard float thresholds
+            if (zoom > 1000000) zoom = 1.0; 
+
+            const maxIterations = 80;
+            const w = width;
+            const h = height;
+            
+            // To maintain performance during a real-time responsive zoom, we sample at a lower resolution grid
+            const pixelSize = 4; 
+            
+            for (let x = 0; x < w; x += pixelSize) {
+                for (let y = 0; y < h; y += pixelSize) {
+                    
+                    // Map screen coordinates to the fractal complex plane space
+                    let c_re = (x - w / 2) * (4 / w) / zoom + targetX;
+                    let c_im = (y - h / 2) * (4 / h) / zoom + targetY;
+                    
+                    let z_re = c_re, z_im = c_im;
+                    let i = 0;
+                    
+                    while (z_re * z_re + z_im * z_im < 4 && i < maxIterations) {
+                        let next_re = z_re * z_re - z_im * z_im + c_re;
+                        let next_im = 2 * z_re * z_im + c_im;
+                        z_re = next_re;
+                        z_im = next_im;
+                        i++;
+                    }
+
+                    if (i < maxIterations) {
+                        // Generate Organic Green/Forest tones mapped dynamically to iteration depth
+                        let green = Math.floor((i / maxIterations) * 200) + 55;
+                        let red = Math.floor((i / maxIterations) * 40);
+                        let blue = Math.floor((i / maxIterations) * 100) + 30;
+                        fCtx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+                    } else {
+                        fCtx.fillStyle = '#020804'; // Core black
+                    }
+                    fCtx.fillRect(x, y, pixelSize, pixelSize);
+                }
+            }
+        }
+
+        // --- 2. Binary Code Rain Overlay ---
+        let columns;
+        const fontSize = 14;
+        let drops = [];
+
+        function initMatrix() {
+            columns = Math.floor(width / fontSize);
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100;
+            }
+        }
+
+        function drawMatrix() {
+            mCtx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+            mCtx.fillRect(0, 0, width, height);
+            mCtx.fillStyle = '#34d399'; // Mint neon green binary
+            mCtx.font = fontSize + 'px Courier New';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = Math.random() > 0.5 ? "1" : "0";
+                mCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i] += 1.5;
+            }
+        }
+
+        // --- 3. Nature Leaves Overlay ---
+        const leaves = [];
+        const maxLeaves = 25;
+
+        function createLeaf() {
+            return {
+                x: Math.random() * width,
+                y: -20,
+                size: Math.random() * 8 + 6,
+                speedY: Math.random() * 1 + 0.5,
+                speedX: Math.sin(Math.random()) * 1,
+                angle: Math.random() * 360,
+                spin: Math.random() * 2 - 1
+            };
+        }
+
+        function updateAndDrawLeaves() {
+            nCtx.clearRect(0, 0, width, height);
+            if (leaves.length < maxLeaves && Math.random() < 0.05) {
+                leaves.push(createLeaf());
+            }
+
+            nCtx.fillStyle = 'rgba(52, 211, 153, 0.4)';
+            for (let i = 0; i < leaves.length; i++) {
+                let leaf = leaves[i];
+                leaf.y += leaf.speedY;
+                leaf.x += leaf.speedX + Math.sin(leaf.y / 30) * 0.5; // Swaying motion
+                leaf.angle += leaf.spin;
+
+                nCtx.save();
+                nCtx.translate(leaf.x, leaf.y);
+                nCtx.rotate((leaf.angle * Math.PI) / 180);
+                
+                // Draw a simple leaf shape
+                nCtx.beginPath();
+                nCtx.ellipse(0, 0, leaf.size, leaf.size / 2, 0, 0, 2 * Math.PI);
+                nCtx.fill();
+                nCtx.restore();
+
+                // Recycle fallen leaves
+                if (leaf.y > height) {
+                    leaves[i] = createLeaf();
+                }
+            }
+        }
+
+        // --- Main Animation Loop ---
+        function animate() {
+            drawFractal();
+            drawMatrix();
+            updateAndDrawLeaves();
+            requestAnimationFrame(animate);
+        }
+
+        // --- 4. Peaceful & Pleasant Synthesized Audio ---
+        let audioCtx = null;
+        let isPlaying = false;
+
+        function toggleAudio() {
+            if (!audioCtx) {
+                // Initialize Web Audio Context
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                startAmbientPad();
+                document.getElementById('audioBtn').innerText = "🔊 Sounds Active (Immersive Mode)";
+                isPlaying = true;
+                return;
+            }
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+                document.getElementById('audioBtn').innerText = "🔊 Sounds Active (Immersive Mode)";
+                isPlaying = true;
+            } else if (audioCtx.state === 'running') {
+                audioCtx.suspend();
+                document.getElementById('audioBtn').innerText = "🔇 Sounds Muted";
+                isPlaying = false;
+            }
+        }
+
+        function startAmbientPad() {
+            // Create a peaceful, sweeping ambient chord drone
+            const frequencies = [110, 165, 220, 330]; // Rich A-minor/E organic harmonies
+            
+            frequencies.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                let filter = audioCtx.createBiquadFilter();
+
+                osc.type = index % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                // Set up soft lowpass filter to imitate warm, peaceful nature sounds
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(400, audioCtx.currentTime);
+                
+                // Slow LFO filter sweeping movement
+                setInterval(() => {
+                    if(isPlaying) {
+                        filter.frequency.exponentialRampToValueAtTime(Math.random() * 500 + 200, audioCtx.currentTime + 4);
+                    }
+                }, 4000);
+
+                // Gentle fluctuating volumes per frequency component
+                gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                setInterval(() => {
+                    if(isPlaying) {
+                        gainNode.gain.linearRampToValueAtTime(Math.random() * 0.04 + 0.01, audioCtx.currentTime + 3);
+                    }
+                }, 3000);
+
+                osc.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start(0);
+            });
+        }
+
+        // Initialize On Load
+        resize();
+        animate();
+    </script>
+</body>
+</html>
