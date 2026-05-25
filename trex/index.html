@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Rex Dance Party - Adam Tonachella</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%); /* Light blue to light green */
+            --white: #ffffff;
+            --trex-green: #4ade80;
+            --trex-dark-green: #22c55e;
+            --sky-blue: #38bdf8;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .party-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.15);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Stage area for dancing dinosaur */
+        .dance-floor {
+            height: 220px;
+            background: linear-gradient(to bottom, #f0fdf4, #e0f2fe);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #f1f5f9;
+        }
+
+        /* Disco ball decoration */
+        .disco-ball {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #fff, var(--sky-blue));
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: calc(50% - 20px);
+            box-shadow: 0 0 15px rgba(58, 189, 248, 0.6);
+            animation: swing 3s ease-in-out infinite alternate;
+            transform-origin: top center;
+        }
+
+        @keyframes swing {
+            0% { transform: rotate(-10deg); }
+            100% { transform: rotate(10deg); }
+        }
+
+        /* Stylized CSS T-Rex */
+        .t-rex {
+            position: absolute;
+            bottom: 30px;
+            left: calc(50% - 40px);
+            width: 80px;
+            height: 110px;
+            transition: transform 0.2s ease;
+        }
+
+        /* T-Rex Body Parts */
+        .trex-head {
+            width: 55px;
+            height: 35px;
+            background: var(--trex-green);
+            border-radius: 10px 20px 5px 5px;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        .trex-eye {
+            width: 6px;
+            height: 6px;
+            background: var(--text-dark);
+            border-radius: 50%;
+            position: absolute;
+            top: 8px;
+            right: 12px;
+        }
+        .trex-jaw {
+            width: 45px;
+            height: 12px;
+            background: var(--trex-dark-green);
+            position: absolute;
+            top: 28px;
+            right: 5px;
+            border-radius: 0 0 5px 5px;
+        }
+        .trex-body {
+            width: 50px;
+            height: 60px;
+            background: var(--trex-green);
+            border-radius: 20px 10px 20px 20px;
+            position: absolute;
+            top: 30px;
+            left: 15px;
+        }
+        .trex-arm {
+            width: 20px;
+            height: 10px;
+            background: var(--trex-dark-green);
+            border-radius: 5px;
+            position: absolute;
+            top: 42px;
+            right: 10px;
+            transform-origin: left center;
+        }
+        .trex-tail {
+            width: 45px;
+            height: 25px;
+            background: var(--trex-green);
+            position: absolute;
+            bottom: 30px;
+            left: -20px;
+            border-radius: 20px 0 0 20px;
+            transform: rotate(-15deg);
+            transform-origin: right center;
+        }
+        .trex-leg {
+            width: 14px;
+            height: 30px;
+            background: var(--trex-dark-green);
+            position: absolute;
+            bottom: -5px;
+            border-radius: 0 0 5px 5px;
+        }
+        .leg-left { left: 22px; transform-origin: top center; }
+        .leg-right { left: 42px; transform-origin: top center; }
+
+        /* --- DANCE ANIMATIONS --- */
+        /* Triggered dynamically when music plays */
+        .playing .trex-body {
+            animation: bounceBody 0.5s ease-in-out infinite alternate;
+        }
+        .playing .trex-head {
+            animation: nodHead 0.5s ease-in-out infinite alternate;
+        }
+        .playing .trex-arm {
+            animation: waveArms 0.25s ease-in-out infinite alternate;
+        }
+        .playing .trex-tail {
+            animation: wagTail 0.5s ease-in-out infinite alternate;
+        }
+        .playing .leg-left {
+            animation: stepLeft 0.5s ease-in-out infinite alternate;
+        }
+        .playing .leg-right {
+            animation: stepRight 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounceBody {
+            0% { transform: translateY(0) scaleY(1); }
+            100% { transform: translateY(-8px) scaleY(0.95); }
+        }
+        @keyframes nodHead {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(12deg); }
+        }
+        @keyframes waveArms {
+            0% { transform: rotate(-20deg); }
+            100% { transform: rotate(40deg); }
+        }
+        @keyframes wagTail {
+            0% { transform: rotate(-15deg); }
+            100% { transform: rotate(-30deg); }
+        }
+        @keyframes stepLeft {
+            0% { transform: rotate(15deg); }
+            100% { transform: rotate(-15deg); }
+        }
+        @keyframes stepRight {
+            0% { transform: rotate(-15deg); }
+            100% { transform: rotate(15deg); }
+        }
+
+        /* Music Controls styling */
+        .track-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+        .track-artist {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .progress-container {
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #f1f5f9;
+            outline: none;
+            cursor: pointer;
+            background-image: linear-gradient(to right, var(--sky-blue) 0%, var(--sky-blue) 0%);
+            background-repeat: no-repeat;
+        }
+        .progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: var(--trex-green);
+            cursor: pointer;
+        }
+        .time-box {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .play-btn {
+            background-color: var(--trex-green);
+            border: none;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            box-shadow: 0 6px 15px rgba(74, 222, 128, 0.4);
+            transition: all 0.2s ease;
+        }
+        .play-btn:hover {
+            background-color: var(--trex-dark-green);
+            transform: scale(1.05);
+        }
+        .play-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Helper label for custom audio drop-in */
+        .upload-stub {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .upload-stub label {
+            color: var(--sky-blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        #audio-upload { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="party-container">
+        <div class="dance-floor" id="floor">
+            <div class="disco-ball"></div>
+            
+            <div class="t-rex" id="trex">
+                <div class="trex-tail"></div>
+                <div class="trex-body"></div>
+                <div class="leg-left trex-leg"></div>
+                <div class="leg-right trex-leg"></div>
+                <div class="trex-head">
+                    <div class="trex-eye"></div>
+                    <div class="trex-jaw"></div>
+                </div>
+                <div class="trex-arm"></div>
+            </div>
+        </div>
+
+        <div class="track-title">Gas Station Cali Hats</div>
+        <div class="track-artist">Adam Tonachella</div>
+
+        <div class="progress-container">
+            <input type="range" class="progress-bar" id="timeline" min="0" max="100" value="0">
+            <div class="time-box">
+                <span id="curr-time">0:00</span>
+                <span id="max-time">3:46</span>
+            </div>
+        </div>
+
+        <button class="play-btn" id="play-trigger" title="Make him dance!">
+            <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+
+        <div class="upload-stub">
+            Want your own sound? <label for="audio-upload">Load a local MP3 file</label>
+            <input type="file" id="audio-upload" accept="audio/*">
+        </div>
+        <audio id="real-audio"></audio>
+    </div>
+
+    <script>
+        const playTrigger = document.getElementById('play-trigger');
+        const playIcon = document.getElementById('play-icon');
+        const trex = document.getElementById('trex');
+        const timeline = document.getElementById('timeline');
+        const currTime = document.getElementById('curr-time');
+        const maxTime = document.getElementById('max-time');
+        const audioUpload = document.getElementById('audio-upload');
+        const realAudio = document.getElementById('real-audio');
+
+        let isDancing = false;
+        let timelineInterval = null;
+
+        const playPath = "M8 5v14l11-7z";
+        const pausePath = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
+
+        // Main action handler toggle
+        function toggleParty() {
+            // If local audio is loaded, defer to active element state
+            if(realAudio.src) {
+                if(realAudio.paused) {
+                    realAudio.play();
+                    startDanceUI();
+                } else {
+                    realAudio.pause();
+                    stopDanceUI();
+                }
+                return;
+            }
+
+            // Interface Simulation Fallback (If no file uploaded yet)
+            if (!isDancing) {
+                startDanceUI();
+                // Simulate timeline ticking forward
+                timelineInterval = setInterval(() => {
+                    let val = parseInt(timeline.value) + 1;
+                    if(val > 100) {
+                        val = 0;
+                        toggleParty();
+                    }
+                    timeline.value = val;
+                    updateBarFill();
+                    
+                    // Math conversions for display
+                    let totalSeconds = Math.floor((val / 100) * 226); // 3:46 total seconds
+                    let m = Math.floor(totalSeconds / 60);
+                    let s = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+                    currTime.textContent = `${m}:${s}`;
+                }, 1000);
+            } else {
+                stopDanceUI();
+                clearInterval(timelineInterval);
+            }
+        }
+
+        function startDanceUI() {
+            isDancing = true;
+            trex.classList.add('playing');
+            playIcon.setAttribute('d', pausePath);
+        }
+
+        function stopDanceUI() {
+            isDancing = false;
+            trex.classList.remove('playing');
+            playIcon.setAttribute('d', playPath);
+        }
+
+        function updateBarFill() {
+            let val = timeline.value;
+            timeline.style.backgroundImage = `linear-gradient(to right, var(--sky-blue) 0%, var(--sky-blue) ${val}%, #f1f5f9 ${val}%, #f1f5f9 100%)`;
+        }
+
+        // Timeline slider scrub hook
+        timeline.addEventListener('input', () => {
+            updateBarFill();
+            if(realAudio.src && realAudio.duration) {
+                realAudio.currentTime = (timeline.value / 100) * realAudio.duration;
+            }
+        });
+
+        // Local Audio Input pipeline
+        audioUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                // Update interface metadata with real file details
+                document.querySelector('.track-title').textContent = file.name.replace(/\.[^/.]+$/, "");
+                document.querySelector('.track-artist').textContent = "Local Audio Feed";
+                
+                realAudio.src = URL.createObjectURL(file);
+                clearInterval(timelineInterval);
+                timeline.value = 0;
+                updateBarFill();
+                realAudio.play();
+                startDanceUI();
+            }
+        });
+
+        // Audio listeners to keep UI synchronized perfectly
+        realAudio.addEventListener('timeupdate', () => {
+            if(realAudio.duration) {
+                const percent = (realAudio.currentTime / realAudio.duration) * 100;
+                timeline.value = percent;
+                updateBarFill();
+
+                let curM = Math.floor(realAudio.currentTime / 60);
+                let curS = Math.floor(realAudio.currentTime % 60).toString().padStart(2, '0');
+                currTime.textContent = `${curM}:${curS}`;
+            }
+        });
+
+        realAudio.addEventListener('loadedmetadata', () => {
+            let durM = Math.floor(realAudio.duration / 60);
+            let durS = Math.floor(realAudio.duration % 60).toString().padStart(2, '0');
+            maxTime.textContent = `${durM}:${durS}`;
+        });
+
+        realAudio.addEventListener('ended', () => {
+            stopDanceUI();
+        });
+
+        playTrigger.addEventListener('click', toggleParty);
+    </script>
+</body>
+</html>
