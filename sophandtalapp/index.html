@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Home Adventure</title>
+    <style>
+        /* ==========================================================================
+           1. DEFAULT / LOGIN UTILITIES
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            transition: all 0.5s ease; /* Makes the theme transition smooth! */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+
+        .app-container {
+            background-color: white;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        /* Screen Visibility Toggles */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* Form Inputs & Buttons */
+        select, input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        select:focus, input:focus {
+            border-color: #4a90e2;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .error-message {
+            color: #ff3b30;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        /* ==========================================================================
+           2. THEME CONFIGURATIONS (Applied via JavaScript classes on <body>)
+           ========================================================================== */
+        
+        /* 🐳 MARINE THEME (10-Year-Old) */
+        body.theme-marine {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        }
+        body.theme-marine .app-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 3px solid #00d2ff;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+        }
+        body.theme-marine h1 {
+            color: #0072ff;
+        }
+        body.theme-marine button {
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            color: white;
+        }
+
+        /* 🦄 PLAYFUL THEME (7-Year-Old) */
+        body.theme-playful {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+        }
+        body.theme-playful .app-container {
+            background-color: white;
+            border: 4px dashed #ff6b6b;
+        }
+        body.theme-playful h1 {
+            color: #ff6b81;
+        }
+        body.theme-playful button {
+            background: linear-gradient(to right, #ff6b81, #ff4757);
+            color: white;
+            font-family: 'Comic Sans MS', cursive, sans-serif; /* Extra playful font choice */
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div id="login-screen" class="screen active">
+        <h1 style="color: #333; margin-bottom: 5px;">👋 Welcome!</h1>
+        <p style="color: #666; margin-top: 0;">Select your name and enter your secret code</p>
+        
+        <label for="user-select" style="display:block; text-align:left; font-weight:bold;">Who are you?</label>
+        <select id="user-select">
+            <option value="older">Big Sister (Age 10)</option>
+            <option value="younger">Little Sister (Age 7)</option>
+        </select>
+
+        <label for="password-input" style="display:block; text-align:left; font-weight:bold;">Secret Code:</label>
+        <input type="password" id="password-input" placeholder="Type your password here...">
+
+        <button onclick="handleLogin()" style="background-color: #4a90e2; color: white;">Unlock My App 🔓</button>
+        <div id="login-error" class="error-message"></div>
+    </div>
+
+    <div id="marine-screen" class="screen">
+        <h1>🐳 Submarine Command Center</h1>
+        <p style="font-size: 18px; color: #444;">Welcome aboard, Captain! Your deep-sea mission is ready.</p>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+        
+        <div style="background: #eef2f3; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            🧪 <strong>Status:</strong> Systems Offline.<br>
+            <em>(We will code your Marine Scavenger Hunt / Trivia right here next!)</em>
+        </div>
+
+        <button onclick="logout()">Log Out</button>
+    </div>
+
+    <div id="playful-screen" class="screen">
+        <h1>✨ The Fun Zone! ✨</h1>
+        <p style="font-size: 18px; color: #444;">Yay! You made it! Let's get ready to play! 🎉</p>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+
+        <div style="background: #fff0f5; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            🎈 <strong>Next Step:</strong> Waiting for magic code...<br>
+            <em>(We will code your interactive digital arcade / puzzles right here next!)</em>
+        </div>
+
+        <button onclick="logout()">Log Out</button>
+    </div>
+
+</div>
+
+<script>
+    // ✏️ SET YOUR PASSWORDS HERE
+    // You can change these strings to whatever words you want them to type.
+    const PASSWORDS = {
+        older: "ocean10",    // Password for the 10-year-old
+        younger: "magic7"    // Password for the 7-year-old
+    };
+
+    function handleLogin() {
+        const selectedUser = document.getElementById("user-select").value;
+        const enteredPassword = document.getElementById("password-input").value;
+        const errorDiv = document.getElementById("login-error");
+
+        // Reset error message
+        errorDiv.innerText = "";
+
+        // Check if password matches the chosen user
+        if (enteredPassword === PASSWORDS[selectedUser]) {
+            
+            // Hide the login screen
+            document.getElementById("login-screen").classList.remove("active");
+
+            if (selectedUser === "older") {
+                // Apply Marine Theme and show Marine Screen
+                document.body.className = "theme-marine";
+                document.getElementById("marine-screen").classList.add("active");
+            } else if (selectedUser === "younger") {
+                // Apply Playful Theme and show Playful Screen
+                document.body.className = "theme-playful";
+                document.getElementById("playful-screen").classList.add("active");
+            }
+            
+            // Clear password field for security
+            document.getElementById("password-input").value = "";
+
+        } else {
+            // Wrong password feedback
+            errorDiv.innerText = "❌ Incorrect code. Try again!";
+        }
+    }
+
+    function logout() {
+        // Hide all game screens
+        document.getElementById("marine-screen").classList.remove("active");
+        document.getElementById("playful-screen").classList.remove("active");
+        
+        // Remove background themes
+        document.body.className = "";
+        
+        // Bring back login screen
+        document.getElementById("login-screen").classList.add("active");
+    }
+</script>
+
+</body>
+</html>
