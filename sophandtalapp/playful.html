@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Fun Zone!</title>
+    <style>
+        /* 🎈 PLAYFUL & BRIGHT BASE STYLING */
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Trending', sans-serif; /* Friendly, rounded fonts */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* A bright, magical sunset/cotton-candy sky gradient */
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            color: #333333;
+            overflow-x: hidden;
+        }
+
+        /* 🦄 POPPING FUN CONTAINER */
+        .fun-container {
+            background: #ffffff;
+            border: 5px dashed #ff6b81; /* Playful dashed boundary box */
+            border-radius: 30px;
+            padding: 35px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 12px 28px rgba(255, 107, 129, 0.2);
+            position: relative;
+        }
+
+        h1 {
+            color: #ff4757;
+            font-size: 32px;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite; /* A subtle, welcoming movement */
+        }
+
+        .greeting-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555555;
+            margin-bottom: 25px;
+        }
+
+        /* 🎉 DIGITAL PARTY REEF */
+        .party-zone {
+            background: #fff0f5;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 36px; /* Big, bright, animated-looking emojis */
+            letter-spacing: 10px;
+            margin: 20px 0;
+        }
+
+        .arcade-box {
+            background: linear-gradient(135deg, #ff6b81 0%, #ff4757 100%);
+            color: white;
+            padding: 22px;
+            border-radius: 18px;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 6px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        /* 🚪 RETURN TO MAIN SCREEN */
+        .exit-btn {
+            background: #f1f2f6;
+            color: #57606f;
+            border: 2px solid #ced6e0;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 35px;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .exit-btn:hover {
+            background: #ffeaa7;
+            color: #d63031;
+            border-color: #ffea72;
+        }
+
+        /* Basic playful bounce effect for the header */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="fun-container">
+    
+    <h1>✨ Welcome, Superstar! ✨</h1>
+    
+    <p class="greeting-text">
+        Yay! Your secret magic code worked perfectly! You have unlocked the ultimate Fun Zone. There are games, puzzles, and hidden surprises waiting just for you today!
+    </p>
+
+    <div class="party-zone">
+        🦄 🎈 🎨 🍿 🌟 🍭 👾 👑 🍿
+    </div>
+
+    <div class="arcade-box">
+        Slime Catcher Arcade: Loading... 🕹️<br>
+        <span style="font-size: 14px; font-weight: normal; opacity: 0.95;">
+            (Next, we will code your custom tap games or matching puzzles right here!)
+        </span>
+    </div>
+
+    <button class="exit-btn" onclick="goToLogin()">Back to Main Screen 🏠</button>
+
+</div>
+
+<script>
+    function goToLogin() {
+        window.location.href = "index.html";
+    }
+</script>
+
+</body>
+</html>
