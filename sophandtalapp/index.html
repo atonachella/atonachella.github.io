@@ -221,6 +221,47 @@ body, html {
     color: var(--right-text);
     font-family: inherit;
 }
+
+/* Center and scale the login boxes inside the halves */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.login-container p {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.login-container input {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border-radius: 25px;
+    border: 3px solid currentColor;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    text-align: center;
+    margin-bottom: 15px;
+    width: 200px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+/* Specific styling for the older sister's terminal style inputs */
+.right .login-container input {
+    background: #000;
+    color: var(--right-text);
+    border-radius: 5px; /* Boxier terminal look */
+    font-family: inherit;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
+}
+
+.right .login-container input::placeholder {
+    color: rgba(0, 255, 102, 0.4);
+}
     </style>
 </head>
 <body>
@@ -232,7 +273,7 @@ body, html {
         
         <div class="login-container">
             <p>Enter your secret passcode:</p>
-            <input type="password" id="playful-pass" placeholder="***">
+            <input type="password" id="playful-pass" placeholder="🍭🍭🍭" onkeypress="if(event.key === 'Enter') checkPlayfulLogin()">
             <button class="portal-btn" onclick="checkPlayfulLogin()">Sign In</button>
         </div>
     </div>
@@ -242,7 +283,7 @@ body, html {
         
         <div class="login-container">
             <p>ENTER SECURITY CREDENTIALS:</p>
-            <input type="password" id="marine-pass" placeholder="PASSWORD">
+            <input type="password" id="marine-pass" placeholder="PASSWORD" onkeypress="if(event.key === 'Enter') checkMarineLogin()">
             <button class="portal-btn" onclick="checkMarineLogin()">Initialize</button>
         </div>
     </div>
@@ -258,23 +299,28 @@ body, html {
     };
 
     function checkPlayfulLogin() {
-    const input = document.getElementById('playful-pass').value;
-    // Replace 'magic' with her actual original passcode
-    if (input === 'magic') { 
+    const input = document.getElementById('playful-pass').value.trim();
+    
+    // Change 'magic' to her original password
+    if (input.toLowerCase() === 'magic7') { 
         location.href = 'playful.html';
     } else {
-        alert("🔒 Incorrect passcode! Try again.");
+        alert("🔒 Oops! That's not the secret password. Try again!");
+        document.getElementById('playful-pass').value = ''; // Clear the box
     }
 }
 
 function checkMarineLogin() {
-    const input = document.getElementById('marine-pass').value;
-    // Replace 'sonar' with her actual original passcode
-    if (input === 'sonar') {
+    const input = document.getElementById('marine-pass').value.trim();
+    
+    // Change 'sonar' to her original password
+    if (input.toLowerCase() === 'ocean10') {
         location.href = 'marine.html';
     } else {
-        alert("❌ ACCESS DENIED. INVALID CREDENTIALS.");
+        alert("❌ ACCESS DENIED. AUTHORIZATION FAILURE.");
+        document.getElementById('marine-pass').value = ''; // Clear the box
     }
+}
 }
 
     function logout() {
