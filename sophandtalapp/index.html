@@ -5,126 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome Home Adventure</title>
     <style>
-        /* ==========================================================================
-           1. DEFAULT / LOGIN UTILITIES
-           ========================================================================== */
-        * {
-            box-sizing: border-box;
-            transition: all 0.5s ease; /* Makes the theme transition smooth! */
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #f0f2f5;
-        }
-
-        .app-container {
-            background-color: white;
-            border-radius: 24px;
-            padding: 35px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 450px;
-            width: 100%;
-        }
-
-        /* Screen Visibility Toggles */
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
-
-        /* Form Inputs & Buttons */
-        select, input {
-            width: 100%;
-            padding: 14px;
-            margin: 10px 0 20px 0;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            font-size: 16px;
-            outline: none;
-        }
-        
-        select:focus, input:focus {
-            border-color: #4a90e2;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .error-message {
-            color: #ff3b30;
-            font-weight: bold;
-            margin-top: 10px;
-            min-height: 20px;
-        }
-
-        /* ==========================================================================
-           2. THEME CONFIGURATIONS (Applied via JavaScript classes on <body>)
-           ========================================================================== */
-        
-        /* 🐳 MARINE THEME (10-Year-Old) */
-        body.theme-marine {
-            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        }
-        body.theme-marine .app-container {
-            background-color: rgba(255, 255, 255, 0.95);
-            border: 3px solid #00d2ff;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
-        }
-        body.theme-marine h1 {
-            color: #0072ff;
-        }
-        body.theme-marine button {
-            background: linear-gradient(to right, #00c6ff, #0072ff);
-            color: white;
-        }
-
-        /* 🦄 PLAYFUL THEME (7-Year-Old) */
-        body.theme-playful {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-        }
-        body.theme-playful .app-container {
-            background-color: white;
-            border: 4px dashed #ff6b6b;
-        }
-        body.theme-playful h1 {
-            color: #ff6b81;
-        }
-        body.theme-playful button {
-            background: linear-gradient(to right, #ff6b81, #ff4757);
-            color: white;
-            font-family: 'Comic Sans MS', cursive, sans-serif; /* Extra playful font choice */
-        }
-
-        :root {
+   :root {
     /* Playful/Magic Theme Colors (Left Side) */
     --left-bg: #9b5de5; 
     --left-text: #fee440;
+    --left-hover-bg: #fee440;
+    --left-hover-text: #4a0e4e;
     
     /* Marine/Sonar Theme Colors (Right Side) */
     --right-bg: #0a1912;
     --right-text: #00ff66;
+    --right-hover-bg: #00ff66;
+    --right-hover-text: #0a1912;
 }
 
 body, html {
@@ -132,7 +24,7 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    font-family: sans-serif;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
     overflow: hidden;
 }
 
@@ -141,7 +33,6 @@ body, html {
     display: flex;
     width: 100%;
     height: 100%;
-    /* 135 degrees creates a perfect top-left to bottom-right diagonal split */
     background: linear-gradient(135deg, 
                 var(--left-bg) 0%, 
                 var(--left-bg) 50%, 
@@ -149,7 +40,6 @@ body, html {
                 var(--right-bg) 100%);
 }
 
-/* Base style for both sides */
 .side {
     flex: 1;
     display: flex;
@@ -158,30 +48,45 @@ body, html {
     justify-content: center;
     height: 100%;
     z-index: 1;
-    transition: transform 0.3s ease;
 }
 
-/* Subtle hover effect to make it interactive */
-.side:hover {
-    transform: scale(1.02);
-}
-
-/* Left Side Adjustments (Offset content slightly so it doesn't cross the diagonal line) */
 .side.left {
     color: var(--left-text);
     padding-right: 5%; 
 }
 
-/* Right Side Adjustments */
 .side.right {
     color: var(--right-text);
     padding-left: 5%;
-    font-family: 'Courier New', Courier, monospace; /* Matching her terminal look */
+    font-family: 'Courier New', Courier, monospace;
 }
 
-/* Fun Dynamic Entry Buttons */
+/* Dropdown Menu Styling */
+.kid-dropdown {
+    padding: 12px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 3px solid currentColor;
+    border-radius: 25px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    margin-bottom: 20px;
+    width: 220px;
+    text-align: center;
+}
+
+.right .kid-dropdown {
+    background: #000;
+    color: var(--right-text);
+    border-radius: 5px;
+    font-family: inherit;
+}
+
+/* Fixed Portal Buttons with High-Contrast Hover Effects */
 .portal-btn {
-    padding: 15px 30px;
+    padding: 12px 30px;
     font-size: 1.2rem;
     font-weight: bold;
     border: 3px solid currentColor;
@@ -189,78 +94,20 @@ body, html {
     color: inherit;
     cursor: pointer;
     border-radius: 30px;
-    margin-top: 20px;
     transition: all 0.2s ease;
 }
 
-.portal-btn:hover {
-    background: currentColor;
-    /* Flips the color on hover dynamically */
-    color: var(--left-bg); 
+/* Left side hover: Yellow background, dark purple text */
+.left .portal-btn:hover {
+    background-color: var(--left-hover-bg);
+    color: var(--left-hover-text);
 }
 
+/* Right side hover: Neon green background, deep dark green text */
 .right .portal-btn:hover {
-    color: var(--right-bg);
-}
-
-.login-container input {
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 2px solid currentColor;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    text-align: center;
-    margin-bottom: 10px;
-    display: block;
-}
-
-/* Style adjustments for the older daughter's terminal inputs */
-.right .login-container input {
-    background: #000;
-    color: var(--right-text);
-    font-family: inherit;
-}
-
-/* Center and scale the login boxes inside the halves */
-.login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 15px;
-}
-
-.login-container p {
-    margin-bottom: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-}
-
-.login-container input {
-    padding: 12px 20px;
-    font-size: 1.1rem;
-    border-radius: 25px;
-    border: 3px solid currentColor;
-    background: rgba(255, 255, 255, 0.95);
-    color: #333;
-    text-align: center;
-    margin-bottom: 15px;
-    width: 200px;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-/* Specific styling for the older sister's terminal style inputs */
-.right .login-container input {
-    background: #000;
-    color: var(--right-text);
-    border-radius: 5px; /* Boxier terminal look */
-    font-family: inherit;
-    box-shadow: 0 0 10px rgba(0, 255, 102, 0.2);
-}
-
-.right .login-container input::placeholder {
-    color: rgba(0, 255, 102, 0.4);
+    background-color: var(--right-hover-bg);
+    color: var(--right-hover-text);
+    box-shadow: 0 0 15px var(--right-text);
 }
     </style>
 </head>
@@ -270,70 +117,40 @@ body, html {
     
     <div class="side left">
         <h1>🌟 Playful World 🧸</h1>
-        
-        <div class="login-container">
-            <p>Enter your secret passcode:</p>
-            <input type="password" id="playful-pass" placeholder="🍭🍭🍭" onkeypress="if(event.key === 'Enter') checkPlayfulLogin()">
-            <button class="portal-btn" onclick="checkPlayfulLogin()">Sign In</button>
-        </div>
+        <select id="playful-select" class="kid-dropdown">
+            <option value="" disabled selected>Who is exploring?</option>
+            <option value="playful.html">Tal</option> </select>
+        <button class="portal-btn" onclick="launchPlayful()">Let's Play! ✨</button>
     </div>
     
     <div class="side right">
         <h1>📡 Marine Command 🐋</h1>
-        
-        <div class="login-container">
-            <p>ENTER SECURITY CREDENTIALS:</p>
-            <input type="password" id="marine-pass" placeholder="PASSWORD" onkeypress="if(event.key === 'Enter') checkMarineLogin()">
-            <button class="portal-btn" onclick="checkMarineLogin()">Initialize</button>
-        </div>
+        <select id="marine-select" class="kid-dropdown">
+            <option value="" disabled selected>SELECT OPERATOR...</option>
+            <option value="marine.html">Soph</option> </select>
+        <button class="portal-btn" onclick="launchMarine()">INITIALIZE 🚀</button>
     </div>
 
 </div>
 
 <script>
-    // ✏️ SET YOUR PASSWORDS HERE
-    // You can change these strings to whatever words you want them to type.
-    const PASSWORDS = {
-        older: "ocean10",    // Password for the 10-year-old
-        younger: "magic7"    // Password for the 7-year-old
-    };
-
-    function checkPlayfulLogin() {
-    const input = document.getElementById('playful-pass').value.trim();
-    
-    // Change 'magic' to her original password
-    if (input.toLowerCase() === 'magic7') { 
-        location.href = 'playful.html';
+function launchPlayful() {
+    const page = document.getElementById('playful-select').value;
+    if (page) {
+        window.location.href = page;
     } else {
-        alert("🔒 Oops! That's not the secret password. Try again!");
-        document.getElementById('playful-pass').value = ''; // Clear the box
+        alert("✨ Please select your name first! ✨");
     }
 }
 
-function checkMarineLogin() {
-    const input = document.getElementById('marine-pass').value.trim();
-    
-    // Change 'sonar' to her original password
-    if (input.toLowerCase() === 'ocean10') {
-        location.href = 'marine.html';
+function launchMarine() {
+    const page = document.getElementById('marine-select').value;
+    if (page) {
+        window.location.href = page;
     } else {
-        alert("❌ ACCESS DENIED. AUTHORIZATION FAILURE.");
-        document.getElementById('marine-pass').value = ''; // Clear the box
+        alert("❌ ERROR: SELECT OPERATOR TO ACCESS RADAR SYSTEM.");
     }
 }
-}
-
-    function logout() {
-        // Hide all game screens
-        document.getElementById("marine-screen").classList.remove("active");
-        document.getElementById("playful-screen").classList.remove("active");
-        
-        // Remove background themes
-        document.body.className = "";
-        
-        // Bring back login screen
-        document.getElementById("login-screen").classList.add("active");
-    }
 </script>
 
 </body>
