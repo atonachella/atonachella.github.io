@@ -202,6 +202,25 @@ body, html {
 .right .portal-btn:hover {
     color: var(--right-bg);
 }
+
+.login-container input {
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 2px solid currentColor;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Style adjustments for the older daughter's terminal inputs */
+.right .login-container input {
+    background: #000;
+    color: var(--right-text);
+    font-family: inherit;
+}
     </style>
 </head>
 <body>
@@ -210,14 +229,22 @@ body, html {
     
     <div class="side left">
         <h1>🌟 Playful World 🧸</h1>
-        <p>Ready for Magic & Mini-Games?</p>
-        <button class="portal-btn" onclick="location.href='playful.html'">Enter Portal</button>
+        
+        <div class="login-container">
+            <p>Enter your secret passcode:</p>
+            <input type="password" id="playful-pass" placeholder="***">
+            <button class="portal-btn" onclick="checkPlayfulLogin()">Sign In</button>
+        </div>
     </div>
     
     <div class="side right">
         <h1>📡 Marine Command 🐋</h1>
-        <p>SYSTEM STATUS: READY FOR SCAN</p>
-        <button class="portal-btn" onclick="location.href='marine.html'">Initialize Sonar</button>
+        
+        <div class="login-container">
+            <p>ENTER SECURITY CREDENTIALS:</p>
+            <input type="password" id="marine-pass" placeholder="PASSWORD">
+            <button class="portal-btn" onclick="checkMarineLogin()">Initialize</button>
+        </div>
     </div>
 
 </div>
@@ -230,36 +257,25 @@ body, html {
         younger: "magic7"    // Password for the 7-year-old
     };
 
-    function handleLogin() {
-        const selectedUser = document.getElementById("user-select").value;
-        const enteredPassword = document.getElementById("password-input").value;
-        const errorDiv = document.getElementById("login-error");
-
-        // Reset error message
-        errorDiv.innerText = "";
-
-        // Check if password matches the chosen user
-        if (enteredPassword === PASSWORDS[selectedUser]) {
-            
-            // Hide the login screen
-            document.getElementById("login-screen").classList.remove("active");
-
-            if (selectedUser === "older") {
-                // Apply Marine Theme and show Marine Screen
-                window.location.href = "marine.html";
-            } else if (selectedUser === "younger") {
-                // Apply Playful Theme and show Playful Screen
-                window.location.href = "playful.html";
-            }
-            
-            // Clear password field for security
-            document.getElementById("password-input").value = "";
-
-        } else {
-            // Wrong password feedback
-            errorDiv.innerText = "❌ Incorrect code. Try again!";
-        }
+    function checkPlayfulLogin() {
+    const input = document.getElementById('playful-pass').value;
+    // Replace 'magic' with her actual original passcode
+    if (input === 'magic') { 
+        location.href = 'playful.html';
+    } else {
+        alert("🔒 Incorrect passcode! Try again.");
     }
+}
+
+function checkMarineLogin() {
+    const input = document.getElementById('marine-pass').value;
+    // Replace 'sonar' with her actual original passcode
+    if (input === 'sonar') {
+        location.href = 'marine.html';
+    } else {
+        alert("❌ ACCESS DENIED. INVALID CREDENTIALS.");
+    }
+}
 
     function logout() {
         // Hide all game screens
