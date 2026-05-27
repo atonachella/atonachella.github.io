@@ -116,53 +116,108 @@
             color: white;
             font-family: 'Comic Sans MS', cursive, sans-serif; /* Extra playful font choice */
         }
+
+        :root {
+    /* Playful/Magic Theme Colors (Left Side) */
+    --left-bg: #9b5de5; 
+    --left-text: #fee440;
+    
+    /* Marine/Sonar Theme Colors (Right Side) */
+    --right-bg: #0a1912;
+    --right-text: #00ff66;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+/* The Magic Diagonal Split Background */
+.split-screen {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    /* 135 degrees creates a perfect top-left to bottom-right diagonal split */
+    background: linear-gradient(135deg, 
+                var(--left-bg) 0%, 
+                var(--left-bg) 50%, 
+                var(--right-bg) 50%, 
+                var(--right-bg) 100%);
+}
+
+/* Base style for both sides */
+.side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+/* Subtle hover effect to make it interactive */
+.side:hover {
+    transform: scale(1.02);
+}
+
+/* Left Side Adjustments (Offset content slightly so it doesn't cross the diagonal line) */
+.side.left {
+    color: var(--left-text);
+    padding-right: 5%; 
+}
+
+/* Right Side Adjustments */
+.side.right {
+    color: var(--right-text);
+    padding-left: 5%;
+    font-family: 'Courier New', Courier, monospace; /* Matching her terminal look */
+}
+
+/* Fun Dynamic Entry Buttons */
+.portal-btn {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 3px solid currentColor;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 30px;
+    margin-top: 20px;
+    transition: all 0.2s ease;
+}
+
+.portal-btn:hover {
+    background: currentColor;
+    /* Flips the color on hover dynamically */
+    color: var(--left-bg); 
+}
+
+.right .portal-btn:hover {
+    color: var(--right-bg);
+}
     </style>
 </head>
 <body>
 
-<div class="app-container">
-
-    <div id="login-screen" class="screen active">
-        <h1 style="color: #333; margin-bottom: 5px;">👋 Welcome!</h1>
-        <p style="color: #666; margin-top: 0;">Select your name and enter your secret code</p>
-        
-        <label for="user-select" style="display:block; text-align:left; font-weight:bold;">Who are you?</label>
-        <select id="user-select">
-            <option value="older">Big Sister (Age 10)</option>
-            <option value="younger">Little Sister (Age 7)</option>
-        </select>
-
-        <label for="password-input" style="display:block; text-align:left; font-weight:bold;">Secret Code:</label>
-        <input type="password" id="password-input" placeholder="Type your password here...">
-
-        <button onclick="handleLogin()" style="background-color: #4a90e2; color: white;">Unlock My App 🔓</button>
-        <div id="login-error" class="error-message"></div>
+<div class="split-screen">
+    
+    <div class="side left">
+        <h1>🌟 Playful World 🧸</h1>
+        <p>Ready for Magic & Mini-Games?</p>
+        <button class="portal-btn" onclick="location.href='playful.html'">Enter Portal</button>
     </div>
-
-    <div id="marine-screen" class="screen">
-        <h1>🐳 Submarine Command Center</h1>
-        <p style="font-size: 18px; color: #444;">Welcome aboard, Captain! Your deep-sea mission is ready.</p>
-        <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
-        
-        <div style="background: #eef2f3; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-            🧪 <strong>Status:</strong> Systems Offline.<br>
-            <em>(We will code your Marine Scavenger Hunt / Trivia right here next!)</em>
-        </div>
-
-        <button onclick="logout()">Log Out</button>
-    </div>
-
-    <div id="playful-screen" class="screen">
-        <h1>✨ The Fun Zone! ✨</h1>
-        <p style="font-size: 18px; color: #444;">Yay! You made it! Let's get ready to play! 🎉</p>
-        <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
-
-        <div style="background: #fff0f5; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-            🎈 <strong>Next Step:</strong> Waiting for magic code...<br>
-            <em>(We will code your interactive digital arcade / puzzles right here next!)</em>
-        </div>
-
-        <button onclick="logout()">Log Out</button>
+    
+    <div class="side right">
+        <h1>📡 Marine Command 🐋</h1>
+        <p>SYSTEM STATUS: READY FOR SCAN</p>
+        <button class="portal-btn" onclick="location.href='marine.html'">Initialize Sonar</button>
     </div>
 
 </div>
