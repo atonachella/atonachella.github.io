@@ -93,6 +93,116 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
         }
+
+:root {
+    --play-purple: #9b5de5;
+    --play-pink: #f15bb5;
+    --play-yellow: #fee440;
+    --play-bg: #fff0f5;
+    --play-text: #4a0e4e;
+}
+
+.toy-game-container {
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    color: white;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    padding: 25px;
+    border-radius: 20px;
+    border: 5px solid white;
+    max-width: 800px;
+    margin: 20px auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.toy-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-top: 0;
+    animation: bounce 3s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.toy-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.toy-tile {
+    background: white;
+    border-radius: 15px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #d6cae6;
+    transition: all 0.2s ease;
+}
+
+.toy-tile:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #d6cae6;
+}
+
+.toy-tile.hidden {
+    background: var(--play-yellow); 
+    box-shadow: 0 6px 0 #fbc02d;
+}
+
+.toy-tile.hidden span {
+    display: none;
+}
+
+.toy-tile.matched {
+    background: #e8dbff;
+    box-shadow: 0 6px 0 #b39ddb;
+    transform: scale(0.95);
+}
+
+.toy-popup-box {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--play-text);
+    border: 3px solid var(--play-pink);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 15px;
+    display: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.toy-choice-btn {
+    background: var(--play-pink);
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    margin: 8px;
+    cursor: pointer;
+    border-radius: 25px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 0 #c2185b;
+    font-weight: bold;
+}
+
+.toy-choice-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #c2185b;
+}
+
+#toy-star-display {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-top: 15px;
+}
+
     </style>
 </head>
 <body>
@@ -112,7 +222,24 @@
     <div class="arcade-box">
         Slime Catcher Arcade: Loading... 🕹️<br>
         <span style="font-size: 14px; font-weight: normal; opacity: 0.95;">
-            (Next, we will code your custom tap games or matching puzzles right here!)
+            (Next, we will code your custom tap games or matching puzzles right here!)<div class="toy-game-container">
+    <h2 class="toy-title">🧸 Magical Toy Box Match! 🌟</h2>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.2rem; font-weight: bold;">
+        <div>⭐ Magic Stars: <span id="toy-star-count">0</span></div>
+        <div>Badge: <span id="toy-rank">Toy Box Helper</span></div>
+    </div>
+
+    <div class="toy-grid" id="toy-grid"></div>
+
+    <div class="toy-popup-box" id="toy-popup-box">
+        <h3 id="toy-popup-title">You found a toy!</h3>
+        <p id="toy-popup-question" style="font-size: 1.1rem;"></p>
+        <div id="toy-popup-choices"></div>
+    </div>
+
+    <div id="toy-star-display"></div>
+</div>
         </span>
     </div>
 
@@ -121,6 +248,140 @@
 </div>
 
 <script>
+const toyItems = [
+    { emoji: '🦄', name: 'Unicorn', question: 'What do magical unicorns love to eat most?', choices: ['Rainbow sprinkles & sparkles', 'Salty broccoli'], correct: 0 },
+    { emoji: '🚀', name: 'Rocket Ship', question: 'How high can a spaceship fly?', choices: ['All the way past the moon!', 'Just up to the tree tops'], correct: 0 },
+    { emoji: '🎨', name: 'Art Palette', question: 'What magic happens when you mix blue and yellow paint together?', choices: ['It turns Bright Green!', 'It turns Hot Pink!'], correct: 0 },
+    { emoji: '🧸', name: 'Teddy Bear', question: 'What is a teddy bear\'s favorite job?', choices: ['Giving the best cozy hugs', 'Doing the dishes'], correct: 0 }
+];
+
+let toyDeck = [...toyItems, ...toyItems];
+let toyFlipped = [];
+let toyMatched = 0;
+let toyStarScore = 0;
+
+// Magic Sparkle Sound Synthesizer (Quick, rising magical twinkle)
+function playMagicSpark(freq = 900) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'triangle'; // Softer, warmer sound tone than standard sine waves
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 2.2, audioCtx.currentTime + 0.12);
+    
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.12);
+}
+
+function shuffleToys(array) {
+    return array.sort(() => Math.random() - 0.5);
+}
+
+function initToyGame() {
+    const grid = document.getElementById('toy-grid');
+    grid.innerHTML = '';
+    shuffleToys(toyDeck);
+    
+    toyDeck.forEach((item, index) => {
+        const tile = document.createElement('div');
+        tile.classList.add('toy-tile', 'hidden');
+        tile.dataset.index = index;
+        tile.innerHTML = `<span>${item.emoji}</span>`;
+        tile.addEventListener('click', () => handleToyClick(tile, item));
+        grid.appendChild(tile);
+    });
+}
+
+function handleToyClick(tile, item) {
+    if (tile.classList.contains('matched') || toyFlipped.includes(tile) || toyFlipped.length >= 2) return;
+
+    playMagicSpark(800); 
+    tile.classList.remove('hidden');
+    toyFlipped.push(tile);
+
+    if (toyFlipped.length === 2) {
+        checkToyMatch();
+    }
+}
+
+function checkToyMatch() {
+    const [tile1, tile2] = toyFlipped;
+    const idx1 = tile1.dataset.index;
+    const idx2 = tile2.dataset.index;
+
+    if (toyDeck[idx1].emoji === toyDeck[idx2].emoji) {
+        setTimeout(() => {
+            // Magical dual sparkle sounds
+            playMagicSpark(1000);
+            setTimeout(() => playMagicSpark(1400), 50);
+
+            tile1.classList.add('matched');
+            tile2.classList.add('matched');
+            toyStarScore += 1;
+            document.getElementById('toy-star-count').textContent = toyStarScore;
+            
+            triggerToyPopup(toyDeck[idx1]);
+            toyFlipped = [];
+            toyMatched += 2;
+            
+            if (toyMatched === toyDeck.length) {
+                document.getElementById('toy-star-display').innerHTML = "🌈 Spectacular! You organized the whole Toy Box! 👑";
+                document.getElementById('toy-rank').textContent = "Grand Toy Master! 🏆";
+            }
+        }, 400);
+    } else {
+        setTimeout(() => {
+            tile1.classList.add('hidden');
+            tile2.classList.add('hidden');
+            toyFlipped = [];
+        }, 1000);
+    }
+}
+
+function triggerToyPopup(item) {
+    const popup = document.getElementById('toy-popup-box');
+    const title = document.getElementById('toy-popup-title');
+    const question = document.getElementById('toy-popup-question');
+    const choicesEl = document.getElementById('toy-popup-choices');
+    
+    title.textContent = `✨ You matched the ${item.name}s!`;
+    question.textContent = item.question;
+    choicesEl.innerHTML = '';
+    
+    item.choices.forEach((choice, index) => {
+        const btn = document.createElement('button');
+        btn.classList.add('toy-choice-btn');
+        btn.textContent = choice;
+        btn.onclick = () => {
+            if (index === item.correct) {
+                alert("🌟 Super Duper! That is exactly right!");
+                toyStarScore += 2;
+            } else {
+                alert(`Oops! Actually, they love sparkles and hugs best!`);
+            }
+            document.getElementById('toy-star-count').textContent = toyStarScore;
+            popup.style.display = 'none';
+            
+            if (toyStarScore >= 4 && toyStarScore < 8) {
+                document.getElementById('toy-rank').textContent = "Expert Fun Explorer 🎨";
+            }
+        };
+        choicesEl.appendChild(btn);
+    });
+    
+    popup.style.display = 'block';
+}
+
+// Start her game!
+initToyGame();
+
     function goToLogin() {
         window.location.href = "index.html";
     }
