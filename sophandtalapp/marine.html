@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submarine Command Center</title>
+    <style>
+        /* 🐳 DEEP SEA BASE STYLING */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Creates a gradient from sunlit surface water down to the deep twilight zone */
+            background: linear-gradient(180deg, #1cb5e0 0%, #000046 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* 🐠 VIVID UNDERWATER CONTAINER */
+        .marine-container {
+            background: rgba(10, 25, 47, 0.85); /* Deep translucent ocean blue */
+            border: 3px solid #00f2fe; /* Neon bioluminescent border */
+            border-radius: 24px;
+            padding: 35px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.4);
+            backdrop-filter: blur(10px); /* Makes the background look like shimmering water */
+            position: relative;
+        }
+
+        h1 {
+            color: #00f2fe;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+        }
+
+        .greeting-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        /* 🪸 CORAL REEF & FISH DECORATION DECK */
+        .coral-reef {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 32px; /* Makes the marine emojis large and vivid */
+            letter-spacing: 8px;
+            margin: 25px 0;
+            border: 1px dashed #4facfe;
+        }
+
+        .mission-box {
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+        }
+
+        /* 🚪 BACK TO RADAR BUTTON */
+        .logout-btn {
+            background: transparent;
+            color: #00f2fe;
+            border: 2px solid #00f2fe;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #00f2fe;
+            color: #000046;
+            box-shadow: 0 0 15px #00f2fe;
+        }
+    </style>
+</head>
+<body>
+
+<div class="marine-container">
+    
+    <h1>🐳 Welcome Aboard, Captain!</h1>
+    
+    <p class="greeting-text">
+        The submarine radar has locked onto your coordinates. It is so wonderful to have you here! The deep sea is filled with magic today, and your special underwater mission is officially ready to begin.
+    </p>
+
+    <div class="coral-reef">
+        🐠 🪸 🐡 🦑 🐬 🌿 🐙 🦐 🌟
+    </div>
+
+    <div class="mission-box">
+        🔒 Deep Sea Mission: Locked<br>
+        <span style="font-size: 14px; font-weight: normal; opacity: 0.9;">
+            (Next, we will code your custom game or puzzle right here!)
+        </span>
+    </div>
+
+    <button class="logout-btn" onclick="goToLogin()">Return to Surface ⚓</button>
+
+</div>
+
+<script>
+    function goToLogin() {
+        // This instantly points the browser back to your main sign-in screen
+        window.location.href = "index.html";
+    }
+</script>
+
+</body>
+</html>
