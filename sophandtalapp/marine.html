@@ -89,6 +89,117 @@
             color: #000046;
             box-shadow: 0 0 15px #00f2fe;
         }
+
+        :root {
+    --sonar-green: #00ff66;
+    --sonar-dark: #0a1912;
+}
+
+.sonar-game-container {
+    background-color: var(--sonar-dark);
+    color: var(--sonar-green);
+    font-family: 'Courier New', Courier, monospace;
+    padding: 20px;
+    border-radius: 15px;
+    border: 3px solid var(--sonar-green);
+    max-width: 800px;
+    margin: 20px auto;
+    box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+}
+
+.radar-screen {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, transparent 30%, rgba(0,255,102,0.1) 40%, transparent 60%);
+    border: 2px solid var(--sonar-green);
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    overflow: hidden;
+}
+
+/* Radar Sweep Line Animation */
+.radar-screen::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0,255,102,0.4) 0%, transparent 50%);
+    transform-origin: rotate;
+    top: 0; left: 0;
+    animation: radar-sweep 4s linear infinite;
+}
+
+@keyframes radar-sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.sonar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.sonar-tile {
+    background: rgba(0, 255, 102, 0.05);
+    border: 2px solid var(--sonar-green);
+    border-radius: 8px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sonar-tile.hidden {
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,255,102,0.1) 10px, rgba(0,255,102,0.1) 20px);
+}
+
+.sonar-tile.hidden span {
+    display: none;
+}
+
+.sonar-tile.matched {
+    background: rgba(0, 255, 102, 0.3);
+    cursor: default;
+    box-shadow: 0 0 10px var(--sonar-green);
+}
+
+.trivia-box {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px dashed var(--sonar-green);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    display: none;
+}
+
+.trivia-btn {
+    background: transparent;
+    border: 1px solid var(--sonar-green);
+    color: var(--sonar-green);
+    padding: 8px 15px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.trivia-btn:hover {
+    background: var(--sonar-green);
+    color: var(--sonar-dark);
+}
+
+#badge-display {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 15px;
+}
     </style>
 </head>
 <body>
@@ -108,7 +219,25 @@
     <div class="mission-box">
         🔒 Deep Sea Mission: Locked<br>
         <span style="font-size: 14px; font-weight: normal; opacity: 0.9;">
-            (Next, we will code your custom game or puzzle right here!)
+            (Next, we will code your custom game or puzzle right here!)<div class="sonar-game-container">
+    <h2>📡 Deep Sea Sonar Match & Trivia</h2>
+    
+    <div class="radar-screen"></div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+        <div>⚡ Score: <span id="game-score">0</span></div>
+        <div>🏆 Rank: <span id="game-rank">Junior Scout</span></div>
+    </div>
+
+    <div class="sonar-grid" id="sonar-grid"></div>
+
+    <div class="trivia-box" id="trivia-box">
+        <h3 id="trivia-question">Analyzing Sonar Contact...</h3>
+        <div id="trivia-options"></div>
+    </div>
+
+    <div id="badge-display"></div>
+</div>
         </span>
     </div>
 
@@ -117,6 +246,147 @@
 </div>
 
 <script>
+const creatures = [
+    { emoji: '🐋', name: 'Blue Whale', question: 'How big is a Blue Whale\'s heart?', options: ['Size of a car', 'Size of a basketball', 'Size of a dog'], correct: 0 },
+    { emoji: '🐬', name: 'Dolphin', question: 'How do dolphins "see" underwater in the dark?', options: ['Flashlights', 'Echolocation / Sonar', 'Night vision'], correct: 1 },
+    { emoji: '🐙', name: 'Octopus', question: 'How many hearts does an octopus have?', options: ['One', 'Two', 'Three'], correct: 2 },
+    { emoji: '🦈', name: 'Shark', question: 'True or False: Sharks have bones made of bone.', options: ['True', 'False (It\'s cartilage!)'], correct: 1 }
+];
+
+// Duplicate creatures to make pairs
+let gameDeck = [...creatures, ...creatures];
+let flippedTiles = [];
+let matchedCount = 0;
+let score = 0;
+
+// Play Synthesized Sonar Sound
+function playPing(frequency = 800, duration = 0.3) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
+// Shuffle Deck
+function shuffle(array) {
+    return array.sort(() => Math.random() - 0.5);
+}
+
+// Initialize Game Grid
+function initGame() {
+    const grid = document.getElementById('sonar-grid');
+    grid.innerHTML = '';
+    shuffle(gameDeck);
+    
+    gameDeck.forEach((item, index) => {
+        const tile = document.createElement('div');
+        tile.classList.add('sonar-tile', 'hidden');
+        tile.dataset.index = index;
+        tile.innerHTML = `<span>${item.emoji}</span>`;
+        tile.addEventListener('click', () => handleTileClick(tile, item));
+        grid.appendChild(tile);
+    });
+}
+
+function handleTileClick(tile, item) {
+    if (tile.classList.contains('matched') || flippedTiles.includes(tile) || flippedTiles.length >= 2) return;
+
+    playPing(600, 0.15); // Short click sound
+    tile.classList.remove('hidden');
+    flippedTiles.push(tile);
+
+    if (flippedTiles.length === 2) {
+        checkMatch();
+    }
+}
+
+function checkMatch() {
+    const [tile1, tile2] = flippedTiles;
+    const idx1 = tile1.dataset.index;
+    const idx2 = tile2.dataset.index;
+
+    if (gameDeck[idx1].emoji === gameDeck[idx2].emoji) {
+        // It's a match!
+        setTimeout(() => {
+            playPing(900, 0.5); // High success ping
+            tile1.classList.add('matched');
+            tile2.classList.add('matched');
+            score += 10;
+            document.getElementById('game-score').textContent = score;
+            
+            // Launch Trivia for this specific creature
+            triggerTrivia(gameDeck[idx1]);
+            
+            flippedTiles = [];
+            matchedCount += 2;
+            
+            if (matchedCount === gameDeck.length) {
+                updateRank("Deep Sea Captain 👑");
+                document.getElementById('badge-display').innerHTML = "🎉 Mission Accomplished! You unlocked the Marine Biologist Explorer Badge! 🎖️";
+            }
+        }, 500);
+    } else {
+        // Not a match
+        setTimeout(() => {
+            tile1.classList.add('hidden');
+            tile2.classList.add('hidden');
+            flippedTiles = [];
+        }, 1000);
+    }
+}
+
+function triggerTrivia(creature) {
+    const triviaBox = document.getElementById('trivia-box');
+    const questionEl = document.getElementById('trivia-question');
+    const optionsEl = document.getElementById('trivia-options');
+    
+    questionEl.textContent = `🚨 SONAR TRIVIA: ${creature.question}`;
+    optionsEl.innerHTML = '';
+    
+    creature.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.classList.add('trivia-btn');
+        btn.textContent = opt;
+        btn.onclick = () => {
+            if (index === creature.correct) {
+                alert("Correct! +15 Radar Points!");
+                score += 15;
+            } else {
+                alert(`Not quite! The correct answer was: ${creature.options[creature.correct]}`);
+            }
+            document.getElementById('game-score').textContent = score;
+            triviaBox.style.display = 'none';
+            checkRankUp();
+        };
+        optionsEl.appendChild(btn);
+    });
+    
+    triviaBox.style.display = 'block';
+}
+
+function checkRankUp() {
+    if (score >= 30 && score < 70) updateRank("Sonar Technician 📡");
+    else if (score >= 70) updateRank("Ocean Commander 🌊");
+}
+
+function updateRank(newRank) {
+    document.getElementById('game-rank').textContent = newRank;
+}
+
+// Fire up the radar system on load
+initGame();
+
     function goToLogin() {
         // This instantly points the browser back to your main sign-in screen
         window.location.href = "index.html";
