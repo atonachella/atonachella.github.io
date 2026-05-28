@@ -1,0 +1,220 @@
+/* --- Design System Tokens --- */
+:root {
+    --bg-dark: #0a0c10;
+    --bg-card: #121620;
+    --neon-green: #39ff14;
+    --neon-blue: #00f0ff;
+    --white-highlight: #f0f4f8;
+    --text-muted: #8a99ad;
+    --font-sans: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- Global Resets --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--white-highlight);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* --- Navigation Header --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: rgba(10, 12, 16, 0.8);
+    backdrop-filter: blur(10px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.logo span {
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 25px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+nav a:hover, nav a.active {
+    color: var(--neon-green);
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+}
+
+/* --- Hero Section --- */
+.hero {
+    height: 85vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+    margin-top: 60px;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.text-gradient {
+    background: linear-gradient(45deg, var(--neon-blue), var(--neon-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+}
+
+/* --- Interactive Components Layout --- */
+.features-preview {
+    padding: 80px 8%;
+    background: linear-gradient(180deg, var(--bg-dark) 0%, #06080c 100%);
+}
+
+.features-preview h2 {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 50px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid rgba(240, 244, 248, 0.05);
+    padding: 30px;
+    border-radius: 12px;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--neon-blue);
+    box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
+}
+
+.card h3 {
+    margin-bottom: 15px;
+    color: var(--white-highlight);
+}
+
+.card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* --- Buttons & Inputs --- */
+.btn-primary {
+    background: transparent;
+    color: var(--neon-green);
+    border: 2px solid var(--neon-green);
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+}
+
+.btn-primary:hover {
+    background: var(--neon-green);
+    color: var(--bg-dark);
+    box-shadow: 0 0 25px rgba(57, 255, 20, 0.6);
+}
+
+/* Custom Dropdown Styling (Prototype State) */
+.custom-dropdown {
+    position: relative;
+}
+
+.dropdown-trigger {
+    width: 100%;
+    background: #1a202c;
+    color: var(--white-highlight);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    list-style: none;
+    margin-top: 5px;
+    background: #1a202c;
+    border: 1px solid var(--neon-blue);
+    border-radius: 6px;
+    display: none; /* Controlled by JS later, visible on hover for proto */
+}
+
+.custom-dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu li {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.dropdown-menu li:hover {
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--neon-blue);
+}
+
+/* Scroll Box Preview */
+.scroll-box {
+    max-height: 120px;
+    overflow-y: auto;
+    border: 1px dashed rgba(57, 255, 20, 0.3);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.scroll-item {
+    padding: 8px;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
