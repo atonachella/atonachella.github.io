@@ -11,5 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+// Contact Email Action Handler
+    const emailLink = document.getElementById('contact-email');
+    if (emailLink) {
+        emailLink.addEventListener('click', (e) => {
+            console.log("📬 Redirecting user to secure email client link...");
+        });
+    }
+
     console.log("🚀 Futuristic AI Architecture System Online.");
 });
