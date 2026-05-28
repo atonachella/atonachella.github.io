@@ -220,10 +220,9 @@ nav a:hover, nav a.active {
 }
 
 /* --- Navigation Contact Dropdown --- */
-/* --- Navigation Contact Dropdown --- */
 .nav-dropdown {
     position: relative;
-    display: inline-block;
+    display: inline-block; /* Keeps the container wrapped tightly around the text */
 }
 
 /* Ensure the menu is strictly hidden by default */
@@ -231,7 +230,7 @@ nav a:hover, nav a.active {
     display: none; 
     position: absolute;
     right: 0;
-    top: 100%; /* Forces it directly below the trigger link */
+    top: 100%; /* Positions the menu right at the bottom edge of the parent */
     background-color: var(--bg-card);
     min-width: 190px;
     box-shadow: 0px 8px 24px rgba(0, 240, 255, 0.2);
@@ -239,7 +238,10 @@ nav a:hover, nav a.active {
     border-radius: 8px;
     z-index: 1001;
     padding: 6px 0;
-    margin-top: 5px;
+    
+    /* FIX: This invisible margin/padding combo creates a bridge so the mouse never leaves the element */
+    margin-top: 0; 
+    padding-top: 10px; 
 }
 
 /* Style the links inside the dropdown */
@@ -267,7 +269,7 @@ nav a:hover, nav a.active {
     cursor: not-allowed;
 }
 
-/* TRIGGER: Show the menu specifically when hovering over the nav-dropdown wrapper */
+/* TRIGGER: Show the menu when hovering over the container */
 .nav-dropdown:hover .nav-dropdown-menu {
     display: block !important;
 }
