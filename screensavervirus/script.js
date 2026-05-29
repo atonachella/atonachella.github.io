@@ -24,15 +24,23 @@ const logLines = [
 let lineIndex = 0;
 function printLog() {
     if (lineIndex < logLines.length) {
-        // Create a distinct line container for each log entry
         const line = document.createElement('div');
         
-        // Safely evaluate the HTML so the 'alert-line' spans render correctly
-        line.innerHTML = logLines[lineIndex];
+        // Get the current text line
+        const currentLineText = logLines[lineIndex];
+        line.innerText = currentLineText;
         
-        // Append it cleanly to your terminal window
+        // If the line starts with an alert keyword, automatically make it red
+        if (currentLineText.startsWith("WARNING") || 
+            currentLineText.startsWith("ERROR") || 
+            currentLineText.startsWith("TRASHING") || 
+            currentLineText.startsWith("ENCRYPTING") ||
+            currentLineText.startsWith("BROADCASTING")) {
+            
+            line.classList.add('alert-line');
+        }
+        
         logElement.appendChild(line);
-        
         lineIndex++;
         setTimeout(printLog, 250);
     } else {

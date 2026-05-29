@@ -129,6 +129,11 @@ canvas {
     height: 100%;
 }
 
+.alert-line {
+    color: #ff0000 !important;
+    text-shadow: 0 0 12px rgba(255, 0, 0, 1) !important;
+}
+
 /* Animations */
 @keyframes flash-red {
     0% { background-color: #ff0000; }
