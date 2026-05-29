@@ -24,11 +24,18 @@ const logLines = [
 let lineIndex = 0;
 function printLog() {
     if (lineIndex < logLines.length) {
-        logElement.innerHTML += logLines[lineIndex] + "<br>";
+        // Create a distinct line container for each log entry
+        const line = document.createElement('div');
+        
+        // Safely evaluate the HTML so the 'alert-line' spans render correctly
+        line.innerHTML = logLines[lineIndex];
+        
+        // Append it cleanly to your terminal window
+        logElement.appendChild(line);
+        
         lineIndex++;
-        setTimeout(printLog, 250); // Speed of terminal dump
+        setTimeout(printLog, 250);
     } else {
-        // Shift to Phase 2 after a short pause
         setTimeout(transitionToPhase2, 1500);
     }
 }
