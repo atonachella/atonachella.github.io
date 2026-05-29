@@ -1,70 +1,93 @@
 const canvas = document.getElementById('virusCanvas');
 const ctx = canvas.getContext('2d');
 
-// Match canvas size to the monitor display
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+// Establish display size variables
+let width = window.innerWidth;
+let height = window.innerHeight;
 
-// Digital virus binary and hexadecimal characters
-const virusChars = '01X_SYSTEM_FAILURE_ERR_0x004F_CRITICAL_CORRUPT_10'.split('');
+canvas.width = width;
+canvas.height = height;
+
+// Handle window stretching or resizing dynamically
+window.addEventListener('resize', () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Recalculate column layout if display changes
+    columns = Math.floor(width / fontSize);
+    drops.length = 0;
+    for (let x = 0; x < columns; x++) {
+        drops[x] = 1;
+    }
+});
+
+// Binary strings, error codes, and hex data for the virus theme
+const virusData = [
+    "0", "1", "01", "SYSTEM_FAILURE", "ERR_0x004F", 
+    "CRITICAL", "CORRUPT", "10", "LOAD_FAIL", "ACCESS_DENIED"
+];
+
 const fontSize = 14;
-let columns = canvas.width / fontSize;
-
+let columns = Math.floor(width / fontSize);
 const drops = [];
+
+// Initialize data streams at the top row
 for (let x = 0; x < columns; x++) {
     drops[x] = 1;
 }
 
-function drawVirus() {
-    // Translucent black fade layer
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Main rendering engine
+function renderVirusStream() {
+    // Transparent black background trail creates the fade effect
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+    ctx.fillRect(0, 0, width, height);
 
     ctx.font = 'bold ' + fontSize + 'px monospace';
 
     for (let i = 0; i < drops.length; i++) {
-        const text = virusChars[Math.floor(Math.random() * virusChars.length)];
+        // Pull random text elements from our virus array
+        const text = virusData[Math.floor(Math.random() * virusData.length)];
 
-        // Core visual theme: Crimson Red streams with Stark White glitch highlights
+        // Design: Predominantly Crimson Red streams with Stark White glitch highlights
         if (Math.random() > 0.98) {
-            ctx.fillStyle = '#ffffff'; // White flash/glitch character
+            ctx.fillStyle = '#ffffff'; // White flash highlight
         } else {
-            ctx.fillStyle = '#ff0000'; // Dark crimson virus data
+            ctx.fillStyle = '#ff0000'; // Pure crimson data line
         }
 
+        // Draw character to screen
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
-        // Reset stream to top randomly after hitting bottom
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        // Reset the drop back to the top once it hits the edge
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
             drops[i] = 0;
         }
         drops[i]++;
     }
 }
 
-// Render loop running smoothly
-setInterval(drawVirus, 33);
+// Standard, stable frame timer loop (approx 30fps)
+setInterval(renderVirusStream, 33);
 
 // ==========================================
-// NATIVE WINDOWS EXIT CONTROLS
+// NATIVE SCREEN SAVER DISMISS CONTROLS
 // ==========================================
-let systemBooting = true;
+let safetyDelay = true;
 
-function closeScreensaver() {
-    window.close();
+// Allow the system to register mouse movement without an instant close glitch
+setTimeout(() => {
+    safetyDelay = false;
+}, 1000);
+
+function terminateScreensaver() {
+    if (!safetyDelay) {
+        window.close();
+    }
 }
 
-// Intercept user inputs to close the program instantly when active
-window.addEventListener('mousemove', () => {
-    if (systemBooting) {
-        systemBooting = false; // Prevents mouse jitter crash on launch
-        return;
-    }
-    closeScreensaver();
-});
-window.addEventListener('keydown', closeScreensaver);
-window.addEventListener('click', closeScreensaver);
+// Track mouse activity and keyboard keys to cleanly quit
+window.addEventListener('mousemove', terminateScreensaver);
+window.addEventListener('keydown', terminateScreensaver);
+window.addEventListener('click', terminateScreensaver);

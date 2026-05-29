@@ -1,15 +1,22 @@
-/* Forces a perfect full screen container with zero window borders */
+/* Reset the window environment for full screen display */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     overflow: hidden !important;
-    background-color: #000000; /* Deep black backdrop */
-    cursor: none; /* Hides the mouse arrow while running */
+    background-color: #000000;
 }
 
-/* Canvas fills the screen completely */
+/* Main background wrapper */
+#virus-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background-color: #000000;
+}
+
+/* Force the canvas layer to fill out the workspace */
 #virusCanvas {
     display: block;
     width: 100%;
