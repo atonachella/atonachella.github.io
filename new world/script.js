@@ -1,67 +1,67 @@
-class GrandSynthesis {
+// --- Core Engine Architecture ---
+class SynthesisEngine {
     constructor() {
-        this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('deck-canvas'), antialias: true });
+        this.container = document.getElementById('canvas-container');
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 0.1, 5000);
-        this.init();
+        this.scene.fog = new THREE.FogExp2(0x020508, 0.005);
+        
+        this.camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 10000);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        this.setup();
     }
 
-    init() {
+    setup() {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.scene.fog = new THREE.FogExp2(0x020508, 0.003); // Cinematic depth
-
-        this.camera.position.set(0, 15, 60);
+        this.container.appendChild(this.renderer.domElement);
         
-        // Lighting: High-contrast futuristic lighting
-        const ambient = new THREE.AmbientLight(0x1a2e4c, 1.5);
-        this.scene.add(ambient);
-        
-        // Build the environment
-        this.buildDeck();
-        this.animate();
+        this.camera.position.set(0, 20, 100);
+        this.addLighting();
+        this.generateEnvironment();
+        this.render();
     }
 
-    buildDeck() {
-        // Floor: High-reflectivity metallic
+    addLighting() {
+        const ambient = new THREE.AmbientLight(0x0a1a2a, 2);
+        this.scene.add(ambient);
+        
+        const directional = new THREE.DirectionalLight(0x00f2ff, 1);
+        directional.position.set(0, 100, 0);
+        this.scene.add(directional);
+    }
+
+    generateEnvironment() {
+        // High-density floor with texture-like detail
         const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(2000, 2000),
-            new THREE.MeshStandardMaterial({ color: 0x0a0c10, metalness: 0.9, roughness: 0.1 })
+            new THREE.PlaneGeometry(5000, 5000),
+            new THREE.MeshStandardMaterial({ color: 0x05080c, metalness: 0.9, roughness: 0.1 })
         );
         floor.rotation.x = -Math.PI / 2;
         this.scene.add(floor);
 
-        // Architecture: Procedural support pillars
-        for(let i=0; i<300; i++) {
-            const size = 1 + Math.random() * 5;
-            const beam = new THREE.Mesh(
-                new THREE.BoxGeometry(size, 100, size),
-                new THREE.MeshStandardMaterial({ color: 0x0f1620, metalness: 0.8 })
-            );
-            beam.position.set((Math.random()-0.5)*1000, 0, -i * 50);
-            this.scene.add(beam);
-        }
-
-        // Foliage: "Lush" clusters
-        for(let i=0; i<500; i++) {
-            const leaf = new THREE.Mesh(
-                new THREE.IcosahedronGeometry(0.8),
-                new THREE.MeshStandardMaterial({ color: 0x00ff88, emissive: 0x004422 })
-            );
-            leaf.position.set((Math.random()-0.5)*300, 2, (Math.random()-0.5)*1000);
-            this.scene.add(leaf);
+        // Building "The City" (Instanced Rendering for scale)
+        const geometry = new THREE.BoxGeometry(2, 50, 2);
+        const material = new THREE.MeshStandardMaterial({ color: 0x0a0f18 });
+        
+        for(let i = 0; i < 1000; i++) {
+            const pillar = new THREE.Mesh(geometry, material);
+            pillar.position.set((Math.random()-0.5)*2000, 25, (Math.random()-0.5)*2000);
+            this.scene.add(pillar);
         }
     }
 
-    animate() {
-        requestAnimationFrame(() => this.animate());
-        this.camera.position.z -= 0.5; // Constant forward drift
-        if(this.camera.position.z < -1000) this.camera.position.z = 60;
+    render() {
+        requestAnimationFrame(() => this.render());
+        this.camera.position.z -= 0.8; // Faster cinematic speed
         this.renderer.render(this.scene, this.camera);
     }
 }
 
-document.getElementById('start-engine').addEventListener('click', () => {
-    document.getElementById('loader').remove();
-    new GrandSynthesis();
+document.getElementById('engage-btn').addEventListener('click', () => {
+    document.getElementById('init-layer').style.opacity = 0;
+    setTimeout(() => {
+        document.getElementById('init-layer').remove();
+        new SynthesisEngine();
+    }, 1000);
 });

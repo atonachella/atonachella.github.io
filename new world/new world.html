@@ -2,23 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GRAND SYNTHESIS // OBSERVATION_DECK_4</title>
+    <title>Grand Synthesis // Environment Core</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="loader">
-        <div class="glass-panel">
-            <h1>INIT_NEURAL_LINK</h1>
-            <button id="start-engine">ESTABLISH CONNECTION</button>
+    <div id="init-layer">
+        <button id="engage-btn" class="init-button">INITIALIZE DECK</button>
+    </div>
+
+    <div id="hud-ui">
+        <div class="data-panel">
+            <h2>OBSERVATION_DECK_4</h2>
+            <p>NEBULA_STABILITY: 99.8%</p>
+        </div>
+        <div class="data-panel">
+            <h2>SYSTEM_STATUS</h2>
+            <p>ENGAGED // LUSH_MODE</p>
         </div>
     </div>
 
-    <div id="ui-hud">
-        <div class="hud-top">SYSTEM // STABLE | VELOCITY // CONSTANT</div>
-        <div class="hud-bottom">ARCHITECTURE // GENERATED | FOLIAGE // SYNTHETIC</div>
-    </div>
-
-    <canvas id="deck-canvas"></canvas>
+    <div id="canvas-container"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="script.js"></script>
