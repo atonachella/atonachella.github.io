@@ -1,49 +1,23 @@
-/* --- High-Fidelity HUD System --- */
-:root {
-    --neon-blue: #00f2ff;
-    --deep-space: #020508;
-    --glass-bg: rgba(0, 10, 20, 0.6);
-}
-
-body, html {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    background: var(--deep-space); color: white;
-    font-family: 'Rajdhani', sans-serif; overflow: hidden;
-}
+:root { --neon: #00f2ff; --bg-deep: #020406; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg-deep); overflow: hidden; font-family: 'Share Tech Mono', monospace; }
 
 #canvas-container { position: absolute; inset: 0; z-index: 1; }
 
-/* The HUD Overlay */
-#hud-ui {
-    position: absolute; inset: 0; z-index: 10;
-    pointer-events: none; display: flex; flex-direction: column;
-    justify-content: space-between; padding: 40px;
+#hud-overlay {
+    position: absolute; inset: 0; z-index: 10; pointer-events: none;
+    display: grid; grid-template-columns: 300px 1fr 300px; padding: 40px;
+    box-sizing: border-box;
 }
 
-.data-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    border-left: 3px solid var(--neon-blue);
-    padding: 20px; width: 300px;
-}
+.hud-element { border: 1px solid rgba(0, 242, 255, 0.2); background: rgba(0, 10, 20, 0.4); padding: 20px; height: fit-content; }
+.hud-element h2 { color: var(--neon); font-size: 0.9rem; letter-spacing: 4px; margin: 0 0 10px 0; }
+.hud-element p { color: #fff; font-size: 0.7rem; opacity: 0.8; }
 
-.data-panel h2 { color: var(--neon-blue); font-size: 1rem; margin: 0; }
-.data-panel p { font-size: 0.8rem; letter-spacing: 2px; }
-
-/* Initialization Layer */
-#init-layer {
+#init-modal {
     position: fixed; inset: 0; background: #000; z-index: 100;
-    display: flex; justify-content: center; align-items: center;
-    transition: opacity 1.5s ease;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
 }
-
-.init-button {
-    padding: 25px 70px; background: transparent; border: 1px solid var(--neon-blue);
-    color: var(--neon-blue); font-size: 1.5rem; letter-spacing: 10px;
-    cursor: pointer; transition: all 0.5s;
-}
-
-.init-button:hover {
-    background: var(--neon-blue); color: black;
-    box-shadow: 0 0 50px var(--neon-blue);
+.btn-core { 
+    background: transparent; color: var(--neon); border: 2px solid var(--neon); 
+    padding: 30px 80px; font-size: 1.5rem; cursor: pointer; text-transform: uppercase;
 }
