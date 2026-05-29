@@ -3,104 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grand Synthesis // Environment</title>
-    <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; }
-        #overlay {
-            position: fixed; inset: 0; background: #050505; z-index: 999;
-            display: flex; justify-content: center; align-items: center;
-        }
-        button {
-            padding: 25px 60px; background: transparent; color: #fff;
-            border: 2px solid #fff; cursor: pointer; text-transform: uppercase;
-            font-size: 1.2rem; letter-spacing: 8px; transition: 0.4s;
-        }
-        button:hover { background: #fff; color: #000; box-shadow: 0 0 40px #fff; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>Grand Synthesis | Observation Deck</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="loading-overlay">
+        <div class="loader-content">
+            <h1>NEURAL LINK INITIALIZING</h1>
+            <button id="engage-btn">ESTABLISH CONNECTION</button>
+        </div>
+    </div>
 
-    <div id="overlay"><button id="engage">Engage Systems</button></div>
+    <div id="ui-overlay">
+        <div class="top-bar">SECTOR // 04 - OBSERVATION</div>
+        <div class="data-stream">NEBULA_STABILITY: 99.8%</div>
+    </div>
 
-    <script>
-        let scene, camera, renderer, clock;
+    <canvas id="main-canvas"></canvas>
 
-        const initScene = () => {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020205);
-            
-            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 5, 20);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            document.body.appendChild(renderer.domElement);
-
-            clock = new THREE.Clock();
-
-            // --- Robust Architecture Construction ---
-            // High-tech floor grid
-            const grid = new THREE.GridHelper(200, 50, 0x00ffff, 0x113333);
-            grid.position.y = -0.1;
-            scene.add(grid);
-
-            // Architectural Pillars
-            const pillarGeo = new THREE.BoxGeometry(2, 20, 2);
-            const pillarMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.8, roughness: 0.2 });
-            for(let i = 0; i < 10; i++) {
-                const p = new THREE.Mesh(pillarGeo, pillarMat);
-                p.position.set(i % 2 === 0 ? 30 : -30, 0, -i * 40);
-                scene.add(p);
-            }
-
-            // High-Tech Planters (Modular)
-            const createPlanter = (x, z) => {
-                const group = new THREE.Group();
-                const base = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 4), new THREE.MeshStandardMaterial({ color: 0x222222 }));
-                group.add(base);
-                
-                // Add "Bio-Module" leaves
-                for(let i=0; i<5; i++) {
-                    const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 0), new THREE.MeshStandardMaterial({ color: 0x00ff44, emissive: 0x002200 }));
-                    leaf.position.set((Math.random()-0.5)*2, 2 + i, (Math.random()-0.5)*2);
-                    group.add(leaf);
-                }
-                group.position.set(x, 0, z);
-                scene.add(group);
-            };
-
-            for(let i=0; i<15; i++) {
-                createPlanter(15, -i * 30);
-                createPlanter(-15, -i * 30);
-            }
-
-            // Atmosphere
-            const ambient = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambient);
-            const spot = new THREE.SpotLight(0x00ffff, 2);
-            spot.position.set(0, 20, 0);
-            scene.add(spot);
-
-            animate();
-        };
-
-        const animate = () => {
-            requestAnimationFrame(animate);
-            const t = clock.getElapsedTime();
-            
-            // Camera movement (constant forward drift)
-            camera.position.z -= 0.1;
-            if(camera.position.z < -400) camera.position.z = 20;
-
-            renderer.render(scene, camera);
-        };
-
-        document.getElementById('engage').addEventListener('click', () => {
-            document.getElementById('overlay').style.display = 'none';
-            initScene();
-        });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js" type="module"></script>
 </body>
 </html>
