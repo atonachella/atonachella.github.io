@@ -186,6 +186,13 @@ window.addEventListener('resize', () => {
     }
 });
 
+// This forces DecSoft HTML Compiler to maximize full screen on startup
+if (typeof dhc !== 'undefined') {
+    // Tells the compiler window to maximize immediately
+    dhc.command('maximize', ''); 
+}
+Step 2: Kill the Scrollbars (CSS)
+
 // Close the screensaver on any mouse movement or keypress
 window.addEventListener('mousemove', () => window.close());
 window.addEventListener('keydown', () => window.close());
