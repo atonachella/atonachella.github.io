@@ -1,23 +1,22 @@
-body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; color: #fff; font-family: 'Courier New', monospace; overflow: hidden; }
+:root { --accent: #00f2ff; --bg: #05080c; }
 
-#main-canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
 
-#loading-overlay {
-    position: fixed; inset: 0; background: #050505; z-index: 1000;
-    display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease;
+#canvas-root { position: absolute; inset: 0; z-index: 1; }
+
+#loader-ui {
+    position: fixed; inset: 0; background: #000; z-index: 100;
+    display: flex; justify-content: center; align-items: center; transition: 1s;
 }
 
 button {
-    padding: 20px 50px; background: transparent; border: 1px solid #0ff;
-    color: #0ff; cursor: pointer; text-transform: uppercase; letter-spacing: 5px;
-    font-size: 1.2rem; transition: 0.3s;
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    padding: 20px 40px; cursor: pointer; text-transform: uppercase; letter-spacing: 4px;
 }
 
-button:hover { background: #0ff; color: #000; box-shadow: 0 0 40px #0ff; }
-
-#ui-overlay { 
-    position: absolute; top: 0; left: 0; width: 100%; padding: 30px; 
-    box-sizing: border-box; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 2s;
+#hud-layer {
+    position: absolute; inset: 20px; z-index: 50; pointer-events: none;
+    display: flex; justify-content: space-between; align-items: flex-start;
 }
 
-#ui-overlay.visible { opacity: 1; }
+.data-node { border: 1px solid rgba(0, 242, 255, 0.3); padding: 10px; font-size: 0.7rem; }
