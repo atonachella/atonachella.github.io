@@ -1,22 +1,17 @@
-:root { --accent: #00f2ff; --bg: #05080c; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+#gl-canvas { display: block; width: 100vw; height: 100vh; }
 
-body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
-
-#canvas-root { position: absolute; inset: 0; z-index: 1; }
-
-#loader-ui {
-    position: fixed; inset: 0; background: #000; z-index: 100;
-    display: flex; justify-content: center; align-items: center; transition: 1s;
+#loader {
+    position: fixed; inset: 0; background: #000; z-index: 999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
 }
 
 button {
-    background: transparent; border: 1px solid var(--accent); color: var(--accent);
-    padding: 20px 40px; cursor: pointer; text-transform: uppercase; letter-spacing: 4px;
+    background: transparent; border: 2px solid #0ff; color: #0ff;
+    padding: 25px 60px; font-size: 1.5rem; letter-spacing: 8px; cursor: pointer;
 }
 
-#hud-layer {
-    position: absolute; inset: 20px; z-index: 50; pointer-events: none;
-    display: flex; justify-content: space-between; align-items: flex-start;
+#ui-overlay {
+    position: absolute; top: 30px; left: 30px; z-index: 10;
+    pointer-events: none; color: #0ff; font-family: 'Courier New', monospace;
 }
-
-.data-node { border: 1px solid rgba(0, 242, 255, 0.3); padding: 10px; font-size: 0.7rem; }

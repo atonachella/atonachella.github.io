@@ -2,25 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura Protocol | Observation Deck</title>
+    <title>Aura Protocol | The Grand Synthesis</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="loader-ui">
-        <div class="monitor-frame">
-            <h1 class="glitch">SYNTHESIZING...</h1>
-            <button id="initialize-btn">ACTIVATE DECK</button>
-        </div>
+    <div id="loader">
+        <div class="spinner"></div>
+        <button id="start-btn">INITIALIZE SYSTEM</button>
     </div>
-
-    <div id="hud-layer">
-        <div class="data-node top-left">SECTOR_4 // AFT_OBSERVATION</div>
-        <div class="data-node bottom-right">STATUS: STABILIZED</div>
+    <canvas id="gl-canvas"></canvas>
+    <div id="ui-overlay">
+        <div class="status-panel">LOCATION: OBSERVATION_DECK_4</div>
+        <div class="status-panel">LINK: NEBULA_STABLE</div>
     </div>
-
-    <canvas id="canvas-root"></canvas>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="script.js"></script>
 </body>
