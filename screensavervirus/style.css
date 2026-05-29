@@ -1,4 +1,4 @@
-/* Complete reset to guarantee zero window frames or screen leaks */
+/* Core viewport configuration for native full screen application layout */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -7,92 +7,121 @@ html, body {
     overflow: hidden !important;
     background-color: #000000;
     font-family: 'Courier New', Courier, monospace;
+    color: #ff0000;
+    user-select: none;
 }
 
-#screen-wrapper {
-    width: 100%;
-    height: 100%;
-    position: relative;
+/* Master layers handling phases */
+.screen-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
     background-color: #000000;
 }
 
-/* Background canvas matrix rendering layer */
-#virusCanvas {
+.screen-layer.active {
     display: block;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
 }
 
-/* Alert box wrapper positioned cleanly in center screen */
-#alert-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
+/* Phase 1 Styles: Terminal Log Spill */
+#terminal-log {
+    padding: 20px;
+    font-size: 15px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    color: #ffffff;
+}
+
+/* Phase 2 Styles: The Ransom Demand Box */
+#phase2-ransom {
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 2;
-    pointer-events: none; /* Allows mouse events to pass to background */
+}
+#phase2-ransom.active {
+    display: flex;
 }
 
-.alert-box {
-    background-color: rgba(15, 0, 0, 0.85);
+.ransom-box {
+    background-color: #0a0000;
     border: 3px solid #ff0000;
-    box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
-    padding: 30px;
-    width: 450px;
+    box-shadow: 0 0 40px rgba(255, 0, 0, 0.7);
+    width: 600px;
+    padding: 40px;
     text-align: center;
-    color: #ffffff;
-    text-transform: uppercase;
+    box-sizing: border-box;
 }
 
-.alert-header {
+.ransom-header {
     background-color: #ff0000;
     color: #000000;
     font-weight: bold;
-    padding: 10px;
-    margin-bottom: 20px;
-    letter-spacing: 1px;
-    font-size: 16px;
-    animation: pulse 1s infinite alternate;
+    font-size: 18px;
+    padding: 12px;
+    margin-bottom: 25px;
+    animation: flash-red 0.5s infinite alternate;
 }
 
-.alert-body p {
-    margin: 10px 0;
-    font-size: 14px;
-    color: #ff3333;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-/* High contrast glitch font layout */
-.glitch-text {
-    position: relative;
+.warning-text {
     color: #ffffff;
-    font-size: 22px;
     font-weight: bold;
+    font-size: 16px;
+}
+
+.btc-address {
+    background-color: #220000;
+    border: 1px dashed #ff0000;
+    padding: 12px;
+    font-size: 16px;
+    color: #ffffff;
+    margin: 20px 0;
+    letter-spacing: 1px;
+}
+
+.timer {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff0000;
     margin-top: 25px;
-    letter-spacing: 3px;
-    animation: glitch 0.4s infinite;
 }
 
-/* Animations for virus movement */
-@keyframes pulse {
-    0% { background-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
-    100% { background-color: #8b0000; box-shadow: 0 0 20px #8b0000; }
+.fine-print {
+    font-size: 11px;
+    color: #555555;
+    margin-top: 15px;
 }
 
-@keyframes glitch {
-    0% { transform: translate(0); text-shadow: -2px 0 #ff0000, 2px 0 #ffffff; }
-    20% { transform: translate(-2px, 2px); text-shadow: 2px 0 #ff0000, -2px 0 #ffffff; }
-    40% { transform: translate(1px, -1px); text-shadow: -1px 0 #ff0000, 2px 0 #ffffff; }
-    60% { transform: translate(-1px, 1px); text-shadow: 3px 0 #ff0000, -1px 0 #ffffff; }
-    80% { transform: translate(2px, -2px); text-shadow: -2px 0 #ff0000, 1px 0 #ffffff; }
-    100% { transform: translate(0); text-shadow: -2px 0 #ff0000, 2px 0 #ffffff; }
+/* Phase 3 Styles: Dual Screen Canvas Grid */
+#phase3-loop {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+}
+#phase3-loop.active {
+    display: flex; /* Splits the view down the center for dual monitors */
+}
+
+.monitor {
+    width: 50vw; /* Exact half width per display monitor */
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.display-left { border-right: 1px solid #110000; }
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Animations */
+@keyframes flash-red {
+    0% { background-color: #ff0000; }
+    100% { background-color: #330000; color: #ff0000; }
 }

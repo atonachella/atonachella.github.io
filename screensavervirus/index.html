@@ -3,24 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYSTEM CORRUPT - TERMINAL FAILURE</title>
+    <title>CRITICAL_SYSTEM_FAILURE</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="screen-wrapper">
-        <canvas id="virusCanvas"></canvas>
-        
-        <div id="alert-overlay">
-            <div class="alert-box">
-                <div class="alert-header">⚠️ WARNING: CRITICAL MALWARE INFECTION</div>
-                <div class="alert-body">
-                    <p>SYSTEM CORE: COMPROMISED</p>
-                    <p>HOST PROTOCOLS: TERMINATED</p>
-                    <p>DECRYPTION KEY: NOT FOUND</p>
-                    <div class="glitch-text" data-text="ERROR_0x000F4B">ERROR_0x000F4B</div>
-                </div>
+    <div id="phase1-panic" class="screen-layer active">
+        <div id="terminal-log"></div>
+    </div>
+
+    <div id="phase2-ransom" class="screen-layer">
+        <div class="ransom-box">
+            <div class="ransom-header">🚨 YOUR FILES HAVE BEEN ENCRYPTED 🚨</div>
+            <div class="ransom-body">
+                <p class="warning-text">ALL DOCUMENTS, PHOTOS, AND DATABASES ARE LOCKED.</p>
+                <p>To restore your system, you must send exactly <b>0.45 BTC</b> to the following address:</p>
+                <div class="btc-address">1Xa7F9qK3vM2pZ9wL8nQ5rT4uE1iO0pW3s</div>
+                <p class="timer">TIME REMAINING: <span id="countdown">59:59</span></p>
+                <p class="fine-print">Failure to pay within the time limit will result in permanent data deletion.</p>
             </div>
+        </div>
+    </div>
+
+    <div id="phase3-loop" class="screen-layer">
+        <div class="monitor display-left">
+            <canvas id="canvasLeft"></canvas>
+        </div>
+        <div class="monitor display-right">
+            <canvas id="canvasRight"></canvas>
         </div>
     </div>
 
