@@ -1,93 +1,93 @@
 const canvas = document.getElementById('virusCanvas');
 const ctx = canvas.getContext('2d');
 
-// Establish display size variables
 let width = window.innerWidth;
 let height = window.innerHeight;
 
 canvas.width = width;
 canvas.height = height;
 
-// Handle window stretching or resizing dynamically
-window.addEventListener('resize', () => {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
-    
-    // Recalculate column layout if display changes
-    columns = Math.floor(width / fontSize);
-    drops.length = 0;
-    for (let x = 0; x < columns; x++) {
-        drops[x] = 1;
-    }
-});
-
-// Binary strings, error codes, and hex data for the virus theme
-const virusData = [
-    "0", "1", "01", "SYSTEM_FAILURE", "ERR_0x004F", 
-    "CRITICAL", "CORRUPT", "10", "LOAD_FAIL", "ACCESS_DENIED"
+// Comprehensive data arrays to build out full layout complexity
+const virusMatrixData = [
+    "0", "1", "01", "10", "SYSTEM_FAILURE", "ERR_0x004F", "CRITICAL_ERROR", 
+    "CORRUPT", "LOAD_FAIL", "ACCESS_DENIED", "TROJAN_INFECTED", "KILL_PROCESS",
+    "0x002A8B", "WIPING_DRIVE...", "MALWARE_DETECTED", "ROOTKIT_ACTIVE",
+    "666", "DANGER", "OVERRIDE", "BREACH", "01101001", "11001110", "FATAL"
 ];
 
-const fontSize = 14;
+const fontSize = 12;
 let columns = Math.floor(width / fontSize);
 const drops = [];
 
-// Initialize data streams at the top row
+// Map the matrix streams row-by-row across monitor screen width
 for (let x = 0; x < columns; x++) {
-    drops[x] = 1;
+    drops[x] = Math.random() * -100; // Random staggered start heights
 }
 
-// Main rendering engine
-function renderVirusStream() {
-    // Transparent black background trail creates the fade effect
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+function runVirusEngine() {
+    // Continuous dark wash coat creates the slow trailing digital data effect
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.07)';
     ctx.fillRect(0, 0, width, height);
 
     ctx.font = 'bold ' + fontSize + 'px monospace';
 
     for (let i = 0; i < drops.length; i++) {
-        // Pull random text elements from our virus array
-        const text = virusData[Math.floor(Math.random() * virusData.length)];
+        // Grab values cleanly out of the data set
+        const textStr = virusMatrixData[Math.floor(Math.random() * virusMatrixData.length)];
 
-        // Design: Predominantly Crimson Red streams with Stark White glitch highlights
+        // Core visual coloring logic
         if (Math.random() > 0.98) {
-            ctx.fillStyle = '#ffffff'; // White flash highlight
+            ctx.fillStyle = '#ffffff'; // Stark white flashing data point
+        } else if (Math.random() > 0.85) {
+            ctx.fillStyle = '#8b0000'; // Dark crimson background data stream
         } else {
-            ctx.fillStyle = '#ff0000'; // Pure crimson data line
+            ctx.fillStyle = '#ff0000'; // Hot binary red stream line
         }
 
-        // Draw character to screen
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        // Draw data row positions
+        ctx.fillText(textStr, i * fontSize * 2.5, drops[i] * fontSize);
 
-        // Reset the drop back to the top once it hits the edge
-        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+        // Reset positions smoothly once data flows off base screen
+        if (drops[i] * fontSize > height && Math.random() > 0.98) {
             drops[i] = 0;
         }
-        drops[i]++;
+        drops[i] += 0.85; // Rate of fall velocity
     }
 }
 
-// Standard, stable frame timer loop (approx 30fps)
-setInterval(renderVirusStream, 33);
+// Track and update scale dimensions seamlessly if window limits change
+window.addEventListener('resize', () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    columns = Math.floor(width / fontSize);
+    drops.length = 0;
+    for (let x = 0; x < columns; x++) {
+        drops[x] = Math.random() * -100;
+    }
+});
+
+// Run loop at a high performance constant frame clip
+setInterval(runVirusEngine, 25);
 
 // ==========================================
 // NATIVE SCREEN SAVER DISMISS CONTROLS
 // ==========================================
-let safetyDelay = true;
+let startupGracePeriod = true;
 
-// Allow the system to register mouse movement without an instant close glitch
+// Prevent instant dismiss on startup caused by initial hardware click or jitter
 setTimeout(() => {
-    safetyDelay = false;
-}, 1000);
+    startupGracePeriod = false;
+}, 1200);
 
-function terminateScreensaver() {
-    if (!safetyDelay) {
+function handleExitSignal() {
+    if (!startupGracePeriod) {
         window.close();
     }
 }
 
-// Track mouse activity and keyboard keys to cleanly quit
-window.addEventListener('mousemove', terminateScreensaver);
-window.addEventListener('keydown', terminateScreensaver);
-window.addEventListener('click', terminateScreensaver);
+// Bind native UI activities to exit handlers
+window.addEventListener('mousemove', handleExitSignal);
+window.addEventListener('keydown', handleExitSignal);
+window.addEventListener('click', handleExitSignal);
