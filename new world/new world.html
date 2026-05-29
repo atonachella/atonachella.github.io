@@ -2,26 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grand Synthesis | Observation Deck</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <div id="loading-overlay">
-        <div class="loader-content">
-            <h1>NEURAL LINK INITIALIZING</h1>
-            <button id="engage-btn">ESTABLISH CONNECTION</button>
-        </div>
+        <button id="engage-btn">ESTABLISH CONNECTION</button>
     </div>
 
-    <div id="ui-overlay">
-        <div class="top-bar">SECTOR // 04 - OBSERVATION</div>
+    <div id="ui-overlay" class="hidden">
+        <div class="top-bar">SECTOR // 04 - OBSERVATION DECK</div>
         <div class="data-stream">NEBULA_STABILITY: 99.8%</div>
     </div>
 
     <canvas id="main-canvas"></canvas>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="script.js" type="module"></script>
+    <script src="script.js"></script>
 </body>
 </html>
