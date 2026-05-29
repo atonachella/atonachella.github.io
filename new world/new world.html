@@ -3,320 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Focus Observation Deck</title>
+    <title>Observation Deck v2</title>
     <style>
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            overflow: hidden; 
-            background-color: #000; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; }
+        
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200;
         }
+        button {
+            padding: 20px 50px; background: transparent; color: #0ff;
+            border: 1px solid #0ff; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 4px; transition: 0.3s;
+        }
+        button:hover { background: #0ff; color: #000; box-shadow: 0 0 20px #0ff; }
+        
         #ui-layer {
-            position: absolute;
-            bottom: 30px;
-            left: 40px;
-            color: rgba(0, 255, 255, 0.6);
-            pointer-events: none;
-            z-index: 100;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-size: 0.8rem;
-        }
-        #ui-layer h1 {
-            margin: 0 0 5px 0;
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-        }
-        #loader {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-            transition: opacity 1s;
+            position: absolute; bottom: 30px; left: 40px; color: rgba(0, 255, 255, 0.6);
+            pointer-events: none; z-index: 100; text-transform: uppercase;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="loader">SYNTHESIZING ENVIRONMENT...</div>
+    <div id="start-screen">
+        <button id="enter-btn">Engage Systems</button>
+    </div>
+
     <div id="ui-layer">
-        <h1>Observation Deck // Sector 4</h1>
-        <p>Aft Viewport Active | Auto-Stabilization On</p>
+        <h1>Observation Deck // Active</h1>
+        <p>Nebula Link: Stabilized</p>
     </div>
 
     <script>
-        // --- 1. CORE SETUP ---
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x0a111a, 0.015);
+        let scene, camera, renderer, clock;
+        let cloud1, cloud2;
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 4, 15);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize for high res
-        // Enable physical lighting calculations
-        renderer.physicallyCorrectLights = true;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(renderer.domElement);
-
-        // --- 2. MATERIALS PALETTE ---
-        // Sleek, dark futuristic metal
-        const wallMat = new THREE.MeshPhysicalMaterial({
-            color: 0x16202c,
-            metalness: 0.6,
-            roughness: 0.4,
-            clearcoat: 0.1,
-            clearcoatRoughness: 0.2
-        });
-
-        // Floor with slight reflections
-        const floorMat = new THREE.MeshPhysicalMaterial({
-            color: 0x0a1016,
-            metalness: 0.8,
-            roughness: 0.2,
-        });
-
-        // Warm wood/leather accents
-        const warmMat = new THREE.MeshStandardMaterial({
-            color: 0x8b5a2b,
-            roughness: 0.8,
-            metalness: 0.1
-        });
-
-        const accentLightMat = new THREE.MeshBasicMaterial({ color: 0xffddaa });
-
-        // --- 3. ARCHITECTURE GENERATION ---
-        const architecture = new THREE.Group();
-
-        // Floor
-        const floorGeo = new THREE.PlaneGeometry(60, 60);
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
-        architecture.add(floor);
-
-        // Stepped Dais leading to the window
-        for(let i=0; i<3; i++) {
-            const stepGeo = new THREE.BoxGeometry(20 - (i*2), 0.5, 5);
-            const step = new THREE.Mesh(stepGeo, wallMat);
-            step.position.set(0, 0.25 + (i * 0.5), -10 - (i * 2));
-            step.castShadow = true;
-            step.receiveShadow = true;
-            architecture.add(step);
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
             
-            // Add glowing strip under steps
-            const stripGeo = new THREE.BoxGeometry(19.8 - (i*2), 0.05, 0.1);
-            const strip = new THREE.Mesh(stripGeo, accentLightMat);
-            strip.position.set(0, 0.45 + (i * 0.5), -7.4 - (i * 2));
-            architecture.add(strip);
+            // Basic Environment
+            scene.fog = new THREE.FogExp2(0x050505, 0.02);
+            camera.position.set(0, 4, 15);
+            clock = new THREE.Clock();
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambient);
+            
+            // Simple Floor
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+            floor.rotation.x = -Math.PI / 2;
+            scene.add(floor);
+
+            // Nebula Cloud Setup
+            const createNebula = (color, x, z) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256; canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+                grad.addColorStop(0, color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0,0,256,256);
+                const tex = new THREE.CanvasTexture(canvas);
+                const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending });
+                const mesh = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), mat);
+                mesh.position.set(x, 10, z);
+                return mesh;
+            };
+
+            cloud1 = createNebula('rgba(0, 255, 255, 0.3)', -20, -50);
+            cloud2 = createNebula('rgba(255, 0, 100, 0.3)', 20, -60);
+            scene.add(cloud1, cloud2);
+
+            animate();
         }
 
-        // Custom Window Wall (Extruded Shape with a hole)
-        const wallShape = new THREE.Shape();
-        wallShape.moveTo(-30, 0); wallShape.lineTo(30, 0); 
-        wallShape.lineTo(30, 20); wallShape.lineTo(-30, 20); 
-        wallShape.lineTo(-30, 0);
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            cloud1.rotation.z = time * 0.1;
+            cloud2.rotation.z = -time * 0.1;
+            renderer.render(scene, camera);
+        }
 
-        // The viewport hole (Octagonal/Chamfered)
-        const windowHole = new THREE.Path();
-        windowHole.moveTo(-12, 3);
-        windowHole.lineTo(12, 3);
-        windowHole.lineTo(16, 7);
-        windowHole.lineTo(16, 13);
-        windowHole.lineTo(12, 17);
-        windowHole.lineTo(-12, 17);
-        windowHole.lineTo(-16, 13);
-        windowHole.lineTo(-16, 7);
-        windowHole.lineTo(-12, 3);
-        wallShape.holes.push(windowHole);
+        document.getElementById('enter-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            init();
+        });
 
-        const extrudeSettings = { depth: 2, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.1, bevelThickness: 0.1 };
-        const windowWallGeo = new THREE.ExtrudeGeometry(wallShape, extrudeSettings);
-        const windowWall = new THREE.Mesh(windowWallGeo, wallMat);
-        windowWall.position.set(0, 0, -20);
-        windowWall.receiveShadow = true;
-        architecture.add(windowWall);
-
-        // Ceiling 
-        const ceilingGeo = new THREE.PlaneGeometry(60, 60);
-        const ceiling = new THREE.Mesh(ceilingGeo, wallMat);
-        ceiling.rotation.x = Math.PI / 2;
-        ceiling.position.y = 18;
-        architecture.add(ceiling);
-
-        // Bookshelves (Side walls)
-        function createShelvingWall(xPos, isRight) {
-            const shelfGroup = new THREE.Group();
-            
-            // Main Wall Panel
-            const panelGeo = new THREE.BoxGeometry(2, 20, 40);
-            const panel = new THREE.Mesh(panelGeo, wallMat);
-            panel.receiveShadow = true;
-            shelfGroup.add(panel);
-
-            // Shelves & Books
-            const bookColors = [0x552222, 0x223355, 0x444433, 0x111111, 0x665544];
-            
-            for(let y=2; y<14; y+=2.5) {
-                // The physical shelf
-                const shelfGeo = new THREE.BoxGeometry(3, 0.2, 25);
-                const shelf = new THREE.Mesh(shelfGeo, warmMat);
-                shelf.position.set(isRight ? -0.5 : 0.5, y, -5);
-                shelfGroup.add(shelf);
-
-                // Add glowing strip under shelf
-                const glowGeo = new THREE.BoxGeometry(0.1, 0.1, 24);
-                const glow = new THREE.Mesh(glowGeo, accentLightMat);
-                glow.position.set(isRight ? -1.8 : 1.8, y - 0.1, -5);
-                shelfGroup.add(glow);
-
-                // Populate with books procedurally
-                let zPos = -16;
-                while(zPos < 6) {
-                    const bookWidth = 0.1 + Math.random() * 0.3;
-                    const bookHeight = 1 + Math.random() * 0.8;
-                    const bookDepth = 0.8 + Math.random() * 0.4;
-                    
-                    if (Math.random() > 0.3) { // 70% chance to place a book
-                        const bookGeo = new THREE.BoxGeometry(bookDepth, bookHeight, bookWidth);
-                        const bColor = bookColors[Math.floor(Math.random() * bookColors.length)];
-                        const bookMat = new THREE.MeshStandardMaterial({ color: bColor, roughness: 0.9 });
-                        const book = new THREE.Mesh(bookGeo, bookMat);
-                        
-                        book.position.set(isRight ? -1 : 1, y + (bookHeight/2) + 0.1, zPos);
-                        
-                        // Sometimes tilt books
-                        if (Math.random() > 0.8) {
-                            book.rotation.x = (Math.random() - 0.5) * 0.5;
-                        }
-                        
-                        book.castShadow = true;
-                        shelfGroup.add(book);
-                    }
-                    zPos += bookWidth + 0.05;
-                }
+        window.addEventListener('resize', () => {
+            if(camera) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
             }
-
-            shelfGroup.position.x = xPos;
-            architecture.add(shelfGroup);
-        }
-
-        createShelvingWall(-18, false); // Left Wall
-        createShelvingWall(18, true);  // Right Wall
-
-        // Central Lounge Chair
-        const chairGroup = new THREE.Group();
-        const seatGeo = new THREE.BoxGeometry(2.5, 0.5, 2.5);
-        const backGeo = new THREE.BoxGeometry(2.5, 3, 0.5);
-        const baseGeo = new THREE.CylinderGeometry(0.5, 1, 1, 16);
-        
-        const seat = new THREE.Mesh(seatGeo, warmMat);
-        seat.position.y = 1.5;
-        seat.castShadow = true;
-        
-        const back = new THREE.Mesh(backGeo, warmMat);
-        back.position.set(0, 3, 1);
-        back.rotation.x = -0.2;
-        back.castShadow = true;
-
-        const base = new THREE.Mesh(baseGeo, wallMat);
-        base.position.y = 0.5;
-
-        chairGroup.add(seat, back, base);
-        chairGroup.position.set(0, 0, 5);
-        chairGroup.rotation.y = -Math.PI / 8; // Angled slightly
-        architecture.add(chairGroup);
-
-        scene.add(architecture);
-
-        // --- 4. PROCEDURAL NEBULA (OUTSIDE) ---
-        // Function to create a glowing canvas texture
-        function createGlowTexture(color1, color2) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 512;
-            const context = canvas.getContext('2d');
-            const gradient = context.createRadialGradient(256, 256, 0, 256, 256, 256);
-            gradient.addColorStop(0, color1);
-            gradient.addColorStop(0.4, color2);
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 512, 512);
-            return new THREE.CanvasTexture(canvas);
-        }
-
-        const spaceGroup = new THREE.Group();
-        
-        // Massive glowing nebula clouds using planes and additive blending
-        const cloudGeo = new THREE.PlaneGeometry(100, 100);
-        
-        const tex1 = createGlowTexture('rgba(255, 100, 50, 1)', 'rgba(150, 0, 100, 0.5)');
-        const mat1 = new THREE.MeshBasicMaterial({ map: tex1, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-        const cloud1 = new THREE.Mesh(cloudGeo, mat1);
-        cloud1.position.set(-15, 10, -80);
-        spaceGroup.add(cloud1);
-
-        const tex2 = createGlowTexture('rgba(0, 200, 255, 0.8)', 'rgba(0, 50, 150, 0.4)');
-        const mat2 = new THREE.MeshBasicMaterial({ map: tex2, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-        const cloud2 = new THREE.Mesh(cloudGeo, mat2);
-        cloud2.position.set(20, 5, -85);
-        spaceGroup.add(cloud2);
-
-        // Starfield Particles
-        const starGeo = new THREE.BufferGeometry();
-        const starCount = 3000;
-        const starPos = new Float32Array(starCount * 3);
-        for(let i=0; i<starCount*3; i+=3) {
-            starPos[i] = (Math.random() - 0.5) * 300;   // x
-            starPos[i+1] = (Math.random() - 0.5) * 200; // y
-            starPos[i+2] = -50 - Math.random() * 200;   // z (Deep in background)
-        }
-        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.2, transparent: true, opacity: 0.8 });
-        const stars = new THREE.Points(starGeo, starMat);
-        spaceGroup.add(stars);
-
-        scene.add(spaceGroup);
-
-        // --- 5. CINEMATIC LIGHTING ---
-        const ambientLight = new THREE.AmbientLight(0x1a2b4c, 0.8); // Cool blue ambient
-        scene.add(ambientLight);
-
-        // Light coming IN from the nebula
-        const nebulaLight = new THREE.DirectionalLight(0xff99aa, 2);
-        nebulaLight.position.set(0, 10, -50);
-        nebulaLight.target = floor;
-        scene.add(nebulaLight);
-
-        // Warm cozy lights near the bookshelves
-        const leftShelfLight = new THREE.PointLight(0xffbb77, 10, 30);
-        leftShelfLight.position.set(-14, 5, 0);
-        scene.add(leftShelfLight);
-
-        const rightShelfLight = new THREE.PointLight(0xffbb77, 10, 30);
-        rightShelfLight.position.set(14, 5, 0);
-        scene.add(rightShelfLight);
-
-        // --- 6. CINEMATIC CAMERA & ANIMATION LOOP ---
-        let mouseX = 0;
-        let mouseY = 0;
-        let targetX = 0;
-        let targetY = 0;
-        
-        const windowHalfX = window.innerWidth / 2;
-        const windowHalfY = window.innerHeight / 2;
-
-        document.addEventListener('mousemove', (event) => {
-            mouseX = (event.clientX - windowHalfX);
-            mouseY = (event.clientY - windowHalfY);
         });
-
-        // Remove loading text once
+    </script>
+</body>
+</html>
