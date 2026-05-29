@@ -62,8 +62,19 @@ html, body {
     padding: 40px;
     text-align: center;
     box-sizing: border-box;
+    
+    /* ADD THIS LINE to make the box float smoothly over the screensaver */
+    animation: float 8s ease-in-out infinite alternate; 
 }
 
+/* Paste this animation at the absolute bottom of your style.css file */
+@keyframes float {
+    0% { transform: translate(0px, 0px); }
+    25% { transform: translate(15px, -10px); }
+    50% { transform: translate(-10px, 15px); }
+    75% { transform: translate(10px, -15px); }
+    100% { transform: translate(0px, 0px); }
+}
 .ransom-header {
     background-color: #ff0000;
     color: #000000;
