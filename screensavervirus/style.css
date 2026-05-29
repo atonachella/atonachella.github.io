@@ -1,124 +1,16 @@
-/* Core Layout Adjustments */
-body, html {
-    margin: 0;
-    padding: 0;
-    background-color: #000;
-    color: #fff;
-    font-family: 'Courier New', Courier, monospace;
+/* Core structure to prevent window overflow and scrollbars */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden !important;
-    width: 100vw;
-    height: 100vh;
-    user-select: none;
+    background-color: #000000; /* Assumes a clean black backdrop for the saver */
 }
 
-/* Dual Monitor Grid Setup */
-#workspace {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+#screensaver-container {
     width: 100%;
     height: 100%;
-}
-
-.terminal-panel {
-    background: #000;
-    padding: 20px;
-    overflow: hidden;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #ffffff;
-}
-
-#log-screen {
-    border-right: 2px solid #ff0000;
-}
-
-#log-dump {
-    width: 100%;
-    height: 95%;
-    overflow-y: hidden;
-    margin-top: 10px;
-}
-
-#matrix-rain {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-/* Utility Styles */
-.alert-text { 
-    color: #ff0000; 
-    font-weight: bold; 
-}
-
-.hidden { 
-    display: none !important; 
-}
-
-/* Phase 2 Overlay Setup (Starts Full Screen) */
-#threat-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.92);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: 5px solid #ff0000;
-    box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.6);
-    z-index: 100;
-    transition: all 0.5s ease-in-out;
-}
-
-/* Phase 3 Dynamic State: The entire overlay shrinks into a drifting screensaver window */
-#threat-overlay.floating-mode {
-    position: absolute;
-    width: 550px;
-    height: auto;
-    background: rgba(15, 0, 0, 0.95);
-    box-shadow: 0 0 40px #ff0000;
-    border-radius: 4px;
-}
-
-.warning-box {
-    text-align: center;
-    max-width: 850px;
-    padding: 50px;
-    border: 2px solid #fff;
-    background: rgba(15, 0, 0, 0.95);
-    transition: all 0.5s ease-in-out;
-}
-
-/* Scale down the text slightly when floating to keep it tidy */
-#threat-overlay.floating-mode .warning-box {
-    padding: 20px;
-    border: none;
-    max-width: 100%;
-}
-
-#threat-overlay.floating-mode .glitch { font-size: 28px; }
-#threat-overlay.floating-mode .threat-desc { font-size: 12px; margin: 10px 0; }
-#threat-overlay.floating-mode .manifest-list { font-size: 11px; margin: 10px 0; line-height: 1.4; }
-#threat-overlay.floating-mode .ultimatum { font-size: 13px; margin-top: 15px; }
-
-.threat-desc { color: #fff; margin: 20px 0; font-size: 16px; }
-.divider { border: 0; border-top: 2px solid #ff0000; margin: 20px 0; }
-.manifest-list { text-align: left; margin: 25px 0; color: #ccc; font-size: 15px; line-height: 1.8; }
-.ultimatum { font-size: 18px; margin-top: 30px; color: #fff; font-weight: bold; }
-
-/* Pulsing Text Effect */
-.glitch {
-    font-size: 54px;
-    color: #ff0000;
-    letter-spacing: 2px;
-    margin: 0;
-    animation: alertPulse 0.8s infinite alternate;
-}
-
-@keyframes alertPulse {
-    0% { transform: scale(1); opacity: 1; text-shadow: 0 0 5px #ff0000; }
-    100% { transform: scale(1.01); opacity: 0.85; text-shadow: 0 0 20px #ff0000; }
+    position: relative;
+    /* Your specific layout, colors, and design styling go here */
 }
