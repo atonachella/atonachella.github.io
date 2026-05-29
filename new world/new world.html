@@ -3,227 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Holographic World</title>
+    <title>Futuristic Botanical Walkthrough</title>
     <style>
-        :root {
-            --core-red: #ff0000;
-            --pure-white: #ffffff;
-            --deep-black: #050505;
-            --dark-red: #220000;
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background-color: #050a0f; 
         }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--deep-black);
-            font-family: 'Courier New', Courier, monospace;
-            color: var(--pure-white);
-        }
-
-        /* Intro Screen */
-        #start-screen {
+        #info {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
             z-index: 100;
-            text-shadow: 0 0 15px var(--core-red);
-        }
-
-        h1 {
-            font-size: 3rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            color: var(--pure-white);
-            text-shadow: 0 0 10px var(--core-red), 0 0 20px var(--core-red);
-            margin-bottom: 40px;
-        }
-
-        button {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background: rgba(255, 0, 0, 0.1);
-            color: var(--pure-white);
-            border: 2px solid var(--core-red);
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3), inset 0 0 10px rgba(255, 0, 0, 0.2);
-        }
-
-        button:hover {
-            background: var(--core-red);
-            color: var(--deep-black);
-            box-shadow: 0 0 30px var(--core-red), inset 0 0 20px var(--pure-white);
-        }
-
-        /* 3D World Setup */
-        #world-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            perspective: 1000px;
-            opacity: 0;
-            transition: opacity 2s ease-in;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform-style: preserve-3d;
-        }
-
-        /* Vast Technoscape Floor Grid */
-        .tech-floor {
-            position: absolute;
-            bottom: -30%;
-            width: 200vw;
-            height: 150vh;
-            background:
-                linear-gradient(transparent 95%, var(--core-red) 100%),
-                linear-gradient(90deg, transparent 95%, var(--core-red) 100%);
-            background-size: 60px 60px;
-            transform: rotateX(80deg);
-            transform-origin: bottom;
-            animation: gridMove 4s linear infinite;
-            box-shadow: inset 0 0 150px var(--deep-black);
-        }
-
-        /* Deep atmospheric background */
-        .atmosphere {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 30%, var(--dark-red) 0%, var(--deep-black) 60%);
-            z-index: -1;
-        }
-
-        /* Gravity Defying Modules */
-        .module {
-            position: absolute;
-            width: 140px;
-            height: 180px;
-            border: 1px solid var(--pure-white);
-            background: rgba(255, 0, 0, 0.05);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4), inset 0 0 15px rgba(255, 0, 0, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform-style: preserve-3d;
-        }
-
-        .module::before {
-            content: '';
-            position: absolute;
-            top: -15px; left: -15px; right: -15px; bottom: -15px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transform: translateZ(-30px);
-        }
-
-        /* Holographic Projections inside Modules */
-        .hologram {
-            width: 70px;
-            height: 70px;
-            border: 2px dashed var(--pure-white);
-            border-radius: 50%;
-            animation: spin 6s linear infinite;
-            box-shadow: 0 0 20px var(--core-red);
-        }
-
-        .hologram-inner {
-            width: 100%;
-            height: 100%;
-            border: 1px solid var(--core-red);
-            transform: rotateX(60deg) rotateY(45deg);
-            animation: spinReverse 4s linear infinite;
-        }
-
-        /* Positioning and floating animations for modules */
-        .mod-1 { left: 15%; top: 20%; animation: float 6s ease-in-out infinite; }
-        .mod-2 { right: 15%; top: 35%; animation: float 7s ease-in-out infinite 1s; }
-        .mod-3 { left: 35%; top: 10%; animation: float 8s ease-in-out infinite 2s; transform: scale(0.6); }
-        .mod-4 { right: 35%; top: 15%; animation: float 5s ease-in-out infinite 0.5s; transform: scale(1.3); }
-
-        /* Intelligent Lighting Beams */
-        .light-beam {
-            position: absolute;
-            bottom: 0;
-            width: 3px;
-            height: 120vh;
-            background: linear-gradient(to top, var(--core-red), transparent);
-            opacity: 0.4;
-            animation: sweep 12s ease-in-out infinite alternate;
-            transform-origin: bottom;
-        }
-        .beam-1 { left: 25%; animation-delay: 0s; }
-        .beam-2 { right: 30%; animation-delay: -4s; }
-
-        /* Keyframe Animations */
-        @keyframes gridMove {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 60px; }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotateY(0deg); }
-            50% { transform: translateY(-50px) rotateY(15deg); }
-        }
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes spinReverse {
-            100% { transform: rotateX(60deg) rotateY(45deg) rotate(-360deg); }
-        }
-        @keyframes sweep {
-            0% { transform: rotate(-25deg) scaleY(0.8); opacity: 0.1; }
-            100% { transform: rotate(25deg) scaleY(1.3); opacity: 0.7; }
+            pointer-events: none;
+            text-shadow: 0 0 10px #00ffff;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="start-screen">
-        <h1>Initialize Grid</h1>
-        <button id="enter-btn">Engage Systems</button>
-    </div>
-
-    <div id="world-container">
-        <div class="atmosphere"></div>
-        
-        <div class="tech-floor"></div>
-
-        <div class="light-beam beam-1"></div>
-        <div class="light-beam beam-2"></div>
-
-        <div class="module mod-1">
-            <div class="hologram"><div class="hologram-inner"></div></div>
-        </div>
-        <div class="module mod-2">
-            <div class="hologram"><div class="hologram-inner"></div></div>
-        </div>
-        <div class="module mod-3">
-            <div class="hologram"><div class="hologram-inner"></div></div>
-        </div>
-        <div class="module mod-4">
-            <div class="hologram"><div class="hologram-inner"></div></div>
-        </div>
-    </div>
+    <div id="info">BOTANICAL SECTOR // ENGAGED</div>
 
     <script>
-        const startScreen = document.getElementById('start-screen');
-        const enterBtn = document.getElementById('enter-btn');
-        const worldContainer = document.getElementById('world-container');
+        // 1. Scene Setup
+        const scene = new THREE.Scene();
+        // Add deep atmospheric fog
+        scene.fog = new THREE.FogExp2(0x051015, 0.035);
 
-        enterBtn.addEventListener('click', () => {
-            // Fade out intro
-            startScreen.style.opacity = '0';
-            setTimeout(() => { startScreen.style.display = 'none'; }, 500);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-            // Fade in futuristic world
-            worldContainer.style.opacity = '1';
+        // 2. Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // Soft base light
+        scene.add(ambientLight);
+        
+        const cyanLight = new THREE.PointLight(0x00ffff, 2, 50);
+        cyanLight.position.set(0, 5, 0);
+        scene.add(cyanLight);
+
+        // 3. Environment (Dark metallic floor)
+        const floorGeo = new THREE.PlaneGeometry(200, 200);
+        const floorMat = new THREE.MeshStandardMaterial({ 
+            color: 0x051015, 
+            roughness: 0.6, 
+            metalness: 0.3 
         });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        // 4. Create Planters, Foliage, and Displays
+        const sceneObjects = [];
+
+        function createTechPlanter(x, z) {
+            const group = new THREE.Group();
+            
+            // High-tech Metallic Planter Base
+            const baseGeo = new THREE.CylinderGeometry(1.2, 0.9, 1.5, 16);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.2 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0.75;
+            group.add(base);
+
+            // Lush "Low-Poly" Plant Cluster
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x11cc44, roughness: 0.8 });
+            for(let i = 0; i < 7; i++) {
+                const leafGeo = new THREE.SphereGeometry(0.5 + Math.random() * 0.5, 7, 7);
+                const leaf = new THREE.Mesh(leafGeo, leafMat);
+                // Cluster them randomly around the top of the planter
+                leaf.position.set((Math.random() - 0.5), 1.5 + Math.random(), (Math.random() - 0.5));
+                group.add(leaf);
+            }
+
+            // Floating Holographic Display
+            const displayGeo = new THREE.PlaneGeometry(1.5, 2);
+            const displayMat = new THREE.MeshBasicMaterial({ 
+                color: 0x00ffff, 
+                transparent: true, 
+                opacity: 0.25, 
+                side: THREE.DoubleSide, 
+                wireframe: true 
+            });
+            const display = new THREE.Mesh(displayGeo, displayMat);
+            display.position.set(x < 0 ? 1.5 : -1.5, 2.5, 0); // Offset depending on side of the path
+            display.rotation.y = x < 0 ? Math.PI / 6 : -Math.PI / 6;
+            group.add(display);
+
+            group.position.set(x, 0, z);
+            scene.add(group);
+            sceneObjects.push({ group, display });
+        }
+
+        // Generate an avenue of planters
+        for(let i = 0; i < 25; i++) {
+            createTechPlanter(-6, -i * 8); // Left side
+            createTechPlanter(6, -i * 8);  // Right side
+        }
+
+        // 5. Set starting camera position
+        camera.position.set(0, 2, 5);
+
+        // 6. Animation Loop (The Walkthrough)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Move camera forward slowly
+            camera.position.z -= 0.06;
+            
+            // Loop the path seamlessly
+            if (camera.position.z < -120) {
+                camera.position.z = 5;
+            }
+
+            // Gently float the holograms up and down
+            sceneObjects.forEach(obj => {
+                obj.display.position.y = 2.5 + Math.sin(Date.now() * 0.002 + obj.group.position.z) * 0.2;
+            });
+
+            renderer.render(scene, camera);
+        }
+        
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start animation
+        animate();
     </script>
 </body>
 </html>
