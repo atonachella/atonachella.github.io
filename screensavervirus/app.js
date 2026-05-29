@@ -186,5 +186,9 @@ window.addEventListener('resize', () => {
     }
 });
 
+// Close the screensaver on any mouse movement or keypress
+window.addEventListener('mousemove', () => window.close());
+window.addEventListener('keydown', () => window.close());
+
 // Execute simulator
 runTerminalIntro();
