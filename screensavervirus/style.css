@@ -26,15 +26,24 @@ html, body {
     display: block;
 }
 
-/* Phase 1 Styles: Terminal Log Spill */
+/* Phase 1 Styles: Intense Terminal Log Spill */
 #terminal-log {
     padding: 20px;
-    font-size: 15px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.5;
     white-space: pre-wrap;
     color: #ffffff;
+    font-weight: bold;
+    /* This adds a sharp, intense red electronic glow behind the white text */
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.9); 
+    letter-spacing: 0.5px;
 }
 
+/* This class will instantly style specific terminal lines pure crimson */
+.alert-line {
+    color: #ff0000 !important;
+    text-shadow: 0 0 12px rgba(255, 0, 0, 1) !important;
+}
 /* Phase 2 Styles: The Ransom Demand Box */
 #phase2-ransom {
     display: none;
