@@ -1,4 +1,4 @@
-/* Core viewport configuration for native full screen application layout */
+/* Core layout configurations */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -11,7 +11,6 @@ html, body {
     user-select: none;
 }
 
-/* Master layers handling phases */
 .screen-layer {
     position: absolute;
     top: 0;
@@ -26,7 +25,7 @@ html, body {
     display: block;
 }
 
-/* Phase 1 Styles: Intense Terminal Log Spill */
+/* Phase 1 Terminal Text Styling */
 #terminal-log {
     padding: 20px;
     font-size: 16px;
@@ -34,27 +33,41 @@ html, body {
     white-space: pre-wrap;
     color: #ffffff;
     font-weight: bold;
-    /* This adds a sharp, intense red electronic glow behind the white text */
-    text-shadow: 0 0 8px rgba(255, 0, 0, 0.9); 
-    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.9);
 }
 
-/* This class will instantly style specific terminal lines pure crimson */
 .alert-line {
     color: #ff0000 !important;
     text-shadow: 0 0 12px rgba(255, 0, 0, 1) !important;
 }
-/* Phase 2 Styles: The Ransom Demand Box */
-#phase2-ransom {
-    display: none;
-    justify-content: center;
-    align-items: center;
-}
-#phase2-ransom.active {
+
+/* Dual Monitor Layout */
+#phase3-loop.active {
     display: flex;
 }
 
+.monitor {
+    width: 50vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Floating Ransom Box - Set to absolute top layer */
 .ransom-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -225px; /* Centers the 450px high box vertically */
+    margin-left: -300px; /* Centers the 600px wide box horizontally */
+    z-index: 9999; /* Higher than canvases, guaranteeing visibility in Phase 3 */
+    display: none; 
     background-color: #0a0000;
     border: 3px solid #ff0000;
     box-shadow: 0 0 40px rgba(255, 0, 0, 0.7);
@@ -62,19 +75,13 @@ html, body {
     padding: 40px;
     text-align: center;
     box-sizing: border-box;
-    
-    /* ADD THIS LINE to make the box float smoothly over the screensaver */
-    animation: float 8s ease-in-out infinite alternate; 
+    animation: float 8s ease-in-out infinite alternate;
 }
 
-/* Paste this animation at the absolute bottom of your style.css file */
-@keyframes float {
-    0% { transform: translate(0px, 0px); }
-    25% { transform: translate(15px, -10px); }
-    50% { transform: translate(-10px, 15px); }
-    75% { transform: translate(10px, -15px); }
-    100% { transform: translate(0px, 0px); }
+.ransom-box.visible {
+    display: block;
 }
+
 .ransom-header {
     background-color: #ff0000;
     color: #000000;
@@ -85,68 +92,21 @@ html, body {
     animation: flash-red 0.5s infinite alternate;
 }
 
-.warning-text {
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 16px;
-}
-
-.btc-address {
-    background-color: #220000;
-    border: 1px dashed #ff0000;
-    padding: 12px;
-    font-size: 16px;
-    color: #ffffff;
-    margin: 20px 0;
-    letter-spacing: 1px;
-}
-
-.timer {
-    font-size: 24px;
-    font-weight: bold;
-    color: #ff0000;
-    margin-top: 25px;
-}
-
-.fine-print {
-    font-size: 11px;
-    color: #555555;
-    margin-top: 15px;
-}
-
-/* Phase 3 Styles: Dual Screen Canvas Grid */
-#phase3-loop {
-    width: 100vw;
-    height: 100vh;
-    display: none;
-}
-#phase3-loop.active {
-    display: flex; /* Splits the view down the center for dual monitors */
-}
-
-.monitor {
-    width: 50vw; /* Exact half width per display monitor */
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.display-left { border-right: 1px solid #110000; }
-
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-.alert-line {
-    color: #ff0000 !important;
-    text-shadow: 0 0 12px rgba(255, 0, 0, 1) !important;
-}
+.warning-text { color: #ffffff; font-weight: bold; font-size: 16px; }
+.btc-address { background-color: #220000; border: 1px dashed #ff0000; padding: 12px; font-size: 16px; color: #ffffff; margin: 20px 0; }
+.timer { font-size: 24px; font-weight: bold; color: #ff0000; margin-top: 25px; }
+.fine-print { font-size: 11px; color: #555555; margin-top: 15px; }
 
 /* Animations */
 @keyframes flash-red {
     0% { background-color: #ff0000; }
     100% { background-color: #330000; color: #ff0000; }
+}
+
+@keyframes float {
+    0% { transform: translate(0px, 0px); }
+    25% { transform: translate(20px, -15px); }
+    50% { transform: translate(-15px, 20px); }
+    75% { transform: translate(15px, -20px); }
+    100% { transform: translate(0px, 0px); }
 }
