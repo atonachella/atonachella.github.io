@@ -52,7 +52,7 @@ function transitionToPhase2() {
         countdownEl.innerText = `${minutes}:${seconds}`;
         totalSeconds--;
         
-        if (totalSeconds < 3585) { // Run Phase 2 for roughly 15 seconds, then lock into screensaver loop
+        if (totalSeconds < 3595) { // Run Phase 2 for roughly 15 seconds, then lock into screensaver loop
             clearInterval(interval);
             transitionToPhase3();
         }
