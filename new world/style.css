@@ -1,17 +1,16 @@
-body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
-#gl-canvas { display: block; width: 100vw; height: 100vh; }
+:root { --c: #00f2ff; --bg: #020508; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; }
 
-#loader {
-    position: fixed; inset: 0; background: #000; z-index: 999;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-}
+#deck-canvas { position: fixed; inset: 0; z-index: 1; }
 
-button {
-    background: transparent; border: 2px solid #0ff; color: #0ff;
-    padding: 25px 60px; font-size: 1.5rem; letter-spacing: 8px; cursor: pointer;
+#loader { 
+    position: fixed; inset: 0; background: #000; z-index: 999; 
+    display: flex; justify-content: center; align-items: center; 
 }
+.glass-panel { padding: 40px; border: 1px solid var(--c); background: rgba(0,0,0,0.5); backdrop-filter: blur(20px); }
 
-#ui-overlay {
-    position: absolute; top: 30px; left: 30px; z-index: 10;
-    pointer-events: none; color: #0ff; font-family: 'Courier New', monospace;
+#ui-hud { 
+    position: absolute; inset: 30px; pointer-events: none; z-index: 50;
+    display: flex; justify-content: space-between; font-family: monospace; color: var(--c); 
 }
+button { background: transparent; color: var(--c); border: 1px solid var(--c); padding: 15px 30px; cursor: pointer; }
