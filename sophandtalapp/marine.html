@@ -5,6 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sophia's Submarine Base</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ==========================================================================
+           COMPLETELY PRESERVED AESTHETIC WITH ADDED SONAR EYE CANDY
+           ========================================================================== */
+        
+        /* New expanding pulse ring that emanates from the center of the radar */
+        .sonar-ping-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: transparent;
+            border: 3px solid rgba(0, 210, 211, 0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: sonarPulseWave 4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(0, 210, 211, 0.4);
+        }
+
+        @keyframes sonarPulseWave {
+            0% {
+                width: 0px;
+                height: 0px;
+                opacity: 1;
+            }
+            70% {
+                opacity: 0.4;
+            }
+            100% {
+                width: 260px;
+                height: 260px;
+                opacity: 0;
+                border-width: 1px;
+            }
+        }
+
+        /* Modernized styling button for the deep-sea trivia navigation */
+        .trivia-nav-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            background: #0984e3;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s ease;
+        }
+        .trivia-nav-btn:hover {
+            background: #076bba;
+        }
+    </style>
 </head>
 <body class="marine-theme">
 
@@ -19,18 +75,20 @@
             <p>Click the tracking grid below to broadcast a ping and find the hidden sea animal!</p>
             <div class="sonar-radar-screen">
                 <div class="sonar-sweep"></div>
+                <div class="sonar-ping-pulse"></div>
                 <div class="sonar-grid-container" id="sonar-grid-board"></div>
             </div>
             <p id="sonar-status" style="font-weight: bold; color: var(--sophia-blue);">Sonar Status: Standby...</p>
         </section>
 
         <section class="game-section" style="color: #2f3542;">
-            <h2>Cheesy Deep-Sea Trivia 🐠</h2>
-            <p><strong>Question:</strong> Why did the dolphin cross the ocean?</p>
-            <button class="trivia-btn" onclick="checkTrivia(true, 't1', 'To get to the other tide! 🌊')">A) To get to the other tide!</button>
-            <button class="trivia-btn" onclick="checkTrivia(false, 't1')">B) To find some crunchy popcorn.</button>
-            <button class="trivia-btn" onclick="checkTrivia(false, 't1')">C) Because it forgot its map.</button>
-            <div class="trivia-feedback" id="t1"></div>
+            <h2>Deep-Sea Fact Explorer 🐠</h2>
+            <div id="trivia-box">
+                <p><strong id="question-text">Loading question...</strong></p>
+                <div id="answers-box"></div>
+                <div class="trivia-feedback" id="t1" style="min-height: 24px; margin-top: 12px;"></div>
+                <button id="next-fact-btn" class="trivia-nav-btn" style="display: none;" onclick="loadNextFact()">Next Fact Deep-Dive ➡️</button>
+            </div>
         </section>
 
         <section class="game-section" style="color: #2f3542;">
@@ -39,10 +97,103 @@
             <div class="cbn-grid" id="ocean-grid"></div>
             <div class="cbn-palette" id="ocean-palette"></div>
         </section>
+
+        <div style="text-align: center; margin-top: 20px; width: 100%;">
+            <button onclick="window.location.href='index.html'" style="
+                padding: 14px 28px;
+                font-size: 1.1rem;
+                font-weight: bold;
+                font-family: inherit;
+                color: #2f3542;
+                background: linear-gradient(45deg, #fdcb6e, #f1c40f);
+                border: 3px solid #ffffff;
+                border-radius: 20px;
+                cursor: pointer;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+                transition: all 0.2s ease;
+            " onmouseover="this.style.transform='translateY(-3px)';" onmouseout="this.style.transform='translateY(0)';">
+                ↩️ Return to Portal
+            </button>
+        </div>
     </div>
 
     <script src="script.js"></script>
     <script>
+        // Real-world underwater science facts database
+        const oceanFacts = [
+            {
+                question: "Which deep-sea ocean trench is the lowest, deepest known point on Earth?",
+                answers: [
+                    { text: "A) The Puerto Rico Trench", correct: false },
+                    { text: "B) The Mariana Trench", correct: true },
+                    { text: "C) The Java Trench", correct: false }
+                ],
+                explanation: "The Mariana Trench! It plunges nearly 36,000 feet deep in the Pacific Ocean—deep enough to hide all of Mount Everest underwater."
+            },
+            {
+                question: "Where does more than 50% of the oxygen we breathe on Earth actually come from?",
+                answers: [
+                    { text: "A) Tiny marine plants and phytoplankton in the ocean", correct: true },
+                    { text: "B) The Amazon Rainforest trees", correct: false },
+                    { text: "C) Desert wind storms", correct: false }
+                ],
+                explanation: "The Ocean! Marine organisms like phytoplankton and seaweed photosynthesize and create most of the planet's breathable oxygen."
+            },
+            {
+                question: "What is the scientific name for creatures that produce their own glowing chemical light in the midnight zone?",
+                answers: [
+                    { text: "A) Hydro-electricity", correct: false },
+                    { text: "B) Solar-radiation", correct: false },
+                    { text: "C) Bioluminescence", correct: true }
+                ],
+                explanation: "Bioluminescence! Over 75% of deep-sea creatures create their own light to hunt, communicate, or hide in pure darkness."
+            },
+            {
+                question: "A Blue Whale's heart is massive. How large and heavy is it estimated to be?",
+                answers: [
+                    { text: "A) The size of a basketball (20 pounds)", correct: false },
+                    { text: "B) The size of a small car (400 pounds)", correct: true },
+                    { text: "C) The size of a laptop (10 pounds)", correct: false }
+                ],
+                explanation: "The size of a small car! It beats slow but powerful cycles, pushing thousands of gallons of blood through giant vessels."
+            }
+        ];
+
+        let currentFactIndex = 0;
+
+        function displayFactQuestion() {
+            const currentFact = oceanFacts[currentFactIndex];
+            document.getElementById('question-text').textContent = currentFact.question;
+            
+            const answersBox = document.getElementById('answers-box');
+            answersBox.innerHTML = ''; // Clear prior choices
+            document.getElementById('t1').textContent = '';
+            document.getElementById('next-fact-btn').style.display = 'none';
+
+            currentFact.answers.forEach(ans => {
+                const btn = document.createElement('button');
+                btn.className = 'trivia-btn';
+                btn.textContent = ans.text;
+                btn.onclick = () => {
+                    if (ans.correct) {
+                        document.getElementById('t1').style.color = '#2ecc71';
+                        document.getElementById('t1').innerHTML = `<strong>Correct!</strong> ${currentFact.explanation}`;
+                        document.getElementById('next-fact-btn').style.display = 'block';
+                    } else {
+                        document.getElementById('t1').style.color = '#e74c3c';
+                        document.getElementById('t1').textContent = "❌ Not quite! Analyze the data and try another option.";
+                    }
+                };
+                answersBox.appendChild(btn);
+            });
+        }
+
+        function loadNextFact() {
+            currentFactIndex = (currentFactIndex + 1) % oceanFacts.length;
+            displayFactQuestion();
+        }
+
+        // Color-By-Number Grid Configuration
         const fishConfig = {
             gridId: 'ocean-grid',
             paletteId: 'ocean-palette',
@@ -54,43 +205,3 @@
                 [1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,1,5,1,1,1,1,1,1,1,1,1],
                 [1,1,1,1,1,1,3,3,3,1,1,1],
-                [1,4,1,1,1,3,3,3,3,3,1,1],
-                [1,4,4,1,3,3,5,3,3,3,3,1],
-                [1,1,4,4,3,3,3,3,3,3,3,1],
-                [1,1,4,4,3,3,3,3,3,3,3,1],
-                [1,4,4,1,3,3,3,3,3,3,3,1],
-                [1,4,1,1,1,3,3,3,3,3,1,1],
-                [1,1,1,1,1,1,3,3,3,1,1,1],
-                [2,2,2,2,2,2,2,2,2,2,2,2],
-                [6,2,6,2,6,2,6,2,6,2,6,2]
-            ]
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initSonarGame();
-            initializeColorByNumber(fishConfig);
-        });
-    </script>
-
-
-<div style="text-align: center; margin-top: 50px; width: 100%;">
-    <button onclick="window.location.href='index.html'" style="
-        padding: 14px 28px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        font-family: inherit;
-        color: #2f3542;
-        background: linear-gradient(45deg, #fdcb6e, #f1c40f);
-        border: 3px solid #ffffff;
-        border-radius: 20px;
-        cursor: pointer;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        transition: all 0.2s ease;
-    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 24px rgba(253, 203, 110, 0.5)';" 
-      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.3)';">
-        ↩️ Return to Secret Portal
-    </button>
-</div>
-
-</body>
-</html>
