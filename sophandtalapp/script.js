@@ -1,185 +1,204 @@
 document.addEventListener("DOMContentLoaded", () => {
+
     // ==========================================
-    // GAME 1: SONAR RADAR SCANNER ENGINE
+    // FAIL-SAFE RADAR PING SOUND GENERATOR
     // ==========================================
-    const sonarGrid = document.getElementById("sonar-grid-board");
-    const sonarStatus = document.getElementById("sonar-status");
-    const sonarAudio = document.getElementById("sonar-sound") || document.getElementById("sonar-ping");
+    function playSonarPing() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(850, ctx.currentTime); // High sub ping frequency
+            osc.frequency.exponentialRampToValueAtTime(430, ctx.currentTime + 0.4); 
+            
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8); // Decay
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.8);
+        } catch (e) {
+            console.log("Audio waiting for user click interaction.");
+        }
+    }
 
-    if (sonarGrid) {
-        const gridSize = 5; // 5x5 Grid
-        const animalNames = ["🐋 Blue Whale", "🐬 Dolphin", "🐢 Sea Turtle", "🐙 Octopus", "🦈 Great White"];
-        const hiddenAnimal = animalNames[Math.floor(Math.random() * animalNames.length)];
-        const targetRow = Math.floor(Math.random() * gridSize);
-        const targetCol = Math.floor(Math.random() * gridSize);
+    // ==========================================
+    // MODULE 1: SONAR RADAR GRID
+    // ==========================================
+    (() => {
+        try {
+            const sonarGrid = document.getElementById("sonar-grid-board");
+            const sonarStatus = document.getElementById("sonar-status");
+            if (!sonarGrid) return;
 
-        sonarGrid.innerHTML = ""; // Clear placeholder data
+            const size = 5;
+            const animals = ["🐋 Blue Whale", "🐬 Dolphin", "🐢 Sea Turtle", "🐙 Octopus", "🦈 Great White"];
+            const targetAnimal = animals[Math.floor(Math.random() * animals.length)];
+            const targetRow = Math.floor(Math.random() * size);
+            const targetCol = Math.floor(Math.random() * size);
 
-        for (let r = 0; r < gridSize; r++) {
-            for (let c = 0; c < gridSize; c++) {
-                const cell = document.createElement("div");
-                cell.classList.add("sonar-cell");
+            sonarGrid.innerHTML = "";
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement("div");
+                    cell.className = "sonar-cell";
+                    cell.addEventListener("click", () => {
+                        playSonarPing(); // Play the direct sound
+                        cell.style.backgroundColor = "rgba(0, 210, 211, 0.4)";
+                        const dist = Math.abs(r - targetRow) + Math.abs(c - targetCol);
+                        
+                        if (dist === 0) {
+                            cell.style.backgroundColor = "#2ecc71";
+                            cell.innerHTML = "🎯";
+                            sonarStatus.innerHTML = `Sonar Status: SUCCESS! Found a ${targetAnimal}!`;
+                        } else if (dist <= 2) {
+                            sonarStatus.innerHTML = "Sonar Status: STRONG signature nearby! 🔥";
+                        } else {
+                            sonarStatus.innerHTML = "Sonar Status: Weak echo... adjusting frequencies. 🌊";
+                        }
+                    });
+                    sonarGrid.appendChild(cell);
+                }
+            }
+        } catch (err) { console.error("Sonar engine initialization paused:", err); }
+    })();
+
+    // ==========================================
+    // MODULE 2: BASIC FUNCTIONAL TRIVIA
+    // ==========================================
+    (() => {
+        try {
+            const qText = document.getElementById("question-text");
+            const aBox = document.getElementById("answers-box");
+            const fBox = document.getElementById("t1");
+            const nBtn = document.getElementById("next-fact-btn");
+            if (!qText || !aBox) return;
+
+            const facts = [
+                {
+                    q: "How much of Earth's volcanic activity happens underwater?",
+                    a: ["Around 10%", "Roughly 50%", "Over 80%", "None at all"],
+                    c: 2,
+                    f: "Over 80% of volcanic eruptions happen deep beneath the ocean surface!"
+                },
+                {
+                    q: "Why is the deep ocean completely pitch black?",
+                    a: ["Sunlight can't travel past 650 feet", "The water is too dirty", "Fish absorb light", "Plants block it"],
+                    c: 0,
+                    f: "Sunlight fades rapidly, leaving anything deeper than 650 feet in darkness."
+                }
+            ];
+
+            let index = 0;
+
+            function showQuestion() {
+                fBox.innerHTML = "";
+                if (nBtn) nBtn.style.display = "none";
+                const current = facts[index];
+                qText.innerText = current.q;
+                aBox.innerHTML = "";
+
+                current.a.forEach((opt, idx) => {
+                    const btn = document.createElement("button");
+                    btn.className = "trivia-btn";
+                    btn.innerText = opt;
+                    btn.addEventListener("click", () => {
+                        if (idx === current.c) {
+                            fBox.innerHTML = `<span style="color: #2ecc71;">✅ Correct! ${current.f}</span>`;
+                            if (nBtn) nBtn.style.display = "inline-block";
+                        } else {
+                            fBox.innerHTML = `<span style="color: #e74c3c;">❌ Systems re-calibrating. Try another tracking answer!</span>`;
+                        }
+                    });
+                    aBox.appendChild(btn);
+                });
+            }
+
+            if (nBtn) {
+                nBtn.addEventListener("click", () => {
+                    index = (index + 1) % facts.length;
+                    showQuestion();
+                });
+            }
+
+            showQuestion();
+        } catch (err) { console.error("Trivia engine initialization paused:", err); }
+    })();
+
+    // ==========================================
+    // MODULE 3: FIXING COLOR BY NUMBER (15x15)
+    // ==========================================
+    (() => {
+        try {
+            const grid = document.getElementById("ocean-grid");
+            const palette = document.getElementById("ocean-palette");
+            if (!grid || !palette) return;
+
+            const colors = {
+                1: "#ff4757", 2: "#ff7f50", 3: "#ffa502", 4: "#2ed573",
+                5: "#1e90ff", 6: "#70a1ff", 7: "#5352ed", 8: "#ed4c67",
+                9: "#ff6b81", 10: "#ff6348", 11: "#eccc68", 12: "#ffffff",
+                0: "#111a24"
+            };
+
+            const layout = [
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,
+                0,0,0,0,0,1,2,2,2,1,0,0,0,0,0,
+                0,0,0,0,1,2,3,3,3,2,1,0,7,0,0,
+                0,0,8,0,1,2,3,12,3,2,1,7,7,0,0,
+                0,8,8,1,2,2,3,3,3,2,2,1,7,7,0,
+                8,8,1,2,2,2,4,4,4,2,2,2,1,7,7,
+                8,1,2,2,2,4,11,11,11,4,2,2,2,1,7,
+                8,8,1,2,2,2,4,4,4,2,2,2,1,7,7,
+                0,8,8,1,2,2,2,2,2,2,2,1,7,7,0,
+                0,0,8,0,1,2,5,5,5,2,1,7,7,0,0,
+                0,0,0,0,1,2,6,6,6,2,1,0,7,0,0,
+                0,0,0,0,0,1,9,9,9,1,0,0,0,0,0,
+                0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+            ];
+
+            let activeColorKey = null;
+
+            palette.innerHTML = "";
+            Object.keys(colors).forEach(key => {
+                if (key == 0) return; 
+                const swatch = document.createElement("div");
+                swatch.className = "palette-swatch";
+                swatch.style.backgroundColor = colors[key];
+                swatch.innerText = key;
                 
-                cell.addEventListener("click", () => {
-                    // Trigger Audio Ping safely
-                    if (sonarAudio) {
-                        sonarAudio.currentTime = 0;
-                        sonarAudio.play().catch(err => console.log("Audio waiting for user interaction."));
-                    }
+                if(["3","4","11","12"].includes(key)) swatch.style.color = "#000000";
 
-                    // Create visual ripple effect on click
-                    cell.style.backgroundColor = "rgba(0, 210, 211, 0.4)";
-                    
-                    // Calculate absolute distance to target animal
-                    const distance = Math.abs(r - targetRow) + Math.abs(c - targetCol);
-                    
-                    if (distance === 0) {
-                        cell.style.backgroundColor = "#2ecc71";
-                        cell.innerHTML = "🎯";
-                        sonarStatus.innerHTML = `Sonar Status: SUCCESS! Found a ${hiddenAnimal}!`;
-                    } else if (distance <= 2) {
-                        sonarStatus.innerHTML = "Sonar Status: Ping returns STRONG signature nearby! 🔥";
-                    } else {
-                        sonarStatus.innerHTML = "Sonar Status: Weak echo... adjusting frequencies. 🌊";
+                swatch.addEventListener("click", () => {
+                    document.querySelectorAll(".palette-swatch").forEach(s => s.style.border = "none");
+                    swatch.style.border = "2px solid #00d2d3";
+                    activeColorKey = key;
+                });
+                palette.appendChild(swatch);
+            });
+
+            grid.innerHTML = "";
+            layout.forEach(num => {
+                const pixel = document.createElement("div");
+                pixel.className = "cbn-pixel";
+                pixel.innerText = num;
+
+                pixel.addEventListener("click", () => {
+                    if (activeColorKey && parseInt(activeColorKey) === num) {
+                        pixel.style.backgroundColor = colors[num];
+                        pixel.style.color = "transparent";
+                        pixel.style.border = "none";
                     }
                 });
-                sonarGrid.appendChild(cell);
-            }
-        }
-    }
-
-    // ==========================================
-    // GAME 2: DEEP-SEA TRIVIA ENGINE
-    // ==========================================
-    const questionText = document.getElementById("question-text");
-    const answersBox = document.getElementById("answers-box");
-    const feedbackBox = document.getElementById("t1");
-    const nextBtn = document.getElementById("next-fact-btn");
-
-    if (questionText && answersBox) {
-        const oceanFacts = [
-            {
-                q: "How much of Earth's volcanic activity happens underwater?",
-                a: ["Around 10%", "Roughly 50%", "Over 80%", "None at all"],
-                correct: 2,
-                fact: "Over 80% of volcanic eruptions happen deep beneath the ocean surface!"
-            },
-            {
-                q: "Why is the deep ocean completely pitch black?",
-                a: ["Sunlight can't travel past 650 feet", "The water is too dirty", "Fish absorb all the light", "Plants block the sun"],
-                correct: 0,
-                fact: "Sunlight fades rapidly, leaving anything deeper than 200 meters (650 feet) in absolute darkness."
-            },
-            {
-                q: "How do deep-sea creatures glow in the dark?",
-                a: ["They swallow flashlights", "Bioluminescence chemical reactions", "They reflect the moon", "Static electricity"],
-                correct: 1,
-                fact: "They use bioluminescence, producing their own light to hunt, communicate, and hide!"
-            },
-            {
-                q: "What color is the blood of a giant deep-sea octopus?",
-                a: ["Red", "Blue", "Green", "Transparent"],
-                correct: 1,
-                fact: "Octopus blood contains a copper-rich protein called hemocyanin, which turns their blood clear blue!"
-            }
-        ];
-
-        let currentFactIndex = 0;
-
-        function displayFact() {
-            feedbackBox.innerHTML = "";
-            if (nextBtn) nextBtn.style.display = "none";
-            
-            let currentData = oceanFacts[currentFactIndex];
-            questionText.innerText = currentData.q;
-            answersBox.innerHTML = "";
-
-            currentData.a.forEach((option, idx) => {
-                const btn = document.createElement("button");
-                btn.className = "trivia-btn";
-                btn.innerText = option;
-                btn.onclick = () => {
-                    if (idx === currentData.correct) {
-                        feedbackBox.innerHTML = `<span style="color: #2ecc71;">✅ Correct! ${currentData.fact}</span>`;
-                        if (nextBtn) nextBtn.style.display = "inline-block";
-                    } else {
-                        feedbackBox.innerHTML = `<span style="color: #e74c3c;">❌ Systems re-calibrating. Try another tracking answer!</span>`;
-                    }
-                };
-                answersBox.appendChild(btn);
+                grid.appendChild(pixel);
             });
-        }
-
-        // Global bridge so HTML button onclick attribute functions correctly
-        window.loadNextFact = function() {
-            currentFactIndex = (currentFactIndex + 1) % oceanFacts.length;
-            displayFact();
-        };
-
-        displayFact(); // Initialize first trivia question
-    }
-
-    // ==========================================
-    // GAME 3: COLOR BY NUMBER ENGINE
-    // ==========================================
-    const colorGrid = document.getElementById("ocean-grid");
-    const colorPalette = document.getElementById("ocean-palette");
-
-    if (colorGrid && colorPalette) {
-        // Simple fish pixel map configuration (0=water, 1=orange fish, 2=yellow stripes)
-        const pixelLayout = [
-            0, 0, 1, 1, 0, 0,
-            0, 1, 1, 2, 1, 0,
-            1, 1, 2, 1, 1, 1,
-            0, 1, 1, 1, 1, 0,
-            0, 0, 1, 1, 0, 0
-        ];
-
-        const colors = {
-            0: { name: "Deep Water Blue", code: "#1e375a" },
-            1: { name: "Clownfish Orange", code: "#ff7f50" },
-            2: { name: "Neon Yellow", code: "#f1c40f" }
-        };
-
-        let selectedColorKey = null;
-
-        // Render Palette Buttons
-        colorPalette.innerHTML = "";
-        Object.keys(colors).forEach(key => {
-            const swatch = document.createElement("div");
-            swatch.className = "palette-swatch";
-            swatch.style.backgroundColor = colors[key].code;
-            swatch.innerText = key;
-            swatch.title = colors[key].name;
-            
-            swatch.onclick = () => {
-                document.querySelectorAll(".palette-swatch").forEach(s => s.style.transform = "scale(1)");
-                swatch.style.transform = "scale(1.2)";
-                swatch.style.border = "2px solid #ffffff";
-                selectedColorKey = key;
-            };
-            colorPalette.appendChild(swatch);
-        });
-
-        // Render Canvas Grid
-        colorGrid.innerHTML = "";
-        pixelLayout.forEach(numberValue => {
-            const pixel = document.createElement("div");
-            pixel.className = "cbn-pixel";
-            pixel.innerText = numberValue;
-
-            pixel.onclick = () => {
-                if (selectedColorKey === null) {
-                    alert("Select a brush code number from the palette first!");
-                    return;
-                }
-                if (parseInt(selectedColorKey) === numberValue) {
-                    pixel.style.backgroundColor = colors[numberValue].code;
-                    pixel.style.color = "transparent"; // Hide helper number text on success
-                    pixel.style.border = "none";
-                }
-            };
-            colorGrid.appendChild(pixel);
-        });
-    }
+        } catch (err) { console.error("Color-by-number initialization paused:", err); }
+    })();
 });
