@@ -7,43 +7,47 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* ==========================================================================
-           SURGICAL HIGH-TECH STYLE OVERRIDES (SAFE & NON-DESTRUCTIVE)
+           HIGH-TECH SUBMARINE SYSTEM OVERRIDES (SAFE & CLEAN)
            ========================================================================== */
         
-        /* Apply a sharp terminal console font to text blocks without disrupting layout wrappers */
-        body, header, .game-section, button, select, input, p, h1, h2, strong, .trivia-btn {
-            font-family: 'Consolas', 'SF Mono', 'Courier New', Monaco, monospace;
+        /* Force a crisp, tactical console font across text elements without breaking structural layouts */
+        body, header, .game-section, button, select, input, p, h1, h2, strong, text {
+            font-family: 'Consolas', 'SF Mono', 'Courier New', Monaco, monospace !important;
         }
 
-        /* Replaces the jarring white boxes with premium deep-sea tactical hull plating */
+        /* Swaps out the clashing white boxes for deep oceanic command panels */
         .game-section {
-            background-color: #0b111e !important; /* Deep ocean trench dark slate */
-            color: #e2e8f0 !important;            /* High-visibility cyber silver text */
-            border: 2px solid #202b3c !important;  /* Industrial sub-aquatic structural trim */
+            background-color: #0b121f !important; /* Deep trench submarine hull color */
+            border: 2px solid #1e293b !important;  /* Industrial panel trim */
             border-radius: 16px !important;
-            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 
-                        0 12px 40px rgba(0, 0, 0, 0.6) !important;
             padding: 25px !important;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 
+                        0 12px 40px rgba(0, 0, 0, 0.5) !important;
         }
 
-        /* High-voltage submarine cyan for section headers */
+        /* Ensure all text inside the dark panels defaults to highly readable cyber-silver */
+        .game-section, .game-section p, .game-section strong, .game-section span {
+            color: #e2e8f0 !important;
+        }
+
+        /* Upgrades section titles to look like active sonar terminal headers */
         .game-section h2 {
-            color: #00d2d3 !important;
-            border-bottom: 1px solid rgba(0, 210, 211, 0.15);
-            padding-bottom: 8px;
+            color: #00d2d3 !important; /* High-voltage electric cyan */
+            border-bottom: 1px solid rgba(0, 210, 211, 0.2) !important;
+            padding-bottom: 10px;
             margin-top: 0;
-            text-transform: uppercase;
             letter-spacing: 1px;
+            text-transform: uppercase;
             font-size: 1.3rem;
         }
 
-        /* Interactive terminal styling for the scientific trivia buttons */
+        /* Tactical console styling for trivia selection buttons */
         .trivia-btn {
-            background-color: #161f2b;
-            color: #ffffff;
-            border: 1px solid #2c3e50;
+            background-color: #162235 !important;
+            color: #ffffff !important;
+            border: 1px solid #2a3b5c !important;
             padding: 12px 16px;
-            margin: 6px 0;
+            margin: 8px 0;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
@@ -51,49 +55,10 @@
             transition: all 0.2s ease;
         }
         .trivia-btn:hover {
-            background-color: #222f42;
-            border-color: #00d2d3;
-            box-shadow: 0 0 10px rgba(0, 210, 211, 0.15);
+            background-color: #1e304a !important;
+            border-color: #00d2d3 !important;
+            box-shadow: 0 0 10px rgba(0, 210, 211, 0.2);
         }
-
-        /* ==========================================================================
-           VISUAL SONAR RADAR EFFECT
-           ========================================================================== */
-        .sonar-ping-pulse {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background: transparent;
-            border: 3px solid rgba(0, 210, 211, 0.6);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: sonarPulseWave 4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
-            pointer-events: none;
-            box-shadow: 0 0 20px rgba(0, 210, 211, 0.4);
-        }
-
-        @keyframes sonarPulseWave {
-            0% { width: 0px; height: 0px; opacity: 1; }
-            70% { opacity: 0.4; }
-            100% { width: 260px; height: 260px; opacity: 0; border-width: 1px; }
-        }
-
-        .trivia-nav-btn {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            font-weight: bold;
-            color: white;
-            background: #0984e3;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.2s ease;
-        }
-        .trivia-nav-btn:hover { background: #076bba; }
     </style>
 </head>
 <body class="marine-theme">
@@ -104,18 +69,19 @@
             <p>Welcome back, Captain Sophia! Systems online.</p>
         </header>
 
-        <section class="game-section" style="color: #2f3542;">
+        <section class="game-section">
             <h2>Submarine Sonar Scanner 🛰️</h2>
             <p>Click the tracking grid below to broadcast a ping and find the hidden sea animal!</p>
             <div class="sonar-radar-screen">
                 <div class="sonar-sweep"></div>
-                <div class="sonar-ping-pulse"></div>
                 <div class="sonar-grid-container" id="sonar-grid-board"></div>
             </div>
-            <p id="sonar-status" style="font-weight: bold; color: var(--sophia-blue);">Sonar Status: Standby...</p>
+            <p id="sonar-status" style="font-weight: bold;">Sonar Status: Standby...</p>
+            
+            <audio id="sonar-sound" src="https://actions.google.com/sounds/v1/science_fiction/sonar_ping.ogg" preload="auto"></audio>
         </section>
 
-        <section class="game-section" style="color: #2f3542;">
+        <section class="game-section">
             <h2>Deep-Sea Fact Explorer 🐠</h2>
             <div id="trivia-box">
                 <p><strong id="question-text">Loading deep sea metrics...</strong></p>
@@ -125,7 +91,7 @@
             </div>
         </section>
 
-        <section class="game-section" style="color: #2f3542;">
+        <section class="game-section">
             <h2>Bonus: Tropical Fish Paint Canvas 🎨</h2>
             <p>Grab your brush colors from the palette circles below and trace out your secret pixel creation!</p>
             <div class="cbn-grid" id="ocean-grid"></div>
@@ -152,64 +118,5 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
-        // Real-world underwater science facts database
-        const oceanFacts = [
-            {
-                question: "Which deep-sea ocean trench is the lowest, deepest known point on Earth?",
-                answers: [
-                    { text: "A) The Puerto Rico Trench", correct: false },
-                    { text: "B) The Mariana Trench", correct: true },
-                    { text: "C) The Java Trench", correct: false }
-                ],
-                explanation: "The Mariana Trench! It plunges nearly 36,000 feet deep in the Pacific Ocean—deep enough to hide all of Mount Everest underwater."
-            },
-            {
-                question: "Where does more than 50% of the oxygen we breathe on Earth actually come from?",
-                answers: [
-                    { text: "A) Tiny marine plants and phytoplankton in the ocean", correct: true },
-                    { text: "B) The Amazon Rainforest trees", correct: false },
-                    { text: "C) Desert wind storms", correct: false }
-                ],
-                explanation: "The Ocean! Marine organisms like phytoplankton and seaweed photosynthesize and create most of the planet's breathable oxygen."
-            },
-            {
-                question: "What is the scientific name for creatures that produce their own glowing chemical light in the midnight zone?",
-                answers: [
-                    { text: "A) Hydro-electricity", correct: false },
-                    { text: "B) Solar-radiation", correct: false },
-                    { text: "C) Bioluminescence", correct: true }
-                ],
-                explanation: "Bioluminescence! Over 75% of deep-sea creatures create their own light to hunt, communicate, or hide in pure darkness."
-            },
-            {
-                question: "A Blue Whale's heart is massive. How large and heavy is it estimated to be?",
-                answers: [
-                    { text: "A) The size of a basketball (20 pounds)", correct: false },
-                    { text: "B) The size of a small car (400 pounds)", correct: true },
-                    { text: "C) The size of a laptop (10 pounds)", correct: false }
-                ],
-                explanation: "The size of a small car! It beats slow but powerful cycles, pushing thousands of gallons of blood through giant vessels."
-            }
-        ];
-
-        let currentFactIndex = 0;
-
-        function displayFactQuestion() {
-            const currentFact = oceanFacts[currentFactIndex];
-            const qText = document.getElementById('question-text');
-            const answersBox = document.getElementById('answers-box');
-            const feedback = document.getElementById('t1');
-            const nextBtn = document.getElementById('next-fact-btn');
-
-            if(!qText || !answersBox) return;
-
-            qText.textContent = currentFact.question;
-            answersBox.innerHTML = ''; 
-            feedback.textContent = '';
-            nextBtn.style.display = 'none';
-
-            currentFact.answers.forEach(ans => {
-                const btn = document.createElement('button');
-                btn.className = 'trivia-btn';
-                btn.textContent = ans.text;
+</body>
+</html>
