@@ -11,6 +11,7 @@
         .memory-game-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 500px; margin: 20px auto; }
         .memory-card { aspect-ratio: 1 / 1; background-color: #2c163f; border: 2px solid #ed4c67; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; }
         .memory-card.flipped { background-color: #5352ed; }
+        .magic-trivia-btn { background-color: #241233; color: #fff; border: 1px solid #ed4c67; padding: 10px; margin: 5px 0; width: 100%; cursor: pointer; }
         .cbn-grid-playful { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; max-width: 350px; margin: 20px auto; border: 2px solid #ed4c67; }
         .cbn-pixel { aspect-ratio: 1 / 1; background-color: #241233; border: 1px solid #3b1d54; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #442a5a; }
     </style>
@@ -28,6 +29,15 @@
         </section>
 
         <section class="magic-section">
+            <h2>Enchanted Fact Explorer ✨</h2>
+            <div id="magic-trivia-box">
+                <p><strong id="magic-question-text">Loading...</strong></p>
+                <div id="magic-answers-box"></div>
+                <div id="t2" style="margin-top: 10px;"></div>
+            </div>
+        </section>
+
+        <section class="magic-section">
             <h2>Secret Full-Canvas Art 🎨</h2>
             <div id="playful-palette" style="display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;"></div>
             <div class="cbn-grid-playful" id="playful-ocean-grid"></div>
@@ -35,7 +45,7 @@
     </div>
 
     <script>
-        // 1. MEMORY GAME (Untouched)
+        // 1. MEMORY GAME (24 CARDS + SOUNDS)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(f1, f2, dur) {
             const osc = audioCtx.createOscillator();
@@ -76,8 +86,21 @@
             board.appendChild(div);
         });
 
-        // 2. COLOR BY NUMBER (10x10 Full Fill - 8 Colors)
-        // 1:DarkPurple, 2:Magenta, 3:LightPink, 4:BrightCyan, 5:Gold, 6:White, 7:BrightBlue, 8:Emerald
+        // 2. TRIVIA (Restored)
+        const trivia = [{q: "What creature is the 'Unicorn of the Sea'?", a: ["Narwhal", "Fish"], c: 0}, {q: "What do fairies use to grow flowers?", a: ["Magic Pollen", "Dirt"], c: 0}];
+        let qIdx = 0;
+        function loadQ() {
+            document.getElementById("magic-question-text").innerText = trivia[qIdx].q;
+            const box = document.getElementById("magic-answers-box"); box.innerHTML = "";
+            trivia[qIdx].a.forEach((opt, i) => {
+                const btn = document.createElement("button"); btn.innerText = opt; btn.className = "magic-trivia-btn";
+                btn.onclick = () => { document.getElementById("t2").innerText = i === trivia[qIdx].c ? "Correct! ✨" : "Try again!"; if(i===trivia[qIdx].c) setTimeout(()=>{qIdx++; loadQ()}, 1000) };
+                box.appendChild(btn);
+            });
+        }
+        loadQ();
+
+        // 3. COLOR BY NUMBER (10x10 Full Fill - 8 Colors)
         const gridMap = [
             1,1,1,1,2,2,1,1,1,1, 1,1,1,2,3,3,2,1,1,1, 1,1,2,3,3,3,3,2,1,1, 1,2,3,3,3,3,3,3,2,1, 2,2,3,3,4,4,3,3,2,2,
             2,2,3,3,4,4,3,3,2,2, 1,2,3,5,5,5,5,3,2,1, 1,1,2,5,6,6,5,2,1,1, 1,1,1,7,7,7,7,1,1,1, 1,1,1,8,8,8,8,1,1,1
