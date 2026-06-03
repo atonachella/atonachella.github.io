@@ -1,16 +1,50 @@
 /**
  * ==========================================================================
+ * AUDIO ENGINE: SYNTHESIZED ELECTRONIC SONAR PING
+ * ==========================================================================
+ */
+function playSonarPingSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        // Classic high-pitched submarine sonar signature
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime); // High A note
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.4); 
+        
+        // Smooth audio decay to simulate an underwater echo echo
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.4);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 1.4);
+    } catch (error) {
+        console.log("Audio playback blocked until user interacts with the page.");
+    }
+}
+
+/**
+ * ==========================================================================
  * GAME MODULE 1: SOPHIA'S SUBMARINE SONAR SCANNER
  * ==========================================================================
  */
 function initSonarGame() {
     const container = document.getElementById('sonar-grid-board');
-    if (!container) return;
+    if (!container) return; // Guard clause to prevent crashing on other pages
 
-    // Secret location coordinates
+    container.innerHTML = ''; // Clear out any stale nodes
+    
     const targetX = Math.floor(Math.random() * 5);
     const targetY = Math.floor(Math.random() * 5);
-    const creatures = ['🐋 Blue Whale!', '🦑 Giant Squid!', '🐬 Playful Dolphin!', '🦈 Friendly Shark!'];
+    const creatures = ['🐋 Blue Whale!', ' Squid!', '🐬 Playful Dolphin!', '🦈 Friendly Shark!'];
     const chosenCreature = creatures[Math.floor(Math.random() * creatures.length)];
 
     for (let r = 0; r < 5; r++) {
@@ -19,6 +53,9 @@ function initSonarGame() {
             block.className = 'sonar-ping-node';
             
             block.addEventListener('click', () => {
+                // Trigger the electronic audio ping on click
+                playSonarPingSound();
+                
                 if (r === targetY && c === targetX) {
                     block.textContent = '👾';
                     block.style.background = '#2ecc71';
@@ -31,7 +68,7 @@ function initSonarGame() {
                         document.getElementById('sonar-status').textContent = "Pinger Status: Warm Signal Detected Nearby!";
                     } else {
                         block.textContent = '🔵';
-                        document.getElementById('sonar-status').textContent = "Pinger Status: Cold Water. Scan somewhere else!";
+                        document.getElementById('sonar-status').textContent = "Pinger Status: Cold Water. Scan elsewhere!";
                     }
                 }
             });
@@ -49,8 +86,9 @@ function initCardFlipGame() {
     const board = document.getElementById('memory-board');
     if (!board) return;
 
+    board.innerHTML = '';
+
     const items = ['🦄', '🦄', '🦁', '🦁', '🐉', '🐉', '🦅', '🦅', '🦊', '🦊', '🐼', '🐼', '🐺', '🐺', '✨', '✨'];
-    // Shuffle Array
     items.sort(() => Math.random() - 0.5);
 
     let firstCard = null;
@@ -100,29 +138,16 @@ function initCardFlipGame() {
 
 /**
  * ==========================================================================
- * GAME MODULE 3: TRIVIA CHECKS
- * ==========================================================================
- */
-function checkTrivia(isCorrect, feedbackId, outputMessage) {
-    const box = document.getElementById(feedbackId);
-    if (isCorrect) {
-        box.style.color = '#2ecc71';
-        box.textContent = "✨ Correct! " + outputMessage;
-    } else {
-        box.style.color = '#e74c3c';
-        box.textContent = "❌ Oops! Give it another guess!";
-    }
-}
-
-/**
- * ==========================================================================
- * GAME MODULE 4: PRODUCTION COLOR-BY-NUMBER CANVAS ENGINE
+ * GAME MODULE 3: COLOR BY NUMBER ENGINE
  * ==========================================================================
  */
 function initializeColorByNumber(config) {
     const gridNode = document.getElementById(config.gridId);
     const paletteNode = document.getElementById(config.paletteId);
     if (!gridNode || !paletteNode) return;
+
+    gridNode.innerHTML = '';
+    paletteNode.innerHTML = '';
 
     let selectedColorNumber = null;
 

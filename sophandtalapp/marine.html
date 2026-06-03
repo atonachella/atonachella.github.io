@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* ==========================================================================
-           COMPLETELY PRESERVED AESTHETIC WITH ADDED SONAR EYE CANDY
+           PRESERVED ARCHITECTURE WITH RADAR PULSE EFFECTS
            ========================================================================== */
-        
-        /* New expanding pulse ring that emanates from the center of the radar */
         .sonar-ping-pulse {
             position: absolute;
             top: 50%;
@@ -27,23 +25,11 @@
         }
 
         @keyframes sonarPulseWave {
-            0% {
-                width: 0px;
-                height: 0px;
-                opacity: 1;
-            }
-            70% {
-                opacity: 0.4;
-            }
-            100% {
-                width: 260px;
-                height: 260px;
-                opacity: 0;
-                border-width: 1px;
-            }
+            0% { width: 0px; height: 0px; opacity: 1; }
+            70% { opacity: 0.4; }
+            100% { width: 260px; height: 260px; opacity: 0; border-width: 1px; }
         }
 
-        /* Modernized styling button for the deep-sea trivia navigation */
         .trivia-nav-btn {
             width: 100%;
             padding: 12px;
@@ -57,9 +43,7 @@
             margin-top: 15px;
             transition: background 0.2s ease;
         }
-        .trivia-nav-btn:hover {
-            background: #076bba;
-        }
+        .trivia-nav-btn:hover { background: #076bba; }
     </style>
 </head>
 <body class="marine-theme">
@@ -84,7 +68,7 @@
         <section class="game-section" style="color: #2f3542;">
             <h2>Deep-Sea Fact Explorer 🐠</h2>
             <div id="trivia-box">
-                <p><strong id="question-text">Loading question...</strong></p>
+                <p><strong id="question-text">Loading deep sea metrics...</strong></p>
                 <div id="answers-box"></div>
                 <div class="trivia-feedback" id="t1" style="min-height: 24px; margin-top: 12px;"></div>
                 <button id="next-fact-btn" class="trivia-nav-btn" style="display: none;" onclick="loadNextFact()">Next Fact Deep-Dive ➡️</button>
@@ -119,7 +103,6 @@
 
     <script src="script.js"></script>
     <script>
-        // Real-world underwater science facts database
         const oceanFacts = [
             {
                 question: "Which deep-sea ocean trench is the lowest, deepest known point on Earth?",
@@ -163,12 +146,17 @@
 
         function displayFactQuestion() {
             const currentFact = oceanFacts[currentFactIndex];
-            document.getElementById('question-text').textContent = currentFact.question;
-            
+            const qText = document.getElementById('question-text');
             const answersBox = document.getElementById('answers-box');
-            answersBox.innerHTML = ''; // Clear prior choices
-            document.getElementById('t1').textContent = '';
-            document.getElementById('next-fact-btn').style.display = 'none';
+            const feedback = document.getElementById('t1');
+            const nextBtn = document.getElementById('next-fact-btn');
+
+            if(!qText || !answersBox) return;
+
+            qText.textContent = currentFact.question;
+            answersBox.innerHTML = ''; 
+            feedback.textContent = '';
+            nextBtn.style.display = 'none';
 
             currentFact.answers.forEach(ans => {
                 const btn = document.createElement('button');
@@ -176,12 +164,12 @@
                 btn.textContent = ans.text;
                 btn.onclick = () => {
                     if (ans.correct) {
-                        document.getElementById('t1').style.color = '#2ecc71';
-                        document.getElementById('t1').innerHTML = `<strong>Correct!</strong> ${currentFact.explanation}`;
-                        document.getElementById('next-fact-btn').style.display = 'block';
+                        feedback.style.color = '#2ecc71';
+                        feedback.innerHTML = `<strong>Correct!</strong> ${currentFact.explanation}`;
+                        nextBtn.style.display = 'block';
                     } else {
-                        document.getElementById('t1').style.color = '#e74c3c';
-                        document.getElementById('t1').textContent = "❌ Not quite! Analyze the data and try another option.";
+                        feedback.style.color = '#e74c3c';
+                        feedback.textContent = "❌ Not quite! Analyze the data and try another option.";
                     }
                 };
                 answersBox.appendChild(btn);
@@ -193,7 +181,6 @@
             displayFactQuestion();
         }
 
-        // Color-By-Number Grid Configuration
         const fishConfig = {
             gridId: 'ocean-grid',
             paletteId: 'ocean-palette',
@@ -205,3 +192,24 @@
                 [1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,1,5,1,1,1,1,1,1,1,1,1],
                 [1,1,1,1,1,1,3,3,3,1,1,1],
+                [1,4,1,1,1,3,3,3,3,3,1,1],
+                [1,4,4,1,3,3,5,3,3,3,3,1],
+                [1,1,4,4,3,3,3,3,3,3,3,1],
+                [1,1,4,4,3,3,3,3,3,3,3,1],
+                [1,4,4,1,3,3,3,3,3,3,3,1],
+                [1,4,1,1,1,3,3,3,3,3,1,1],
+                [1,1,1,1,1,1,3,3,3,1,1,1],
+                [2,2,2,2,2,2,2,2,2,2,2,2],
+                [6,2,6,2,6,2,6,2,6,2,6,2]
+            ]
+        };
+
+        // Execution wrapper isolating initializations inside safe try/catch containers
+        window.addEventListener('load', () => {
+            try { initSonarGame(); } catch(e) { console.error(e); }
+            try { displayFactQuestion(); } catch(e) { console.error(e); }
+            try { initializeColorByNumber(fishConfig); } catch(e) { console.error(e); }
+        });
+    </script>
+</body>
+</html>
