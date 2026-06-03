@@ -5,80 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sophia's Submarine Base</title>
     <link rel="stylesheet" href="style.css">
+    
+    <script>
+        /* ==========================================================================
+           FAIL-SAFE ID COMPATIBILITY SHIM (PREVENTS SCRIPT.JS FROM CRASHING)
+           ========================================================================== */
+        (function() {
+            const origGetElementById = document.getElementById;
+            const aliases = {
+                // If script.js looks for Left ID, it safely routes to Right ID
+                'trivia-question': 'question-text',
+                'fact-question': 'question-text',
+                'trivia-answers': 'answers-box',
+                'answers-container': 'answers-box',
+                'trivia-feedback': 't1',
+                'feedback': 't1',
+                'sonar-grid': 'sonar-grid-board',
+                'radar-grid': 'sonar-grid-board',
+                'radar-status': 'sonar-status',
+                'sonar-ping': 'sonar-sound',
+                'ping-sound': 'sonar-sound',
+                'cbn-grid': 'ocean-grid',
+                'color-grid': 'ocean-grid',
+                'cbn-palette': 'ocean-palette',
+                'color-palette': 'ocean-palette',
+                'next-btn': 'next-fact-btn',
+                'next-question-btn': 'next-fact-btn'
+            };
+            document.getElementById = function(id) {
+                let el = origGetElementById.call(document, id);
+                if (!el && aliases[id]) {
+                    el = origGetElementById.call(document, aliases[id]);
+                }
+                return el;
+            };
+        })();
+    </script>
+
     <style>
         /* ==========================================================================
-           HIGH-TECH SUBMARINE SYSTEM OVERRIDES (SAFE & CLEAN)
+           TACTICAL SUBMARINE CONSOLE STYLING
            ========================================================================== */
         
-        /* Force a crisp, tactical console font across text elements without breaking structural layouts */
-        body, header, .game-section, button, select, input, p, h1, h2, strong, text {
-            font-family: 'Consolas', 'SF Mono', 'Courier New', Monaco, monospace !important;
+        /* Force high-tech tactical monospace typography across core text elements */
+        body, header, .game-section, button, select, input, p, h1, h2, strong, span {
+            font-family: 'Consolas', 'SF Mono', 'Courier New', Monaco, monospace;
         }
 
-        /* Swaps out the clashing white boxes for deep oceanic command panels */
+        /* Swaps white boxes for sleek, dark ocean-depth command panels */
         .game-section {
-            background-color: #0b121f !important; /* Deep trench submarine hull color */
-            border: 2px solid #1e293b !important;  /* Industrial panel trim */
+            background-color: #0b1320 !important; /* Deep ocean trench hull */
+            border: 2px solid #00d2d3 !important;  /* High-tech cyan panel accents */
             border-radius: 16px !important;
             padding: 25px !important;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 
-                        0 12px 40px rgba(0, 0, 0, 0.5) !important;
-        }
-
-        /* Ensure all text inside the dark panels defaults to highly readable cyber-silver */
-        .game-section, .game-section p, .game-section strong, .game-section span {
-            color: #e2e8f0 !important;
-        }
-
-        /* Upgrades section titles to look like active sonar terminal headers */
-        .game-section h2 {
-            color: #00d2d3 !important; /* High-voltage electric cyan */
-            border-bottom: 1px solid rgba(0, 210, 211, 0.2) !important;
-            padding-bottom: 10px;
-            margin-top: 0;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 1.3rem;
-        }
-
-        /* Tactical console styling for trivia selection buttons */
-        .trivia-btn {
-            background-color: #162235 !important;
+            margin-bottom: 25px !important;
             color: #ffffff !important;
-            border: 1px solid #2a3b5c !important;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* Tactical terminal section headers */
+        .game-section h2 {
+            color: #00d2d3 !important;
+            margin-top: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 210, 211, 0.2);
+            padding-bottom: 8px;
+        }
+
+        /* High-visibility crisp silver text for readouts */
+        .game-section p, .game-section strong, .game-section span, #question-text {
+            color: #e2e8f0;
+        }
+
+        /* ==========================================================================
+           PHYSICAL SONAR RADAR & PING COMPONENT
+           ========================================================================== */
+        .sonar-radar-screen {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            background-color: #040a12;
+            border: 3px solid #00d2d3;
+            border-radius: 50%;
+            margin: 20px auto;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(0, 210, 211, 0.3);
+        }
+
+        /* Rotating radar beam sweep */
+        .sonar-sweep {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, rgba(0, 210, 211, 0.4) 0deg, rgba(0, 210, 211, 0) 90deg);
+            border-radius: 50%;
+            transform-origin: center;
+            animation: radar-sweep-sweep 4s linear infinite;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Target signature sonar ping wave */
+        .sonar-ping-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            background-color: #00d2d3;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: radar-ping-glow 2.5s ease-out infinite;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        @keyframes radar-sweep-sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes radar-ping-glow {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 210, 211, 0.8); }
+            100% { transform: translate(-50%, -50%) scale(7); opacity: 0; box-shadow: 0 0 0 15px rgba(0, 210, 211, 0); }
+        }
+
+        /* Clean styling for trivia option button text items */
+        .trivia-btn {
+            background-color: #162235;
+            color: #ffffff;
+            border: 1px solid #00d2d3;
             padding: 12px 16px;
             margin: 8px 0;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
             text-align: left;
-            transition: all 0.2s ease;
+            font-family: inherit;
         }
         .trivia-btn:hover {
-            background-color: #1e304a !important;
-            border-color: #00d2d3 !important;
-            box-shadow: 0 0 10px rgba(0, 210, 211, 0.2);
+            background-color: #1e324d;
+            box-shadow: 0 0 10px rgba(0, 210, 211, 0.3);
         }
     </style>
 </head>
 <body class="marine-theme">
 
     <div class="page-wrapper">
-        <header class="dashboard-header" style="background: var(--sophia-blue);">
-            <h1>Sophia's Ocean Explorer Dashboard 🐋</h1>
-            <p>Welcome back, Captain Sophia! Systems online.</p>
+        <header class="dashboard-header" style="background: var(--sophia-blue, #00d2d3); padding: 15px; text-align: center;">
+            <h1 style="margin: 0; font-size: 2rem;">Sophia's Ocean Explorer Dashboard 🐋</h1>
+            <p style="margin: 5px 0 0 0;">Welcome back, Captain Sophia! Systems online.</p>
         </header>
 
         <section class="game-section">
             <h2>Submarine Sonar Scanner 🛰️</h2>
             <p>Click the tracking grid below to broadcast a ping and find the hidden sea animal!</p>
+            
             <div class="sonar-radar-screen">
                 <div class="sonar-sweep"></div>
+                <div class="sonar-ping-pulse"></div>
                 <div class="sonar-grid-container" id="sonar-grid-board"></div>
             </div>
-            <p id="sonar-status" style="font-weight: bold;">Sonar Status: Standby...</p>
+            
+            <p id="sonar-status" style="font-weight: bold; text-align: center;">Sonar Status: Standby...</p>
             
             <audio id="sonar-sound" src="https://actions.google.com/sounds/v1/science_fiction/sonar_ping.ogg" preload="auto"></audio>
+            <audio id="sonar-ping" src="https://actions.google.com/sounds/v1/science_fiction/sonar_ping.ogg" preload="auto"></audio>
         </section>
 
         <section class="game-section">
@@ -86,7 +179,7 @@
             <div id="trivia-box">
                 <p><strong id="question-text">Loading deep sea metrics...</strong></p>
                 <div id="answers-box"></div>
-                <div class="trivia-feedback" id="t1" style="min-height: 24px; margin-top: 12px;"></div>
+                <div class="trivia-feedback" id="t1" style="min-height: 24px; margin-top: 12px; font-weight: bold;"></div>
                 <button id="next-fact-btn" class="trivia-nav-btn" style="display: none;" onclick="loadNextFact()">Next Fact Deep-Dive ➡️</button>
             </div>
         </section>
@@ -104,14 +197,14 @@
                 font-size: 1.1rem;
                 font-weight: bold;
                 font-family: inherit;
-                color: #2f3542;
+                color: #111a24;
                 background: linear-gradient(45deg, #fdcb6e, #f1c40f);
                 border: 3px solid #ffffff;
                 border-radius: 20px;
                 cursor: pointer;
                 box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
                 transition: all 0.2s ease;
-            " onmouseover="this.style.transform='translateY(-3px)';" onmouseout="this.style.transform='translateY(0)';">
+            ">
                 ↩️ Return to Portal
             </button>
         </div>
