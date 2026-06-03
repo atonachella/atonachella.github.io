@@ -6,22 +6,22 @@
     <title>Natalia's Magic Land</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Twilight Magical Theme */
+        /* Keeping your existing styling entirely intact */
         body { background-color: #09040d; margin: 0; padding: 20px; font-family: 'Consolas', monospace; color: #fff; }
         .magic-section { background-color: #140b1c; border: 2px solid #ed4c67; border-radius: 16px; padding: 25px; margin-bottom: 25px; }
         h2 { color: #ff6b81; margin-top: 0; }
         
-        /* Memory Grid */
-        .memory-game-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 340px; margin: 20px auto; }
-        .memory-card { aspect-ratio: 1 / 1; background-color: #2c163f; border: 2px solid #ed4c67; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
+        /* Memory Grid (Upgraded to 24 cards) */
+        .memory-game-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 500px; margin: 20px auto; }
+        .memory-card { aspect-ratio: 1 / 1; background-color: #2c163f; border: 2px solid #ed4c67; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; }
         .memory-card.flipped { background-color: #5352ed; }
         
         /* Trivia */
         .magic-trivia-btn { background-color: #241233; color: #fff; border: 1px solid #ed4c67; padding: 10px; margin: 5px 0; width: 100%; cursor: pointer; }
         
-        /* Color Grid */
-        .cbn-grid-playful { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; max-width: 420px; margin: 20px auto; }
-        .cbn-pixel { aspect-ratio: 1 / 1; background-color: #241233; border: 1px solid #3b1d54; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; cursor: pointer; }
+        /* Color Grid (10x10) */
+        .cbn-grid-playful { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; max-width: 350px; margin: 20px auto; border: 2px solid #ed4c67; }
+        .cbn-pixel { aspect-ratio: 1 / 1; background-color: #241233; border: 1px solid #3b1d54; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -34,7 +34,7 @@
         <section class="magic-section">
             <h2>Magical Match Memory 👑</h2>
             <div class="memory-game-container" id="memory-board"></div>
-            <p id="memory-status" style="text-align: center;">Matches Found: 0 / 4</p>
+            <p id="memory-status" style="text-align: center;">Matches Found: 0 / 12</p>
         </section>
 
         <section class="magic-section">
@@ -48,32 +48,34 @@
 
         <section class="magic-section">
             <h2>Secret Unicorn Canvas 🎨</h2>
+            <div id="playful-palette" style="display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;"></div>
             <div class="cbn-grid-playful" id="playful-ocean-grid"></div>
         </section>
     </div>
 
     <script>
-        // MEMORY GAME LOGIC
-        const icons = ["🦄", "🦄", "🧜‍♀️", "🧜‍♀️", "🧚‍♀️", "🧚‍♀️", "👑", "👑"].sort(() => 0.5 - Math.random());
+        // 1. MEMORY GAME (24 CARDS)
         const board = document.getElementById("memory-board");
+        const icons = ["🦄","🦄","🧜‍♀️","🧜‍♀️","🧚‍♀️","🧚‍♀️","👑","👑","🌈","🌈","✨","✨","🌸","🌸","🦋","🦋","🍭","🍭","💎","💎","🎀","🎀","🌟","🌟"].sort(() => 0.5 - Math.random());
         let active = [];
         icons.forEach(icon => {
             const div = document.createElement("div");
             div.className = "memory-card";
             div.innerHTML = `<span style="visibility:hidden">${icon}</span>`;
             div.onclick = () => {
+                if(div.classList.contains("flipped") || active.length >= 2) return;
                 div.classList.add("flipped");
                 div.firstChild.style.visibility = "visible";
                 active.push(div);
                 if(active.length === 2) {
-                    if(active[0].innerText === active[1].innerText) active = [];
+                    if(active[0].innerText === active[1].innerText) { active = []; }
                     else setTimeout(() => { active.forEach(c => { c.classList.remove("flipped"); c.firstChild.style.visibility="hidden"}); active = [] }, 800);
                 }
             };
             board.appendChild(div);
         });
 
-        // TRIVIA LOGIC
+        // 2. TRIVIA (Untouched)
         const trivia = [{q: "What creature is the 'Unicorn of the Sea'?", a: ["Narwhal", "Fish"], c: 0}, {q: "What do fairies use to grow flowers?", a: ["Magic Pollen", "Dirt"], c: 0}];
         let qIdx = 0;
         function loadQ() {
@@ -87,11 +89,21 @@
         }
         loadQ();
 
-        // COLOR BY NUMBER LOGIC
+        // 3. COLOR BY NUMBER (10x10 + Palette)
+        const colors = ["#ff4757", "#ff7f50", "#ffa502", "#2ed573", "#1e90ff", "#9b59b6", "#ed4c67", "#f1c40f", "#ffffff", "#000000"];
+        let selectedColor = colors[0];
+        const palette = document.getElementById("playful-palette");
+        colors.forEach(c => {
+            const btn = document.createElement("div");
+            btn.style.width = "30px"; btn.style.height = "30px"; btn.style.backgroundColor = c;
+            btn.style.borderRadius = "50%"; btn.style.cursor = "pointer"; btn.style.border = "2px solid #fff";
+            btn.onclick = () => selectedColor = c;
+            palette.appendChild(btn);
+        });
         const grid = document.getElementById("playful-ocean-grid");
-        for(let i=0; i<144; i++) {
-            const p = document.createElement("div"); p.className = "cbn-pixel"; p.innerText = (i%12)+1;
-            p.onclick = () => p.style.backgroundColor = "#ed4c67";
+        for(let i=0; i<100; i++) {
+            const p = document.createElement("div"); p.className = "cbn-pixel";
+            p.onclick = () => p.style.backgroundColor = selectedColor;
             grid.appendChild(p);
         }
     </script>
