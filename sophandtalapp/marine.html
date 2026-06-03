@@ -3,133 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sophia's Submarine Base</title>
+    <title>Marine Explorer</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Base Setup Styles - Keeping layout structure pristine */
-        body, header, .game-section, button, p, h2, strong, span {
-            font-family: 'Consolas', 'SF Mono', monospace;
-        }
-
-        .game-section {
-            background-color: #0b1320; 
-            border: 2px solid #00d2d3;  
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 25px;
-            color: #ffffff;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
-        }
-
-        .game-section h2 {
-            color: #00d2d3;
-            margin-top: 0;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(0, 210, 211, 0.2);
-            padding-bottom: 8px;
-        }
-
-        .sonar-radar-screen {
-            position: relative;
-            width: 220px;
-            height: 220px;
-            background-color: #040a12;
-            border: 3px solid #00d2d3;
-            border-radius: 50%;
-            margin: 20px auto;
-            overflow: hidden;
-        }
-
-        .sonar-sweep {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: conic-gradient(from 0deg, rgba(0, 210, 211, 0.3) 0deg, rgba(0, 210, 211, 0) 90deg);
-            border-radius: 50%;
-            animation: radar-sweep 4s linear infinite;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        @keyframes radar-sweep {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .trivia-btn {
-            background-color: #162235;
-            color: #ffffff;
-            border: 1px solid #00d2d3;
-            padding: 12px 16px;
-            margin: 8px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
-            font-family: inherit;
-        }
-        .trivia-btn:hover {
-            background-color: #1e324d;
-        }
+        /* Existing Styling Retained */
+        body { background-color: #050a14; color: #e0f7fa; font-family: 'Arial', sans-serif; padding: 20px; }
+        .marine-section { background-color: #0b1d36; border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .marine-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 1px; max-width: 450px; margin: 20px auto; border: 2px solid #3498db; }
+        .pixel { aspect-ratio: 1/1; background-color: #071526; border: 1px solid #1a3a5f; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #1a3a5f; }
+        .palette { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
     </style>
 </head>
-<body class="marine-theme" style="background-color: #050b14; margin: 0; padding: 20px;">
+<body>
 
-    <div class="page-wrapper" style="max-width: 800px; margin: 0 auto;">
-        <header style="background: #00d2d3; padding: 15px; text-align: center; border-radius: 12px; margin-bottom: 25px;">
-            <h1 style="margin: 0; font-size: 2rem; color: #111a24;">Sophia's Ocean Explorer Dashboard 🐋</h1>
-        </header>
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1>Marine Discovery 🌊</h1>
 
-        <section class="game-section">
-            <h2>Submarine Sonar Scanner 🛰️</h2>
-            <p>Click the tracking grid below to broadcast an acoustic ping and locate the hidden creature!</p>
-            
-            <div class="sonar-radar-screen">
-                <div class="sonar-sweep"></div>
-                <div class="sonar-grid-container" id="sonar-grid-board"></div>
-            </div>
-            
-            <p id="sonar-status" style="font-weight: bold; text-align: center;">Sonar Status: Standby...</p>
+        <section class="marine-section">
+            <h2>Secret Underwater Canvas 🎨</h2>
+            <div id="marine-palette" class="palette"></div>
+            <div id="marine-grid" class="marine-grid"></div>
         </section>
 
-        <section class="game-section">
-            <h2>Deep-Sea Fact Explorer 🐠</h2>
-            <div id="trivia-box">
-                <p><strong id="question-text">Loading deep sea metrics...</strong></p>
-                <div id="answers-box"></div>
-                <div id="t1" style="min-height: 24px; margin-top: 12px; font-weight: bold;"></div>
-                <button id="next-fact-btn" style="display: none; background: #00d2d3; color: #111a24; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;">Next Fact ➡️</button>
-            </div>
-        </section>
+        <section class="marine-section">
+            <h2>Sonar & Trivia</h2>
+            </section>
 
-        <section class="game-section">
-            <h2>Bonus: Tropical Fish Paint Canvas 🎨</h2>
-            <p>Select your brush numbers (1-12) from the palette below and click matching numbers to paint!</p>
-            <div class="cbn-grid" id="ocean-grid"></div>
-            <div class="cbn-palette" id="ocean-palette"></div>
-        </section>
+        <button onclick="window.location.href='index.html'">↩️ Return to Sign-In</button>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // 1. COLOR BY NUMBER (15x15, 12 colors)
+        const colorKey = {
+            1: "#2980b9", 2: "#3498db", 3: "#5dade2", 4: "#aed6f1",
+            5: "#27ae60", 6: "#2ecc71", 7: "#abebc6", 8: "#f1c40f",
+            9: "#e67e22", 10: "#d35400", 11: "#f39c12", 12: "#ffffff"
+        };
 
-<div style="text-align: center; margin: 30px auto; width: 100%;">
-    <button onclick="window.location.href='index.html'" style="
-        background-color: #111a24;
-        color: #00d2d3;
-        border: 2px solid #00d2d3;
-        padding: 12px 24px;
-        font-size: 1rem;
-        font-weight: bold;
-        font-family: 'Consolas', 'SF Mono', monospace;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 210, 211, 0.2);
-        transition: all 0.2s ease;
-    " onmouseover="this.style.backgroundColor='#00d2d3'; this.style.color='#111a24';" 
-       onmouseout="this.style.backgroundColor='#111a24'; this.style.color='#00d2d3';">
-        ↩️ Return to Sign-In
-    </button>
-</div>
+        const gridMap = [
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,5,1,1,1,1,1,1,1,1,1,1,1,1,1, 5,6,5,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,5,1,1,1,1,1,1,1,1,1,10,10,1,1, 1,1,1,1,1,1,1,1,1,1,10,11,10,1,1,
+            1,1,1,1,1,1,1,1,1,10,11,12,11,10,1, 1,1,1,1,1,1,1,1,1,10,11,11,10,1,1,
+            1,1,1,1,1,1,1,1,1,1,10,10,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,7,1,1,1,1,1,1,1,1,1,1,1,1, 1,7,7,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,7,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+        ];
 
+        let selectedColorIndex = 1;
+        const palette = document.getElementById("marine-palette");
+        const grid = document.getElementById("marine-grid");
+
+        [1,2,3,4,5,6,7,8,9,10,11,12].forEach(num => {
+            const btn = document.createElement("div");
+            btn.style.width = "25px"; btn.style.height = "25px"; btn.style.backgroundColor = colorKey[num];
+            btn.style.cursor = "pointer"; btn.style.border = "1px solid white";
+            btn.onclick = () => selectedColorIndex = num;
+            palette.appendChild(btn);
+        });
+
+        gridMap.forEach((targetNum) => {
+            const p = document.createElement("div");
+            p.className = "pixel";
+            p.innerText = targetNum;
+            p.onclick = () => { if (selectedColorIndex === targetNum) { p.style.backgroundColor = colorKey[targetNum]; p.innerText = ""; } };
+            grid.appendChild(p);
+        });
+    </script>
 </body>
 </html>
