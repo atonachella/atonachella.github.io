@@ -55,9 +55,24 @@
 
     <script>
         // 1. MEMORY GAME (24 CARDS)
+        // 1. MEMORY GAME (24 CARDS + MAGIC SOUNDS)
         const board = document.getElementById("memory-board");
         const icons = ["🦄","🦄","🧜‍♀️","🧜‍♀️","🧚‍♀️","🧚‍♀️","👑","👑","🌈","🌈","✨","✨","🌸","🌸","🦋","🦋","🍭","🍭","💎","💎","🎀","🎀","🌟","🌟"].sort(() => 0.5 - Math.random());
         let active = [];
+
+        // Audio Engine
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freqStart, freqEnd, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + duration);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+
         icons.forEach(icon => {
             const div = document.createElement("div");
             div.className = "memory-card";
@@ -68,8 +83,13 @@
                 div.firstChild.style.visibility = "visible";
                 active.push(div);
                 if(active.length === 2) {
-                    if(active[0].innerText === active[1].innerText) { active = []; }
-                    else setTimeout(() => { active.forEach(c => { c.classList.remove("flipped"); c.firstChild.style.visibility="hidden"}); active = [] }, 800);
+                    if(active[0].innerText === active[1].innerText) {
+                        playSound(1200, 1800, 0.3); // Magical Chime
+                        active = [];
+                    } else {
+                        playSound(400, 200, 0.2); // Mismatch Bloop
+                        setTimeout(() => { active.forEach(c => { c.classList.remove("flipped"); c.firstChild.style.visibility="hidden"}); active = [] }, 800);
+                    }
                 }
             };
             board.appendChild(div);
