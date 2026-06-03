@@ -1,290 +1,95 @@
 /* ==========================================================================
-   GLOBAL DESIGN SYSTEM
+   FUNCTIONAL LAYOUT GRIDS & PALETTES FOR CORE MECHANICS
    ========================================================================== */
-:root {
-    --font-main: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-    --sophia-blue: #0984e3;
-    --sophia-dark: #0b132b;
-    --natalia-purple: #5c2d91;
-    --natalia-pink: #fd79a8;
-    --magic-gold: #fdcb6e;
-}
 
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    font-family: var(--font-main);
-    background-color: #f5f6fa;
-    color: #2f3542;
-}
-
-.page-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    padding-bottom: 80px;
-}
-
-.dashboard-header {
-    text-align: center;
-    padding: 30px 20px;
-    color: white;
-    width: 100%;
-    box-sizing: border-box;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.game-section {
-    background: white;
-    width: 90%;
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 25px;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-    text-align: center;
-    box-sizing: border-box;
-}
-
-/* ==========================================================================
-   INDEX.HTML: 50/50 DIAGONAL SPLIT
-   ========================================================================== */
-.split-body {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, var(--sophia-blue) 50%, var(--natalia-purple) 50%);
-    overflow: hidden;
-    position: relative;
-}
-
-.portal-card {
-    background: rgba(255, 255, 255, 0.98);
-    padding: 40px 35px;
-    border-radius: 32px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
-    z-index: 10;
-    border: 4px solid var(--magic-gold);
-}
-
-.portal-dropdown, .portal-input {
-    width: 100%;
-    padding: 14px 16px;
-    font-size: 1.1rem;
-    font-family: inherit;
-    border: 3px solid #ced6e0;
-    border-radius: 16px;
-    outline: none;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-    background-color: #f8f9fa;
-}
-
-.portal-button {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: white;
-    background: linear-gradient(45deg, #2ecc71, #00b894);
-    border: none;
-    border-radius: 18px;
-    cursor: pointer;
-    box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
-}
-
-/* ==========================================================================
-   SOPHIA'S SUBMARINE & SONAR THEME
-   ========================================================================== */
-.marine-theme {
-    background: radial-gradient(circle at top, #102a43, var(--sophia-dark));
-    color: #e0f2fe;
-}
-
-.sonar-radar-screen {
-    width: 250px;
-    height: 250px;
-    margin: 20px auto;
-    border: 5px solid #00d2d3;
-    border-radius: 50%;
-    background: #011627;
-    position: relative;
-    overflow: hidden;
-}
-
-.sonar-sweep {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: conic-gradient(from 0deg, rgba(0, 210, 211, 0.4) 0deg, transparent 90deg);
-    transform-origin: center;
-    animation: sweep 4s linear infinite;
-    pointer-events: none;
-}
-
-@keyframes sweep {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
+/* Sonar Grid Matrix layout setup */
 .sonar-grid-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
     gap: 4px;
-    padding: 15px;
-}
-
-.sonar-ping-node {
-    aspect-ratio: 1;
-    background: rgba(0, 210, 211, 0.1);
-    border: 1px solid rgba(0, 210, 211, 0.3);
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ==========================================================================
-   NATALIA'S MAJESTIC CARD FLIP THEME
-   ========================================================================== */
-.magic-theme {
-    background: linear-gradient(to bottom, #2d142c, #510a32);
-    color: #fff0f5;
-}
-
-.memory-board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    max-width: 400px;
-    margin: 20px auto;
-}
-
-.memory-card {
-    aspect-ratio: 1;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    cursor: pointer;
-}
-
-.memory-card.flipped {
-    transform: rotateY(180deg);
-}
-
-.card-front, .card-back {
-    position: absolute;
     width: 100%;
     height: 100%;
-    backface-visibility: hidden;
-    border-radius: 12px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Individual sonar coordinate nodes */
+.sonar-cell {
+    border: 1px solid rgba(0, 210, 211, 0.2);
+    background-color: rgba(4, 10, 18, 0.6);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-}
-
-.card-back {
-    background: linear-gradient(135deg, var(--natalia-pink), var(--natalia-purple));
-    border: 2px solid var(--magic-gold);
-    color: white;
-}
-
-.card-front {
-    background: #ffffff;
-    transform: rotateY(180deg);
-    border: 2px solid var(--magic-gold);
-}
-
-/* ==========================================================================
-   TRIVIA & INTERACTIVE FEEDBACK STYLING
-   ========================================================================== */
-.trivia-btn {
-    background: #f1f2f6;
-    border: 2px solid #ced6e0;
-    padding: 12px 20px;
-    margin: 8px 0;
-    width: 100%;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 1rem;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.15s ease;
-}
-
-.trivia-btn:hover {
-    background: #dfe4ea;
-}
-
-.trivia-feedback {
-    margin-top: 15px;
-    font-weight: bold;
     font-size: 1.1rem;
 }
-
-/* ==========================================================================
-   COLOR BY NUMBER CANVAS (FIXED & RESPONSIVE)
-   ========================================================================== */
-.cbn-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(12, 1fr);
-    gap: 1px;
-    background-color: #dcdde1;
-    border: 4px solid #b2bec3;
-    border-radius: 14px;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    margin-bottom: 24px;
+.sonar-cell:hover {
+    background-color: rgba(0, 210, 211, 0.2);
+    border-color: #00d2d3;
 }
 
-.cbn-cell {
-    background-color: #fafafa;
+/* Color By Number canvas scaling dimensions */
+.cbn-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    max-width: 320px;
+    margin: 20px auto;
+    background-color: #050b14;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed #00d2d3;
+}
+
+/* Traceable paint target coordinates */
+.cbn-pixel {
+    aspect-ratio: 1 / 1;
+    background-color: #152233;
+    border: 1px solid #243b59;
+    color: #57606f;
+    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    font-weight: 800;
-    color: #95a5a6;
     cursor: pointer;
+    border-radius: 4px;
     user-select: none;
-    -webkit-user-select: none;
+    font-size: 0.9rem;
+}
+.cbn-pixel:hover {
+    filter: brightness(1.3);
+    border-color: #00d2d3;
 }
 
+/* Paint brush selector array alignment */
 .cbn-palette {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px;
 }
 
-.cbn-color-swatch {
-    width: 42px;
-    height: 42px;
+/* Circular paint asset switches */
+.palette-swatch {
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #ffffff;
     font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
     cursor: pointer;
-    border: 3px solid transparent;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.cbn-color-swatch.active {
-    border-color: #2f3542;
-    transform: scale(1.15);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: transform 0.15s ease;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    border: 2px solid transparent;
 }

@@ -1,187 +1,185 @@
-/**
- * ==========================================================================
- * AUDIO ENGINE: SYNTHESIZED ELECTRONIC SONAR PING
- * ==========================================================================
- */
-function playSonarPingSound() {
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        // Classic high-pitched submarine sonar signature
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, ctx.currentTime); // High A note
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.4); 
-        
-        // Smooth audio decay to simulate an underwater echo echo
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.4);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.start();
-        osc.stop(ctx.currentTime + 1.4);
-    } catch (error) {
-        console.log("Audio playback blocked until user interacts with the page.");
-    }
-}
+document.addEventListener("DOMContentLoaded", () => {
+    // ==========================================
+    // GAME 1: SONAR RADAR SCANNER ENGINE
+    // ==========================================
+    const sonarGrid = document.getElementById("sonar-grid-board");
+    const sonarStatus = document.getElementById("sonar-status");
+    const sonarAudio = document.getElementById("sonar-sound") || document.getElementById("sonar-ping");
 
-/**
- * ==========================================================================
- * GAME MODULE 1: SOPHIA'S SUBMARINE SONAR SCANNER
- * ==========================================================================
- */
-function initSonarGame() {
-    const container = document.getElementById('sonar-grid-board');
-    if (!container) return; // Guard clause to prevent crashing on other pages
+    if (sonarGrid) {
+        const gridSize = 5; // 5x5 Grid
+        const animalNames = ["🐋 Blue Whale", "🐬 Dolphin", "🐢 Sea Turtle", "🐙 Octopus", "🦈 Great White"];
+        const hiddenAnimal = animalNames[Math.floor(Math.random() * animalNames.length)];
+        const targetRow = Math.floor(Math.random() * gridSize);
+        const targetCol = Math.floor(Math.random() * gridSize);
 
-    container.innerHTML = ''; // Clear out any stale nodes
-    
-    const targetX = Math.floor(Math.random() * 5);
-    const targetY = Math.floor(Math.random() * 5);
-    const creatures = ['🐋 Blue Whale!', ' Squid!', '🐬 Playful Dolphin!', '🦈 Friendly Shark!'];
-    const chosenCreature = creatures[Math.floor(Math.random() * creatures.length)];
+        sonarGrid.innerHTML = ""; // Clear placeholder data
 
-    for (let r = 0; r < 5; r++) {
-        for (let c = 0; c < 5; c++) {
-            const block = document.createElement('div');
-            block.className = 'sonar-ping-node';
-            
-            block.addEventListener('click', () => {
-                // Trigger the electronic audio ping on click
-                playSonarPingSound();
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                const cell = document.createElement("div");
+                cell.classList.add("sonar-cell");
                 
-                if (r === targetY && c === targetX) {
-                    block.textContent = '👾';
-                    block.style.background = '#2ecc71';
-                    document.getElementById('sonar-status').innerHTML = `<strong>Sonar Lock Status:</strong> Found a ${chosenCreature}`;
-                } else {
-                    const distance = Math.abs(r - targetY) + Math.abs(c - targetX);
-                    block.style.background = 'rgba(235, 94, 85, 0.2)';
-                    if (distance <= 2) {
-                        block.textContent = '🟡';
-                        document.getElementById('sonar-status').textContent = "Pinger Status: Warm Signal Detected Nearby!";
-                    } else {
-                        block.textContent = '🔵';
-                        document.getElementById('sonar-status').textContent = "Pinger Status: Cold Water. Scan elsewhere!";
+                cell.addEventListener("click", () => {
+                    // Trigger Audio Ping safely
+                    if (sonarAudio) {
+                        sonarAudio.currentTime = 0;
+                        sonarAudio.play().catch(err => console.log("Audio waiting for user interaction."));
                     }
-                }
-            });
-            container.appendChild(block);
+
+                    // Create visual ripple effect on click
+                    cell.style.backgroundColor = "rgba(0, 210, 211, 0.4)";
+                    
+                    // Calculate absolute distance to target animal
+                    const distance = Math.abs(r - targetRow) + Math.abs(c - targetCol);
+                    
+                    if (distance === 0) {
+                        cell.style.backgroundColor = "#2ecc71";
+                        cell.innerHTML = "🎯";
+                        sonarStatus.innerHTML = `Sonar Status: SUCCESS! Found a ${hiddenAnimal}!`;
+                    } else if (distance <= 2) {
+                        sonarStatus.innerHTML = "Sonar Status: Ping returns STRONG signature nearby! 🔥";
+                    } else {
+                        sonarStatus.innerHTML = "Sonar Status: Weak echo... adjusting frequencies. 🌊";
+                    }
+                });
+                sonarGrid.appendChild(cell);
+            }
         }
     }
-}
 
-/**
- * ==========================================================================
- * GAME MODULE 2: NATALIA'S MAJESTIC ANIMAL CARD FLIP
- * ==========================================================================
- */
-function initCardFlipGame() {
-    const board = document.getElementById('memory-board');
-    if (!board) return;
+    // ==========================================
+    // GAME 2: DEEP-SEA TRIVIA ENGINE
+    // ==========================================
+    const questionText = document.getElementById("question-text");
+    const answersBox = document.getElementById("answers-box");
+    const feedbackBox = document.getElementById("t1");
+    const nextBtn = document.getElementById("next-fact-btn");
 
-    board.innerHTML = '';
-
-    const items = ['🦄', '🦄', '🦁', '🦁', '🐉', '🐉', '🦅', '🦅', '🦊', '🦊', '🐼', '🐼', '🐺', '🐺', '✨', '✨'];
-    items.sort(() => Math.random() - 0.5);
-
-    let firstCard = null;
-    let secondCard = null;
-    let lockBoard = false;
-
-    items.forEach(emoji => {
-        const card = document.createElement('div');
-        card.className = 'memory-card';
-        card.innerHTML = `
-            <div class="card-back">⭐</div>
-            <div class="card-front">${emoji}</div>
-        `;
-
-        card.addEventListener('click', () => {
-            if (lockBoard || card === firstCard || card.classList.contains('flipped')) return;
-
-            card.classList.add('flipped');
-
-            if (!firstCard) {
-                firstCard = card;
-                return;
+    if (questionText && answersBox) {
+        const oceanFacts = [
+            {
+                q: "How much of Earth's volcanic activity happens underwater?",
+                a: ["Around 10%", "Roughly 50%", "Over 80%", "None at all"],
+                correct: 2,
+                fact: "Over 80% of volcanic eruptions happen deep beneath the ocean surface!"
+            },
+            {
+                q: "Why is the deep ocean completely pitch black?",
+                a: ["Sunlight can't travel past 650 feet", "The water is too dirty", "Fish absorb all the light", "Plants block the sun"],
+                correct: 0,
+                fact: "Sunlight fades rapidly, leaving anything deeper than 200 meters (650 feet) in absolute darkness."
+            },
+            {
+                q: "How do deep-sea creatures glow in the dark?",
+                a: ["They swallow flashlights", "Bioluminescence chemical reactions", "They reflect the moon", "Static electricity"],
+                correct: 1,
+                fact: "They use bioluminescence, producing their own light to hunt, communicate, and hide!"
+            },
+            {
+                q: "What color is the blood of a giant deep-sea octopus?",
+                a: ["Red", "Blue", "Green", "Transparent"],
+                correct: 1,
+                fact: "Octopus blood contains a copper-rich protein called hemocyanin, which turns their blood clear blue!"
             }
+        ];
 
-            secondCard = card;
-            lockBoard = true;
+        let currentFactIndex = 0;
 
-            const isMatch = firstCard.querySelector('.card-front').textContent === secondCard.querySelector('.card-front').textContent;
-            if (isMatch) {
-                firstCard = null;
-                secondCard = null;
-                lockBoard = false;
-            } else {
-                setTimeout(() => {
-                    firstCard.classList.remove('flipped');
-                    secondCard.classList.remove('flipped');
-                    firstCard = null;
-                    secondCard = null;
-                    lockBoard = false;
-                }, 1000);
-            }
-        });
-
-        board.appendChild(card);
-    });
-}
-
-/**
- * ==========================================================================
- * GAME MODULE 3: COLOR BY NUMBER ENGINE
- * ==========================================================================
- */
-function initializeColorByNumber(config) {
-    const gridNode = document.getElementById(config.gridId);
-    const paletteNode = document.getElementById(config.paletteId);
-    if (!gridNode || !paletteNode) return;
-
-    gridNode.innerHTML = '';
-    paletteNode.innerHTML = '';
-
-    let selectedColorNumber = null;
-
-    Object.keys(config.paletteColors).forEach(num => {
-        const swatch = document.createElement('div');
-        swatch.className = 'cbn-color-swatch';
-        swatch.style.backgroundColor = config.paletteColors[num];
-        swatch.textContent = num;
-        
-        swatch.addEventListener('click', () => {
-            paletteNode.querySelectorAll('.cbn-color-swatch').forEach(s => s.classList.remove('active'));
-            swatch.classList.add('active');
-            selectedColorNumber = parseInt(num);
-        });
-        paletteNode.appendChild(swatch);
-    });
-
-    config.layoutMap.forEach(row => {
-        row.forEach(targetColorNum => {
-            const square = document.createElement('div');
-            square.className = 'cbn-cell';
-            square.textContent = targetColorNum;
+        function displayFact() {
+            feedbackBox.innerHTML = "";
+            if (nextBtn) nextBtn.style.display = "none";
             
-            const handlePaint = () => {
-                if (selectedColorNumber === targetColorNum) {
-                    square.style.backgroundColor = config.paletteColors[targetColorNum];
-                    square.style.color = config.paletteColors[targetColorNum];
-                    square.style.border = `1px solid ${config.paletteColors[targetColorNum]}`;
+            let currentData = oceanFacts[currentFactIndex];
+            questionText.innerText = currentData.q;
+            answersBox.innerHTML = "";
+
+            currentData.a.forEach((option, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "trivia-btn";
+                btn.innerText = option;
+                btn.onclick = () => {
+                    if (idx === currentData.correct) {
+                        feedbackBox.innerHTML = `<span style="color: #2ecc71;">✅ Correct! ${currentData.fact}</span>`;
+                        if (nextBtn) nextBtn.style.display = "inline-block";
+                    } else {
+                        feedbackBox.innerHTML = `<span style="color: #e74c3c;">❌ Systems re-calibrating. Try another tracking answer!</span>`;
+                    }
+                };
+                answersBox.appendChild(btn);
+            });
+        }
+
+        // Global bridge so HTML button onclick attribute functions correctly
+        window.loadNextFact = function() {
+            currentFactIndex = (currentFactIndex + 1) % oceanFacts.length;
+            displayFact();
+        };
+
+        displayFact(); // Initialize first trivia question
+    }
+
+    // ==========================================
+    // GAME 3: COLOR BY NUMBER ENGINE
+    // ==========================================
+    const colorGrid = document.getElementById("ocean-grid");
+    const colorPalette = document.getElementById("ocean-palette");
+
+    if (colorGrid && colorPalette) {
+        // Simple fish pixel map configuration (0=water, 1=orange fish, 2=yellow stripes)
+        const pixelLayout = [
+            0, 0, 1, 1, 0, 0,
+            0, 1, 1, 2, 1, 0,
+            1, 1, 2, 1, 1, 1,
+            0, 1, 1, 1, 1, 0,
+            0, 0, 1, 1, 0, 0
+        ];
+
+        const colors = {
+            0: { name: "Deep Water Blue", code: "#1e375a" },
+            1: { name: "Clownfish Orange", code: "#ff7f50" },
+            2: { name: "Neon Yellow", code: "#f1c40f" }
+        };
+
+        let selectedColorKey = null;
+
+        // Render Palette Buttons
+        colorPalette.innerHTML = "";
+        Object.keys(colors).forEach(key => {
+            const swatch = document.createElement("div");
+            swatch.className = "palette-swatch";
+            swatch.style.backgroundColor = colors[key].code;
+            swatch.innerText = key;
+            swatch.title = colors[key].name;
+            
+            swatch.onclick = () => {
+                document.querySelectorAll(".palette-swatch").forEach(s => s.style.transform = "scale(1)");
+                swatch.style.transform = "scale(1.2)";
+                swatch.style.border = "2px solid #ffffff";
+                selectedColorKey = key;
+            };
+            colorPalette.appendChild(swatch);
+        });
+
+        // Render Canvas Grid
+        colorGrid.innerHTML = "";
+        pixelLayout.forEach(numberValue => {
+            const pixel = document.createElement("div");
+            pixel.className = "cbn-pixel";
+            pixel.innerText = numberValue;
+
+            pixel.onclick = () => {
+                if (selectedColorKey === null) {
+                    alert("Select a brush code number from the palette first!");
+                    return;
+                }
+                if (parseInt(selectedColorKey) === numberValue) {
+                    pixel.style.backgroundColor = colors[numberValue].code;
+                    pixel.style.color = "transparent"; // Hide helper number text on success
+                    pixel.style.border = "none";
                 }
             };
-
-            square.addEventListener('click', handlePaint);
-            square.addEventListener('touchstart', handlePaint, { passive: true });
-            gridNode.appendChild(square);
+            colorGrid.appendChild(pixel);
         });
-    });
-}
+    }
+});
