@@ -3,30 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Secret Home Portal 🌟🌊</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Soph and Tal App</title>
+    <style>
+        /* ==========================================================================
+           FUTURISTIC DIAGONAL SPLIT BACKGROUND
+           ========================================================================== */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Sleek, high-tech font system */
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            /* Sophia's Deep Tech Blue vs Natalia's Bright Cyber Magenta */
+            background: linear-gradient(135deg, #0a192f 50%, #ff007f 50%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Subtle cybernetic background accent grid */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        /* ==========================================================================
+           DARK GLASS INTERFACE CARD (MATURE & PREMIUM TECH VIBE)
+           ========================================================================== */
+        .portal-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .portal-title {
+            margin: 0 0 30px 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        /* ==========================================================================
+           SLICK INPUTS & DROPDOWNS
+           ========================================================================== */
+        .portal-dropdown, .portal-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            outline: none;
+            color: #ffffff;
+            box-sizing: border-box;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Customize select arrow option spacing for modern browsers */
+        .portal-dropdown option {
+            background: #1e293b;
+            color: #ffffff;
+        }
+
+        .portal-dropdown:focus, .portal-input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        /* ==========================================================================
+           ACTION BUTTON & ALERTS
+           ========================================================================== */
+        .portal-button {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: #0f172a;
+            background: #ffffff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+        }
+
+        .portal-button:hover {
+            transform: translateY(-1px);
+            background: #f1f5f9;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+        }
+
+        .portal-button:active {
+            transform: translateY(1px);
+        }
+
+        .error-message {
+            color: #f87171;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 20px;
+            min-height: 20px;
+        }
+    </style>
 </head>
-<body class="split-body">
+<body>
 
     <div class="portal-card">
-        <h1 style="margin: 0 0 20px 0; font-size: 2.2rem; color: #2f3542;">Secret Dashboard Sign In</h1>
+        <h1 class="portal-title">Welcome to the<br>Soph and Tal app</h1>
         
-        <div style="text-align: left; margin-bottom: 15px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Select Adventurer:</label>
+        <div class="input-group">
+            <label class="input-label" for="childSelect">Select User</label>
             <select id="childSelect" class="portal-dropdown">
-                <option value="" disabled selected>Who is signing in? ...</option>
-                <option value="sophia">Sophia 🌊 (Ocean Base)</option>
-                <option value="natalia">Natalia 🪄 (Magic Base)</option>
+                <option value="" disabled selected>Choose your profile...</option>
+                <option value="sophia">Sophia (Deep Blue)</option>
+                <option value="natalia">Natalia (Bright Magenta)</option>
             </select>
         </div>
 
-        <div style="text-align: left; margin-bottom: 25px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Enter Passkey:</label>
-            <input type="password" id="childCode" class="portal-input" placeholder="Type password here...">
+        <div class="input-group">
+            <label class="input-label" for="childCode">Access Code</label>
+            <input type="password" id="childCode" class="portal-input" placeholder="••••••••">
         </div>
 
-        <button onclick="verifyAndLogin()" class="portal-button">Launch Dashboard 🚀</button>
-        <div id="errorBox" style="color: #e74c3c; font-weight: bold; margin-top: 15px; min-height: 20px;"></div>
+        <button onclick="verifyAndLogin()" class="portal-button">Sign In</button>
+        
+        <div id="errorBox" class="error-message"></div>
     </div>
 
     <script>
@@ -34,30 +176,8 @@
             const user = document.getElementById('childSelect').value;
             const pass = document.getElementById('childCode').value.trim();
             const err = document.getElementById('errorBox');
+            
             err.textContent = "";
 
             if (!user) {
-                err.textContent = "Please choose a name first!";
-                return;
-            }
-
-            if (user === 'sophia') {
-                if (pass === 'ocean10') {
-                    window.location.href = 'marine.html';
-                } else {
-                    err.textContent = "Wrong passcode for Sophia's Ocean!";
-                }
-            } else if (user === 'natalia') {
-                if (pass === 'magic7') {
-                    window.location.href = 'playful.html';
-                } else {
-                    err.textContent = "Wrong passcode for Natalia's Magic!";
-                }
-            }
-        }
-        document.getElementById('childCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') verifyAndLogin();
-        });
-    </script>
-</body>
-</html>
+                err.textContent = "
