@@ -76,3 +76,76 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     box-sizing: border-box;
 }
+
+
+/* ==========================================================================
+   NATALIA'S PLAYFUL THEME - UNIQUE LAYOUT EXTENSIONS
+   ========================================================================== */
+
+/* 12x12 Color-by-Number Board Rules (Keeps it separate from Sophia's 15x15) */
+.cbn-grid-playful {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 4px;
+    max-width: 420px;
+    margin: 20px auto;
+    background-color: #09040d;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed #ed4c67;
+}
+
+.cbn-grid-playful .cbn-pixel {
+    aspect-ratio: 1 / 1;
+    background-color: #241233;
+    border: 1px solid #3b1d54;
+    color: #a58bb3;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    user-select: none;
+    font-size: 0.75rem;
+    transition: all 0.15s ease;
+}
+
+.cbn-grid-playful .cbn-pixel:hover {
+    filter: brightness(1.4);
+    border-color: #ff6b81;
+    box-shadow: 0 0 8px rgba(255, 107, 129, 0.5);
+}
+
+/* 12 Swatch Magical Color Palette Elements */
+.cbn-palette-playful {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px auto 0 auto;
+    padding: 10px;
+    max-width: 500px;
+}
+
+.cbn-palette-playful .palette-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+    transition: transform 0.1s ease;
+}
+
+/* Memory Card Interaction Hover Effects */
+.memory-card:hover {
+    background-color: #3b1d54;
+    border-color: #ff6b81;
+    transform: scale(1.05);
+}

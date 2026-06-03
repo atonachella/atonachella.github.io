@@ -201,4 +201,216 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         } catch (err) { console.error("Color-by-number initialization paused:", err); }
     })();
+
+// ==========================================
+    // NATALIA'S MODULE 1: MAGICAL MATCH MEMORY MATRIX
+    // ==========================================
+    (() => {
+        try {
+            const board = document.getElementById("memory-board");
+            const status = document.getElementById("memory-status");
+            if (!board) return;
+
+            // 4 pairs of magical creatures (8 cards total)
+            const icons = ["🦄", "🦄", "🧜‍♀️", "🧜‍♀️", "🧚‍♀️", "🧚‍♀️", "👑", "👑"];
+            
+            // Randomize card order
+            icons.sort(() => 0.5 - Math.random());
+
+            let activeCards = [];
+            let solvedPairs = 0;
+
+            board.innerHTML = "";
+
+            icons.forEach((icon) => {
+                const card = document.createElement("div");
+                card.className = "memory-card";
+                card.innerText = icon;
+
+                card.addEventListener("click", () => {
+                    // Ignore clicks on already revealed or matched nodes
+                    if (card.classList.contains("flipped") || card.classList.contains("matched") || activeCards.length >= 2) {
+                        return;
+                    }
+
+                    // Reveal card
+                    card.classList.add("flipped");
+                    activeCards.push(card);
+
+                    // Check for match when two nodes are open
+                    if (activeCards.length === 2) {
+                        const [cardOne, cardTwo] = activeCards;
+
+                        if (cardOne.innerText === cardTwo.innerText) {
+                            // Hit! Mark as permanently matched
+                            cardOne.classList.add("matched");
+                            cardTwo.classList.add("matched");
+                            activeCards = [];
+                            solvedPairs++;
+                            status.innerText = `Matches Found: ${solvedPairs} / 4`;
+
+                            if (solvedPairs === 4) {
+                                status.innerHTML = "Matches Found: 4 / 4 - Magic Grid Complete! 🌟";
+                            }
+                        } else {
+                            // Miss! Flip back over after a short view delay
+                            setTimeout(() => {
+                                cardOne.classList.remove("flipped");
+                                cardTwo.classList.remove("flipped");
+                                activeCards = [];
+                            }, 800);
+                        }
+                    }
+                });
+
+                board.appendChild(card);
+            });
+        } catch (err) { console.error("Memory matrix initialization paused:", err); }
+    })();
+
+    // ==========================================
+    // NATALIA'S MODULE 2: ENCHANTED FACT TRIVIA
+    // ==========================================
+    (() => {
+        try {
+            const qText = document.getElementById("magic-question-text");
+            const aBox = document.getElementById("magic-answers-box");
+            const fBox = document.getElementById("t2");
+            const nBtn = document.getElementById("magic-next-btn");
+            if (!qText || !aBox) return;
+
+            const magicFacts = [
+                {
+                    q: "Which sea creature is known as the 'Unicorn of the Sea'?",
+                    a: ["The Narwhal", "The Starfish", "The Seahorse", "The Jellyfish"],
+                    c: 0,
+                    f: "Narwhals are real whales that grow a magnificent spiral tusk up to 10 feet long!"
+                },
+                {
+                    q: "What color is a flamingo when it is first born?",
+                    a: ["Bright Pink", "Neon Orange", "Fluffy Gray", "Light Blue"],
+                    c: 2,
+                    f: "Flamingos are born gray! They turn pink later from eating special algae and shrimp."
+                }
+            ];
+
+            let index = 0;
+
+            function showMagicQuestion() {
+                fBox.innerHTML = "";
+                if (nBtn) nBtn.style.display = "none";
+                const current = magicFacts[index];
+                qText.innerText = current.q;
+                aBox.innerHTML = "";
+
+                current.a.forEach((opt, idx) => {
+                    const btn = document.createElement("button");
+                    btn.className = "magic-trivia-btn";
+                    btn.innerText = opt;
+                    btn.addEventListener("click", () => {
+                        if (idx === current.c) {
+                            fBox.innerHTML = `<span style="color: #2ecc71;">✨ Correct! ${current.f}</span>`;
+                            if (nBtn) nBtn.style.display = "inline-block";
+                        } else {
+                            fBox.innerHTML = `<span style="color: #ed4c67;">❌ Charm fizzled. Try another tracking answer!</span>`;
+                        }
+                    });
+                    aBox.appendChild(btn);
+                });
+            }
+
+            if (nBtn) {
+                nBtn.addEventListener("click", () => {
+                    index = (index + 1) % magicFacts.length;
+                    showMagicQuestion();
+                });
+            }
+
+            showMagicQuestion();
+        } catch (err) { console.error("Magic trivia initialization paused:", err); }
+    })();
+
+    // ==========================================
+    // NATALIA'S MODULE 3: UNICORN PAINT CANVAS (12x12)
+    // ==========================================
+    (() => {
+        try {
+            const grid = document.getElementById("playful-ocean-grid");
+            const palette = document.getElementById("playful-ocean-palette");
+            if (!grid || !palette) return;
+
+            // 12 High-Gloss Magic Kingdom Color Tones
+            const magicColors = {
+                1: "#ff4757",  // Ruby Red
+                2: "#ff7f50",  // Coral
+                3: "#ffa502",  // Sun Gold
+                4: "#2ed573",  // Emerald
+                5: "#1e90ff",  // Sapphire
+                6: "#70a1ff",  // Sky Blue
+                7: "#9b59b6",  // Amethyst
+                8: "#ed4c67",  // Neon Pink
+                9: "#ff6b81",  // Pastel Rose
+                10: "#00d2d3", // Cyan Glow
+                11: "#f1c40f", // Pixie Yellow
+                12: "#ffffff", // Pure White
+                0: "#140b1c"   // Twilight Background
+            };
+
+            // Custom 12x12 Pixel Map Blueprint (144 pixels total)
+            const magicLayout = [
+                0,0,0,0,0,12,12,0,0,0,0,0,
+                0,0,0,0,12,11,11,12,0,0,0,0,
+                0,0,0,12,11,9,9,11,12,0,0,0,
+                0,0,12,11,9,8,8,9,11,12,0,0,
+                0,12,11,9,8,7,7,8,9,11,12,0,
+                12,11,9,8,7,6,6,7,8,9,11,12,
+                12,11,9,8,7,6,6,7,8,9,11,12,
+                0,12,11,9,8,7,7,8,9,11,12,0,
+                0,0,12,11,9,8,8,9,11,12,0,0,
+                0,0,0,12,11,9,9,11,12,0,0,0,
+                0,0,0,0,12,11,11,12,0,0,0,0,
+                0,0,0,0,0,12,12,0,0,0,0,0
+            ];
+
+            let activeColorKey = null;
+
+            // Render 12 Palette Options
+            palette.innerHTML = "";
+            Object.keys(magicColors).forEach(key => {
+                if (key == 0) return; 
+                const swatch = document.createElement("div");
+                swatch.className = "palette-swatch";
+                swatch.style.backgroundColor = magicColors[key];
+                swatch.innerText = key;
+                
+                if(["3","4","11","12","10"].includes(key)) swatch.style.color = "#000000";
+
+                swatch.addEventListener("click", () => {
+                    document.querySelectorAll(".cbn-palette-playful .palette-swatch").forEach(s => s.style.border = "none");
+                    swatch.style.border = "2px solid #ffffff";
+                    activeColorKey = key;
+                });
+                palette.appendChild(swatch);
+            });
+
+            // Render 12x12 Pixel Field
+            grid.innerHTML = "";
+            magicLayout.forEach(num => {
+                const pixel = document.createElement("div");
+                pixel.className = "cbn-pixel";
+                pixel.innerText = num;
+
+                pixel.addEventListener("click", () => {
+                    if (activeColorKey && parseInt(activeColorKey) === num) {
+                        pixel.style.backgroundColor = magicColors[num];
+                        pixel.style.color = "transparent";
+                        pixel.style.border = "none";
+                    }
+                });
+                grid.appendChild(pixel);
+            });
+        } catch (err) { console.error("Playful canvas initialization paused:", err); }
+    })();
+
+
 });
