@@ -28,14 +28,14 @@
         </section>
 
         <section class="magic-section">
-            <h2>Secret Heart Canvas 🎨</h2>
+            <h2>Secret Full-Canvas Art 🎨</h2>
             <div id="playful-palette" style="display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;"></div>
             <div class="cbn-grid-playful" id="playful-ocean-grid"></div>
         </section>
     </div>
 
     <script>
-        // 1. MEMORY GAME (24 CARDS + SOUNDS)
+        // 1. MEMORY GAME (Untouched)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(f1, f2, dur) {
             const osc = audioCtx.createOscillator();
@@ -76,12 +76,13 @@
             board.appendChild(div);
         });
 
-        // 2. COLOR BY NUMBER (10x10 Heart - 8 Colors)
+        // 2. COLOR BY NUMBER (10x10 Full Fill - 8 Colors)
+        // 1:DarkPurple, 2:Magenta, 3:LightPink, 4:BrightCyan, 5:Gold, 6:White, 7:BrightBlue, 8:Emerald
         const gridMap = [
-            0,0,1,1,0,0,1,1,0,0, 0,1,2,2,1,1,2,2,1,0, 1,2,2,2,2,2,2,2,2,1, 1,2,2,2,2,2,2,2,2,1, 0,1,2,2,2,2,2,2,1,0,
-            0,0,1,2,2,2,2,1,0,0, 0,0,0,1,2,2,1,0,0,0, 0,0,0,0,1,1,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0
+            1,1,1,1,2,2,1,1,1,1, 1,1,1,2,3,3,2,1,1,1, 1,1,2,3,3,3,3,2,1,1, 1,2,3,3,3,3,3,3,2,1, 2,2,3,3,4,4,3,3,2,2,
+            2,2,3,3,4,4,3,3,2,2, 1,2,3,5,5,5,5,3,2,1, 1,1,2,5,6,6,5,2,1,1, 1,1,1,7,7,7,7,1,1,1, 1,1,1,8,8,8,8,1,1,1
         ];
-        const colorKey = { 0: "#140b1c", 1: "#ff4757", 2: "#ff6b81", 3: "#ffa502", 4: "#2ed573", 5: "#1e90ff", 6: "#9b59b6", 7: "#f1c40f", 8: "#ffffff" };
+        const colorKey = { 1: "#241233", 2: "#ed4c67", 3: "#ff6b81", 4: "#00d2d3", 5: "#f1c40f", 6: "#ffffff", 7: "#1e90ff", 8: "#2ed573" };
         let selectedColorIndex = 1;
 
         const palette = document.getElementById("playful-palette");
@@ -98,7 +99,7 @@
         gridMap.forEach((targetNum) => {
             const p = document.createElement("div");
             p.className = "cbn-pixel";
-            p.innerText = targetNum > 0 ? targetNum : "";
+            p.innerText = targetNum;
             p.onclick = () => { if (selectedColorIndex === targetNum) { p.style.backgroundColor = colorKey[targetNum]; p.innerText = ""; } };
             grid.appendChild(p);
         });
