@@ -6,7 +6,7 @@
     <title>Soph and Tal App</title>
     <style>
         /* ==========================================================================
-           FUTURISTIC DIAGONAL SPLIT BACKGROUND
+           FUTURISTIC DIAGONAL SPLIT BACKGROUND (UNTOUCHED)
            ========================================================================== */
         body {
             margin: 0;
@@ -16,15 +16,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Sleek, high-tech font system */
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            /* Sophia's Deep Tech Blue vs Natalia's Bright Cyber Magenta */
             background: linear-gradient(135deg, #0a192f 50%, #ff007f 50%);
             overflow: hidden;
             position: relative;
         }
 
-        /* Subtle cybernetic background accent grid */
         body::before {
             content: '';
             position: absolute;
@@ -37,7 +34,7 @@
         }
 
         /* ==========================================================================
-           DARK GLASS INTERFACE CARD (MATURE & PREMIUM TECH VIBE)
+           DARK GLASS INTERFACE CARD (UNTOUCHED)
            ========================================================================== */
         .portal-card {
             background: rgba(15, 23, 42, 0.85);
@@ -80,9 +77,6 @@
             padding-left: 4px;
         }
 
-        /* ==========================================================================
-           SLICK INPUTS & DROPDOWNS
-           ========================================================================== */
         .portal-dropdown, .portal-input {
             width: 100%;
             padding: 14px 16px;
@@ -97,7 +91,6 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Customize select arrow option spacing for modern browsers */
         .portal-dropdown option {
             background: #1e293b;
             color: #ffffff;
@@ -109,9 +102,6 @@
             box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
         }
 
-        /* ==========================================================================
-           ACTION BUTTON & ALERTS
-           ========================================================================== */
         .portal-button {
             width: 100%;
             padding: 16px;
@@ -166,18 +156,52 @@
             <input type="password" id="childCode" class="portal-input" placeholder="••••••••">
         </div>
 
-        <button onclick="verifyAndLogin()" class="portal-button">Sign In</button>
+        <button id="signInBtn" class="portal-button">Sign In</button>
         
         <div id="errorBox" class="error-message"></div>
     </div>
 
     <script>
-        function verifyAndLogin() {
-            const user = document.getElementById('childSelect').value;
-            const pass = document.getElementById('childCode').value.trim();
-            const err = document.getElementById('errorBox');
-            
-            err.textContent = "";
+        document.getElementById('signInBtn').addEventListener('click', verifyAndLogin);
+        
+        document.getElementById('childCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyAndLogin();
+            }
+        });
 
-            if (!user) {
-                err.textContent = "
+        function verifyAndLogin() {
+            const userElement = document.getElementById('childSelect');
+            const codeElement = document.getElementById('childCode');
+            const errorElement = document.getElementById('errorBox');
+            
+            if (!userElement || !codeElement || !errorElement) return;
+
+            const selectedUser = userElement.value;
+            // .toLowerCase() prevents mobile auto-capitalization bugs from breaking the input
+            const enteredCode = codeElement.value.trim().toLowerCase();
+            
+            errorElement.textContent = "";
+
+            if (!selectedUser) {
+                errorElement.textContent = "Please select a user profile.";
+                return;
+            }
+
+            if (selectedUser === 'sophia') {
+                if (enteredCode === 'ocean10') {
+                    window.location.href = 'marine.html';
+                } else {
+                    errorElement.textContent = "Invalid access code for Sophia.";
+                }
+            } else if (selectedUser === 'natalia') {
+                if (enteredCode === 'magic7') {
+                    window.location.href = 'playful.html';
+                } else {
+                    errorElement.textContent = "Invalid access code for Natalia.";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
