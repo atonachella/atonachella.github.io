@@ -3,158 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome Home Adventure</title>
-    <style>
-:root {
-    /* Colors representing both girls */
-    --playful-purple: #9b5de5;
-    --marine-dark: #0a1912;
-    --neon-green: #00ff66;
-    --bright-yellow: #fee440;
-}
-
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-    overflow: hidden;
-}
-
-/* The Magic Diagonal Split Background */
-.split-screen {
-    display: flex;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, 
-                var(--playful-purple) 0%, 
-                var(--playful-purple) 50%, 
-                var(--marine-dark) 50%, 
-                var(--marine-dark) 100%);
-}
-
-/* Centralized Kid-Friendly Login Box */
-.central-login-card {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.95);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    border: 4px solid #fff;
-    text-align: center;
-    width: 320px;
-    z-index: 10;
-}
-
-.central-login-card h2 {
-    color: #4a0e4e;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.6rem;
-}
-
-/* Dropdown and Input Fields */
-.login-field {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    border: 2px solid #b39ddb;
-    border-radius: 12px;
-    box-sizing: border-box;
-    outline: none;
-    text-align: center;
-    font-family: inherit;
-}
-
-.login-field:focus {
-    border-color: var(--playful-purple);
-}
-
-/* Styled Sign-In Button with High-Contrast Hover Colors */
-.portal-btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    background-color: var(--playful-purple);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    box-shadow: 0 4px 0 #6c5ce7;
-    transition: all 0.2s ease;
-}
-
-/* Crisp, highly readable hover effect */
-.portal-btn:hover {
-    background-color: var(--bright-yellow);
-    color: #4a0e4e;
-    box-shadow: 0 4px 0 #fbc02d;
-}
-
-.portal-btn:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #fbc02d;
-}
-    </style>
+    <title>Welcome Home! 🏠</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="split-screen">
-    
-    <div class="central-login-card">
-        <h2>✨ Secret Portal Sign-In ✨</h2>
-        
-        <select id="kid-select" class="login-field">
-            <option value="" disabled selected>Who is signing in?</option>
-            <option value="7">7-Year-Old Explorer (Tal)</option>
-            <option value="10">10-Year-Old Commander (Soph)</option>
-        </select>
-        
-        <input type="password" id="secret-pass" class="login-field" placeholder="Secret Passcode" onkeypress="if(event.key === 'Enter') verifySecretLogin()">
-        
-        <button class="portal-btn" onclick="verifySecretLogin()">Unlock Portal! 🔑</button>
+    <div class="page-wrapper">
+        <div class="original-content-container" style="text-align: center; margin-top: 100px;">
+            <h1>Enter Your Code to Play!</h1>
+            
+            <div style="margin: 20px 0;">
+                <input type="password" id="childCode" placeholder="Enter code..." style="padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;">
+                <button onclick="checkAccessCode()" style="padding: 10px 20px; font-size: 16px; border-radius: 8px; background: #4b7bec; color: white; border: none; cursor: pointer;">Go!</button>
+            </div>
+        </div>
     </div>
 
-</div>
-
-<script>
-function verifySecretLogin() {
-    const kidSelection = document.getElementById('kid-select').value;
-    const passwordInput = document.getElementById('secret-pass').value.trim().toLowerCase();
-    
-    if (!kidSelection) {
-        alert("✨ Please select who you are from the dropdown menu first! ✨");
-        return;
-    }
-    
-    // Check 7-Year-Old Login
-    if (kidSelection === "7") {
-        if (passwordInput === "magic7") {
-            window.location.href = 'playful.html';
-        } else {
-            alert("🍭 Oops! That's not the magic passcode. Try again!");
-            document.getElementById('secret-pass').value = ''; 
+    <script>
+        // Place your existing continuity login verification code right here
+        function checkAccessCode() {
+            const code = document.getElementById('childCode').value.trim().toLowerCase();
+            
+            // Example Placeholder logic routing to separate pages based on code matching
+            if (code === 'sophia' || code === 'marine') {
+                window.location.href = 'marine.html';
+            } else if (code === 'natalia' || code === 'playful') {
+                window.location.href = 'playful.html';
+            } else {
+                alert('Try again, adventurer!');
+            }
         }
-    }
-    
-    // Check 10-Year-Old Login
-    if (kidSelection === "10") {
-        if (passwordInput === "ocean10") {
-            window.location.href = 'marine.html';
-        } else {
-            alert("❌ ACCESS DENIED. INVALID SUBMARINE CODES.");
-            document.getElementById('secret-pass').value = '';
-        }
-    }
-}
-</script>
-
+    </script>
 </body>
 </html>

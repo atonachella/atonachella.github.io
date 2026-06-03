@@ -1,0 +1,106 @@
+/* ==========================================================================
+   GLOBAL APP STYLES & CONTINUITY
+   ========================================================================== */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    background-color: #f5f6fa;
+}
+
+/* Base structural wrapper ensuring natural vertical layout flow */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Placeholder space for your existing custom content styles */
+.original-content-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   COLOR BY NUMBER CONTAINER (MOBILE-OPTIMIZED)
+   ========================================================================== */
+.cbn-game-container {
+    width: 92vw;
+    max-width: 440px;
+    margin: 40px auto 60px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    box-sizing: border-box;
+    /* Allows natural device gestures outside immediate tap nodes */
+    touch-action: auto; 
+}
+
+.cbn-title {
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-weight: bold;
+}
+
+/* Capped square grid using aspect-ratio to prevent desktop blowing up */
+.cbn-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    gap: 1px;
+    background-color: #dcdde1;
+    border: 4px solid #b2bec3;
+    border-radius: 14px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.cbn-cell {
+    background-color: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #95a5a6;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color 0.12s ease;
+}
+
+.cbn-palette {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 4px 0;
+}
+
+.cbn-color-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cbn-color-swatch.active {
+    border-color: #2f3542;
+    transform: scale(1.15);
+}
