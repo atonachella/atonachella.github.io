@@ -4,27 +4,23 @@
     <meta charset="UTF-8">
     <title>Marine Explorer</title>
     <style>
-        body { background-color: #050a14; color: #e0f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
-        .marine-section { background-color: #0b1d36; border: 2px solid #3498db; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2); }
-        h1, h2 { color: #5dade2; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        body { background-color: #050a14; color: #e0f7fa; font-family: 'Arial', sans-serif; margin: 0; padding: 20px; }
+        .marine-section { background-color: #0b1d36; border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; }
+        h1, h2 { color: #5dade2; }
 
-        /* SONAR CIRCLE - INTERACTIVE */
-        #sonar-container { width: 200px; height: 200px; margin: 20px auto; border: 4px solid #3498db; border-radius: 50%; background: radial-gradient(circle, #050a14 0%, #000 100%); position: relative; overflow: hidden; cursor: pointer; }
-        #sonar-sweep { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; transform-origin: left center; background: conic-gradient(from 0deg, rgba(46, 204, 113, 0.3) 0deg, transparent 45deg); animation: radar-sweep 3s linear infinite; }
-        @keyframes radar-sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        /* SONAR: Centered Circle with Sweep & Trail */
+        #sonar-circle { width: 200px; height: 200px; border: 4px solid #2ecc71; border-radius: 50%; margin: 20px auto; position: relative; background: #000; overflow: hidden; cursor: pointer; }
+        #sonar-sweep { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; transform-origin: left center; background: conic-gradient(from 0deg, rgba(46, 204, 113, 0.4) 0deg, transparent 60deg); animation: rotate 3s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* TRIVIA BUTTONS */
-        .trivia-btn { background: #1a3a5f; color: #fff; border: 2px solid #3498db; padding: 12px 24px; margin: 5px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        .trivia-btn:hover { background: #3498db; }
-
+        /* INTERACTIVE BUTTONS */
+        .marine-btn { background: #1a3a5f; color: #fff; border: 2px solid #3498db; padding: 12px 24px; cursor: pointer; border-radius: 8px; font-weight: bold; margin: 5px; }
+        
         /* 15x15 GRID */
         .marine-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 1px; max-width: 450px; margin: 20px auto; border: 2px solid #3498db; }
-        .pixel { aspect-ratio: 1/1; background-color: #071526; border: 1px solid #1a3a5f; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #2980b9; }
+        .pixel { aspect-ratio: 1/1; background-color: #071526; border: 1px solid #1a3a5f; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #1a3a5f; }
         .palette { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
         .p-btn { width: 35px; height: 35px; border: 2px solid #fff; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-        /* NAV BUTTON */
-        .nav-btn { display: block; margin: 30px auto; background: #0b1d36; color: #3498db; border: 2px solid #3498db; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -34,15 +30,14 @@
 
         <section class="marine-section">
             <h2>Sonar Explorer</h2>
-            <div id="sonar-container" onclick="pulse()">
-                <div id="sonar-sweep"></div>
-            </div>
+            <div id="sonar-circle" onclick="ping()"><div id="sonar-sweep"></div></div>
+            <p>Click the sonar to ping!</p>
         </section>
 
         <section class="marine-section">
             <h2>Deep Sea Trivia</h2>
-            <div id="trivia-q" style="text-align: center; margin-bottom: 15px; font-size: 1.2rem;"></div>
-            <div id="trivia-a" style="display: flex; justify-content: center;"></div>
+            <div id="trivia-q" style="margin-bottom: 15px; font-size: 1.2rem;"></div>
+            <div id="trivia-a"></div>
         </section>
 
         <section class="marine-section">
@@ -51,44 +46,52 @@
             <div id="marine-grid" class="marine-grid"></div>
         </section>
 
-        <button class="nav-btn" onclick="window.location.href='index.html'">↩️ Return to Home</button>
+        <button class="marine-btn" style="display:block; margin: 20px auto;" onclick="window.location.href='index.html'">↩️ Return to Home</button>
     </div>
 
     <script>
-        // SONAR LOGIC
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        function pulse() {
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
+        // SONAR: Audio Pulse
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        function ping() {
+            const o = audio.createOscillator();
+            const g = audio.createGain();
             o.frequency.value = 440;
-            g.gain.setValueAtTime(0.5, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-            o.connect(g); g.connect(ctx.destination);
-            o.start(); o.stop(ctx.currentTime + 0.5);
+            g.gain.setValueAtTime(0.5, audio.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.5);
+            o.connect(g); g.connect(audio.destination);
+            o.start(); o.stop(audio.currentTime + 0.5);
         }
-        setInterval(pulse, 3000); // Auto-ping
+        setInterval(ping, 4000); // Auto-ping every 4s
 
-        // TRIVIA LOGIC
-        const q = {q: "Which creature is known as the 'Unicorn of the Sea'?", a: ["Narwhal", "Beluga"], c: 0};
-        document.getElementById("trivia-q").innerText = q.q;
-        q.a.forEach((opt, i) => {
+        // TRIVIA: Functional
+        const t = {q: "What is the 'Unicorn of the Sea'?", a: ["Narwhal", "Beluga"], c: 0};
+        document.getElementById("trivia-q").innerText = t.q;
+        t.a.forEach((opt, i) => {
             const b = document.createElement("button");
-            b.className = "trivia-btn"; b.innerText = opt;
-            b.onclick = () => alert(i === q.c ? "Correct!" : "Try again");
+            b.className = "marine-btn"; b.innerText = opt;
+            b.onclick = () => alert(i === t.c ? "Correct!" : "Try again");
             document.getElementById("trivia-a").appendChild(b);
         });
 
-        // 15x15 GRID LOGIC
+        // GRID: 15x15
         const colors = { 1: "#2980b9", 2: "#3498db", 3: "#5dade2", 4: "#aed6f1", 5: "#27ae60", 6: "#2ecc71", 7: "#abebc6", 8: "#f1c40f", 9: "#e67e22", 10: "#d35400", 11: "#f39c12", 12: "#ffffff" };
-        let activeC = 1;
+        let active = 1;
         const pal = document.getElementById("marine-palette");
         const grid = document.getElementById("marine-grid");
 
-        [1,2,3,4,5,6,7,8,9,10,11,12].forEach(n => {
+        Object.keys(colors).forEach(n => {
             const b = document.createElement("div");
             b.className = "p-btn"; b.style.backgroundColor = colors[n]; b.innerText = n;
-            b.onclick = () => activeC = n;
+            b.onclick = () => active = n;
             pal.appendChild(b);
         });
 
-        for(let i=0; i<22
+        for(let i=0; i<225; i++) {
+            const p = document.createElement("div");
+            p.className = "pixel"; p.innerText = (i % 12) + 1;
+            p.onclick = () => { if(active == p.innerText) { p.style.backgroundColor = colors[active]; p.innerText = ""; } };
+            grid.appendChild(p);
+        }
+    </script>
+</body>
+</html>
