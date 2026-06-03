@@ -7,43 +7,43 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* ==========================================================================
-           HIGH-TECH SUBMARINE SYSTEM OVERRIDES (NO LAYOUT OR LOGIC CHANGES)
+           SURGICAL HIGH-TECH STYLE OVERRIDES (SAFE & NON-DESTRUCTIVE)
            ========================================================================== */
         
-        /* Forces a crisp, tactical console font across the entire interface */
-        body, button, select, input, p, div, h1, h2, strong {
-            font-family: 'Consolas', 'SF Mono', 'Courier New', Monaco, monospace !important;
+        /* Apply a sharp terminal console font to text blocks without disrupting layout wrappers */
+        body, header, .game-section, button, select, input, p, h1, h2, strong, .trivia-btn {
+            font-family: 'Consolas', 'SF Mono', 'Courier New', Monaco, monospace;
         }
 
-        /* Swaps out the clashing white boxes for deep oceanic command panels */
+        /* Replaces the jarring white boxes with premium deep-sea tactical hull plating */
         .game-section {
-            background: #0b0f19 !important; /* Deep midnight-zone hull color */
-            color: #e2e8f0 !important;      /* Sharp, highly legible silver-white text */
-            border: 2px solid #1e293b !important; /* Industrial panel trim */
+            background-color: #0b111e !important; /* Deep ocean trench dark slate */
+            color: #e2e8f0 !important;            /* High-visibility cyber silver text */
+            border: 2px solid #202b3c !important;  /* Industrial sub-aquatic structural trim */
             border-radius: 16px !important;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 
-                        0 12px 40px rgba(0, 0, 0, 0.5) !important;
-            padding: 25px;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 
+                        0 12px 40px rgba(0, 0, 0, 0.6) !important;
+            padding: 25px !important;
         }
 
-        /* Upgrades section titles to look like active sonar terminal headers */
+        /* High-voltage submarine cyan for section headers */
         .game-section h2 {
-            color: #00d2d3 !important; /* High-voltage electric cyan */
-            border-bottom: 1px solid rgba(0, 210, 211, 0.2);
-            padding-bottom: 10px;
+            color: #00d2d3 !important;
+            border-bottom: 1px solid rgba(0, 210, 211, 0.15);
+            padding-bottom: 8px;
             margin-top: 0;
-            letter-spacing: 1px;
             text-transform: uppercase;
+            letter-spacing: 1px;
             font-size: 1.3rem;
         }
 
-        /* Style tactical buttons for the trivia section to fit the dark theme */
+        /* Interactive terminal styling for the scientific trivia buttons */
         .trivia-btn {
-            background: #1e293b !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            background-color: #161f2b;
+            color: #ffffff;
+            border: 1px solid #2c3e50;
             padding: 12px 16px;
-            margin: 8px 0;
+            margin: 6px 0;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
@@ -51,13 +51,13 @@
             transition: all 0.2s ease;
         }
         .trivia-btn:hover {
-            background: #2d3d52 !important;
-            border-color: #00d2d3 !important;
-            box-shadow: 0 0 10px rgba(0, 210, 211, 0.2);
+            background-color: #222f42;
+            border-color: #00d2d3;
+            box-shadow: 0 0 10px rgba(0, 210, 211, 0.15);
         }
 
         /* ==========================================================================
-           RADAR PULSE EYE CANDY
+           VISUAL SONAR RADAR EFFECT
            ========================================================================== */
         .sonar-ping-pulse {
             position: absolute;
@@ -153,6 +153,7 @@
 
     <script src="script.js"></script>
     <script>
+        // Real-world underwater science facts database
         const oceanFacts = [
             {
                 question: "Which deep-sea ocean trench is the lowest, deepest known point on Earth?",
@@ -212,40 +213,3 @@
                 const btn = document.createElement('button');
                 btn.className = 'trivia-btn';
                 btn.textContent = ans.text;
-                btn.onclick = () => {
-                    if (ans.correct) {
-                        feedback.style.color = '#2ecc71';
-                        feedback.innerHTML = `<strong>Correct!</strong> ${currentFact.explanation}`;
-                        nextBtn.style.display = 'block';
-                    } else {
-                        feedback.style.color = '#e74c3c';
-                        feedback.textContent = "❌ Not quite! Analyze the data and try another option.";
-                    }
-                };
-                answersBox.appendChild(btn);
-            });
-        }
-
-        function loadNextFact() {
-            currentFactIndex = (currentFactIndex + 1) % oceanFacts.length;
-            displayFactQuestion();
-        }
-
-        const fishConfig = {
-            gridId: 'ocean-grid',
-            paletteId: 'ocean-palette',
-            paletteColors: {
-                1: '#74b9ff', 2: '#0984e3', 3: '#ff7675', 
-                4: '#fdcb6e', 5: '#ffffff', 6: '#2ecc71'
-            },
-            layoutMap: [
-                [1,1,1,1,1,1,1,1,1,1,1,1],
-                [1,1,5,1,1,1,1,1,1,1,1,1],
-                [1,1,1,1,1,1,3,3,3,1,1,1],
-                [1,4,1,1,1,3,3,3,3,3,1,1],
-                [1,4,4,1,3,3,5,3,3,3,3,1],
-                [1,1,4,4,3,3,3,3,3,3,3,1],
-                [1,1,4,4,3,3,3,3,3,3,3,1],
-                [1,4,4,1,3,3,3,3,3,3,3,1],
-                [1,4,1,1,1,3,3,3,3,3,1,1],
-                [1,1,1,1,1,1,3,3,3,1,1,1],
