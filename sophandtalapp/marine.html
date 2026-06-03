@@ -2,42 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sophia's Marine Explorer</title>
+    <title>Marine Explorer</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { background-color: #050a14; color: #e0f7fa; font-family: 'Arial', sans-serif; margin: 0; padding: 20px; }
-        .marine-section { background-color: #0b1d36; border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h1, h2 { color: #5dade2; text-align: center; }
+        /* Your original styling preserved */
+        body { background-color: #050a14; color: #e0f7fa; font-family: 'Arial', sans-serif; padding: 20px; }
+        .marine-section { background-color: #0b1d36; border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         
-        /* 15x15 GRID STYLING */
+        /* SONAR CIRCLE */
+        #sonar-circle { width: 150px; height: 150px; border: 3px solid #2ecc71; border-radius: 50%; margin: 20px auto; position: relative; background: #000; overflow: hidden; }
+        #sonar-sweep { width: 50%; height: 2px; background: #2ecc71; position: absolute; top: 50%; left: 50%; transform-origin: left center; animation: rotate 3s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
         .marine-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 1px; max-width: 450px; margin: 20px auto; border: 2px solid #3498db; }
         .pixel { aspect-ratio: 1/1; background-color: #071526; border: 1px solid #1a3a5f; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #1a3a5f; }
-        
-        /* PALETTE */
         .palette { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
-        .p-btn { width: 30px; height: 30px; border: 2px solid #fff; cursor: pointer; border-radius: 4px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; }
-        
-        /* SONAR */
-        #sonar-display { height: 100px; background: #000; border: 2px solid #2ecc71; margin-bottom: 10px; position: relative; overflow: hidden; }
-        
-        .nav-btn { background: #1a3a5f; color: #fff; padding: 10px 20px; border: 1px solid #3498db; cursor: pointer; border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <div style="max-width: 800px; margin: 0 auto;">
-        <h1>Sophia's Marine Discovery 🌊</h1>
-
-        <section class="marine-section">
-            <h2>Underwater Canvas</h2>
-            <div id="marine-palette" class="palette"></div>
-            <div id="marine-grid" class="marine-grid"></div>
-        </section>
+        <h1>Marine Discovery 🌊</h1>
 
         <section class="marine-section">
             <h2>Sonar Explorer</h2>
-            <div id="sonar-display"></div>
-            <button class="nav-btn" onclick="triggerSonar()">Pulse Sonar</button>
+            <div id="sonar-circle"><div id="sonar-sweep"></div></div>
+            <button onclick="playSonar()">Pulse Sonar</button>
         </section>
 
         <section class="marine-section">
@@ -46,50 +36,59 @@
             <div id="trivia-a"></div>
         </section>
 
-        <button class="nav-btn" onclick="window.location.href='index.html'">↩️ Return to Home</button>
+        <section class="marine-section">
+            <h2>Secret Underwater Canvas</h2>
+            <div id="marine-palette" class="palette"></div>
+            <div id="marine-grid" class="marine-grid"></div>
+        </section>
+
+        <button onclick="window.location.href='index.html'">↩️ Return to Sign-In</button>
     </div>
 
     <script>
-        // SONAR LOGIC
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function triggerSonar() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 1);
+        // SONAR SOUND LOGIC
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSonar() {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.5);
+            g.gain.setValueAtTime(0.3, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            osc.connect(g); g.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.5);
         }
 
-        // TRIVIA LOGIC
+        // TRIVIA LOGIC (Fixed & Restored)
         const trivia = [{q: "What is the biggest ocean?", a: ["Pacific", "Atlantic"], c: 0}];
-        document.getElementById("trivia-q").innerText = trivia[0].q;
+        const qDiv = document.getElementById("trivia-q");
+        const aDiv = document.getElementById("trivia-a");
+        qDiv.innerText = trivia[0].q;
         trivia[0].a.forEach((opt, i) => {
-            const btn = document.createElement("button"); btn.innerText = opt; btn.className="nav-btn";
-            btn.onclick = () => alert(i === trivia[0].c ? "Correct!" : "Try again");
-            document.getElementById("trivia-a").appendChild(btn);
+            const btn = document.createElement("button");
+            btn.innerText = opt;
+            btn.onclick = () => { alert(i === trivia[0].c ? "Correct!" : "Try again"); };
+            aDiv.appendChild(btn);
         });
 
-        // 15x15 COLOR BY NUMBER LOGIC
+        // 15x15 COLOR BY NUMBER
         const colorKey = { 1: "#2980b9", 2: "#3498db", 3: "#5dade2", 4: "#aed6f1", 5: "#27ae60", 6: "#2ecc71", 7: "#abebc6", 8: "#f1c40f", 9: "#e67e22", 10: "#d35400", 11: "#f39c12", 12: "#ffffff" };
-        const gridMap = Array(225).fill(1); // Placeholder for structural layout
-        
-        let selectedColorIndex = 1;
-        const palette = document.getElementById("marine-palette");
         const grid = document.getElementById("marine-grid");
+        const palette = document.getElementById("marine-palette");
+        let activeColor = 1;
 
-        [1,2,3,4,5,6,7,8,9,10,11,12].forEach(num => {
-            const btn = document.createElement("div"); btn.className = "p-btn";
-            btn.style.backgroundColor = colorKey[num]; btn.innerText = num;
-            btn.onclick = () => selectedColorIndex = num;
-            palette.appendChild(btn);
+        [1,2,3,4,5,6,7,8,9,10,11,12].forEach(n => {
+            const b = document.createElement("div");
+            b.style.width="30px"; b.style.height="30px"; b.style.backgroundColor=colorKey[n]; b.style.cursor="pointer";
+            b.onclick = () => activeColor = n;
+            palette.appendChild(b);
         });
 
         for(let i=0; i<225; i++) {
-            const p = document.createElement("div"); p.className = "pixel";
+            const p = document.createElement("div");
+            p.className = "pixel";
             p.innerText = (i % 12) + 1;
-            p.onclick = () => { if(selectedColorIndex == p.innerText) { p.style.backgroundColor = colorKey[selectedColorIndex]; p.innerText = ""; } };
+            p.onclick = () => { if(activeColor == p.innerText) { p.style.backgroundColor = colorKey[activeColor]; p.innerText = ""; } };
             grid.appendChild(p);
         }
     </script>
