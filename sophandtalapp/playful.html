@@ -387,5 +387,154 @@ initToyGame();
     }
 </script>
 
+<style>
+.cbn-game-container {
+    max-width: 440px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    box-sizing: border-box;
+}
+.cbn-title {
+    color: #5c2d91;
+    font-size: 1.6rem;
+    margin-bottom: 18px;
+}
+.cbn-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    gap: 1px;
+    background-color: #e0e0e0;
+    border: 4px solid #ced6e0;
+    border-radius: 12px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    margin-bottom: 22px;
+    touch-action: manipulation;
+}
+.cbn-cell {
+    background-color: #fcfcfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #a4b0be;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+}
+.cbn-cell:active {
+    opacity: 0.7;
+}
+.cbn-palette {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 5px 0;
+}
+.cbn-color-swatch {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.1s ease, border-color 0.2s ease;
+    user-select: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+}
+.cbn-color-swatch.active {
+    border-color: #2f3542;
+    transform: scale(1.18);
+}
+</style>
+
+<div class="cbn-game-container">
+    <h2 class="cbn-title">Natalia's Magic Canvas! ✨</h2>
+    <div class="cbn-grid" id="magic-grid"></div>
+    <div class="cbn-palette" id="magic-palette"></div>
+</div>
+
+<script>
+(function() {
+    const magicColors = {
+        1: '#3c1361', // Midnight Purple
+        2: '#ffec5c', // Magic Gold
+        3: '#5c2d91', // Wizard Hat Purple
+        4: '#ff6b6b', // Pixie Pink
+        5: '#55efc4', // Electric Mint Sparkles
+        6: '#a29bfe'  // Lavender Shadow
+    };
+
+    const magicLayout = [
+        [1,1,1,1,1,2,1,1,1,1,1,1],
+        [1,1,1,1,3,3,3,1,1,4,1,1],
+        [1,1,1,1,3,6,3,1,4,4,4,1],
+        [1,1,1,3,6,6,6,3,1,4,1,1],
+        [1,1,1,3,3,3,3,3,1,1,1,1],
+        [1,1,3,3,3,3,3,3,3,1,5,1],
+        [1,1,3,3,3,3,3,3,3,5,5,5],
+        [1,3,3,3,3,3,3,3,3,3,5,1],
+        [2,2,2,2,2,2,2,2,2,2,2,2],
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [4,1,1,1,1,1,1,1,1,1,1,4],
+        [1,4,1,1,1,1,1,1,1,1,4,1]
+    ];
+
+    let currentSelection = null;
+    const gridNode = document.getElementById('magic-grid');
+    const paletteNode = document.getElementById('magic-palette');
+
+    if (!gridNode || !paletteNode) return;
+
+    Object.keys(magicColors).forEach(num => {
+        const swatch = document.createElement('div');
+        swatch.className = 'cbn-color-swatch';
+        swatch.style.backgroundColor = magicColors[num];
+        swatch.textContent = num;
+        swatch.addEventListener('click', () => {
+            document.querySelectorAll('#magic-palette .cbn-color-swatch').forEach(s => s.classList.remove('active'));
+            swatch.classList.add('active');
+            currentSelection = parseInt(num);
+        });
+        paletteNode.appendChild(swatch);
+    });
+
+    magicLayout.forEach(row => {
+        row.forEach(targetVal => {
+            const square = document.createElement('div');
+            square.className = 'cbn-cell';
+            square.textContent = targetVal;
+            
+            const processColorInput = (e) => {
+                e.preventDefault();
+                if (currentSelection === targetVal) {
+                    square.style.backgroundColor = magicColors[targetVal];
+                    square.style.color = magicColors[targetVal];
+                }
+            };
+
+            square.addEventListener('click', processColorInput);
+            square.addEventListener('touchstart', processColorInput, { passive: false });
+            gridNode.appendChild(square);
+        });
+    });
+})();
+</script>
+
+
 </body>
 </html>
