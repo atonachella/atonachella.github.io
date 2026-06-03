@@ -3,36 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sophia's Marine Kingdom</title>
+    <title>Sophia's Submarine Base</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="marine-theme">
 
     <div class="page-wrapper">
-        <div class="original-content-container">
-            <h1 style="text-align: center; color: #0984e3; margin-top: 20px;">Sophia's Marine World 🐳</h1>
-            </div>
+        <header class="dashboard-header" style="background: var(--sophia-blue);">
+            <h1>Sophia's Ocean Explorer Dashboard 🐋</h1>
+            <p>Welcome back, Captain Sophia! Systems online.</p>
+        </header>
 
-        <div class="cbn-game-container">
-            <h2 class="cbn-title" style="color: #0984e3;">Ocean Discovery Canvas! 🌊</h2>
+        <section class="game-section" style="color: #2f3542;">
+            <h2>Submarine Sonar Scanner 🛰️</h2>
+            <p>Click the tracking grid below to broadcast a ping and find the hidden sea animal!</p>
+            <div class="sonar-radar-screen">
+                <div class="sonar-sweep"></div>
+                <div class="sonar-grid-container" id="sonar-grid-board"></div>
+            </div>
+            <p id="sonar-status" style="font-weight: bold; color: var(--sophia-blue);">Sonar Status: Standby...</p>
+        </section>
+
+        <section class="game-section" style="color: #2f3542;">
+            <h2>Cheesy Deep-Sea Trivia 🐠</h2>
+            <p><strong>Question:</strong> Why did the dolphin cross the ocean?</p>
+            <button class="trivia-btn" onclick="checkTrivia(true, 't1', 'To get to the other tide! 🌊')">A) To get to the other tide!</button>
+            <button class="trivia-btn" onclick="checkTrivia(false, 't1')">B) To find some crunchy popcorn.</button>
+            <button class="trivia-btn" onclick="checkTrivia(false, 't1')">C) Because it forgot its map.</button>
+            <div class="trivia-feedback" id="t1"></div>
+        </section>
+
+        <section class="game-section" style="color: #2f3542;">
+            <h2>Bonus: Tropical Fish Paint Canvas 🎨</h2>
+            <p>Grab your brush colors from the palette circles below and trace out your secret pixel creation!</p>
             <div class="cbn-grid" id="ocean-grid"></div>
             <div class="cbn-palette" id="ocean-palette"></div>
-        </div>
+        </section>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Setup Ocean Configuration Block
-        const oceanConfig = {
+        const fishConfig = {
             gridId: 'ocean-grid',
             paletteId: 'ocean-palette',
             paletteColors: {
-                1: '#74b9ff', // Light Sky Blue
-                2: '#0984e3', // Deep Sea Blue
-                3: '#ff7675', // Coral Fish Orange
-                4: '#fdcb6e', // Canary Fin Yellow
-                5: '#ffffff', // Bubble / Eye White
-                6: '#2ecc71'  // Reef Seaweed Green
+                1: '#74b9ff', 2: '#0984e3', 3: '#ff7675', 
+                4: '#fdcb6e', 5: '#ffffff', 6: '#2ecc71'
             },
             layoutMap: [
                 [1,1,1,1,1,1,1,1,1,1,1,1],
@@ -50,9 +66,9 @@
             ]
         };
 
-        // Initialize Canvas
         document.addEventListener('DOMContentLoaded', () => {
-            initializeColorByNumber(oceanConfig);
+            initSonarGame();
+            initializeColorByNumber(fishConfig);
         });
     </script>
 </body>

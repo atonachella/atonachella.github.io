@@ -3,36 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Natalia's Playful Magic</title>
+    <title>Natalia's Magic Base</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="magic-theme">
 
     <div class="page-wrapper">
-        <div class="original-content-container">
-            <h1 style="text-align: center; color: #6c5ce7; margin-top: 20px;">Natalia's Magic Kingdom 🌟</h1>
-            </div>
+        <header class="dashboard-header" style="background: linear-gradient(to right, var(--natalia-purple), var(--natalia-pink));">
+            <h1>Natalia's Majestic Magic Base 🌟</h1>
+            <p>Welcome back, Sorceress Natalia! Spells fully charged.</p>
+        </header>
 
-        <div class="cbn-game-container">
-            <h2 class="cbn-title" style="color: #6c5ce7;">Glowing Crystal Ball! ✨</h2>
+        <section class="game-section" style="color: #2f3542;">
+            <h2>Majestic Animal Card Match 🦄</h2>
+            <p>Flip and trace cards to pair up all the enchanted hidden animals!</p>
+            <div class="memory-board" id="memory-board"></div>
+        </section>
+
+        <section class="game-section" style="color: #2f3542;">
+            <h2>Enchanted Wizard Riddles 🪄</h2>
+            <p><strong>Question:</strong> What kind of wizard can you find under the mattress?</p>
+            <button class="trivia-btn" onclick="checkTrivia(false, 't2')">A) A dragon flying upside down.</button>
+            <button class="trivia-btn" onclick="checkTrivia(true, 't2', 'A Wood-Gizzard! 🧙‍♂️')">B) A Wood-Gizzard!</button>
+            <button class="trivia-btn" onclick="checkTrivia(false, 't2')">C) A sparkly blanket monster.</button>
+            <div class="trivia-feedback" id="t2"></div>
+        </section>
+
+        <section class="game-section" style="color: #2f3542;">
+            <h2>Bonus: Glowing Crystal Ball Paint Canvas 🔮</h2>
+            <p>Pick a magic number circle below and illuminate your dark crystal space display!</p>
             <div class="cbn-grid" id="magic-grid"></div>
             <div class="cbn-palette" id="magic-palette"></div>
-        </div>
+        </section>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Setup High-Contrast Magic Configuration Block
-        const magicConfig = {
+        const ballConfig = {
             gridId: 'magic-grid',
             paletteId: 'magic-palette',
             paletteColors: {
-                1: '#11052C', // Deep Void Space (Stark Dark Contrast)
-                2: '#00E5FF', // Glowing Electric Cyan (Crystal Interior)
-                3: '#FFFFFF', // Pure Bright Gloss (Light Reflection)
-                4: '#FFD700', // Radiant Gold (Pedestal Base Support)
-                5: '#FF007F', // Neon Hot Pink (Cosmic Sparks)
-                6: '#A020F0'  // Nebula Vivid Purple (Secondary Magic Sparks)
+                1: '#11052C', 2: '#00E5FF', 3: '#FFFFFF', 
+                4: '#FFD700', 5: '#FF007F', 6: '#A020F0'
             },
             layoutMap: [
                 [1,1,5,1,1,1,1,1,1,6,1,1],
@@ -50,9 +62,9 @@
             ]
         };
 
-        // Initialize Canvas
         document.addEventListener('DOMContentLoaded', () => {
-            initializeColorByNumber(magicConfig);
+            initCardFlipGame();
+            initializeColorByNumber(ballConfig);
         });
     </script>
 </body>

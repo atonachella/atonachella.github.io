@@ -3,224 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Secret Portal 🌟🌊</title>
+    <title>The Secret Home Portal 🌟🌊</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* ==========================================================================
-           EYE-GRABBING DIAGONAL SPLIT HERO BACKGROUND
-           ========================================================================== */
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background: linear-gradient(135deg, #0984e3 50%, #5c2d91 50%);
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Sophia's Side Decorative Flair (Top Left) */
-        body::before {
-            content: '🌊  🐠  🫧  🐬';
-            position: absolute;
-            top: 15%;
-            left: 10%;
-            font-size: 2.5rem;
-            letter-spacing: 20px;
-            opacity: 0.35;
-            transform: rotate(-10deg);
-        }
-
-        /* Natalia's Side Decorative Flair (Bottom Right) */
-        body::after {
-            content: '✨  🔮  ⭐  🪄';
-            position: absolute;
-            bottom: 15%;
-            right: 5%;
-            font-size: 2.5rem;
-            letter-spacing: 20px;
-            opacity: 0.35;
-            transform: rotate(15deg);
-        }
-
-        /* ==========================================================================
-           CENTRAL PORTAL LOGIN CARD
-           ========================================================================== */
-        .portal-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px 35px;
-            border-radius: 32px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 
-                        0 0 0 10px rgba(255, 255, 255, 0.2);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            box-sizing: border-box;
-            z-index: 10;
-            border: 4px solid #fdcb6e;
-            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .portal-title {
-            margin: 0 0 25px 0;
-            font-size: 2.2rem;
-            background: linear-gradient(45deg, #0984e3, #5c2d91);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #2f3542;
-            font-size: 1rem;
-            padding-left: 5px;
-        }
-
-        /* ==========================================================================
-           STYLED USER DROPDOWN & PASSWORD INPUTS
-           ========================================================================== */
-        .portal-dropdown, .portal-input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1.1rem;
-            font-family: inherit;
-            border: 3px solid #ced6e0;
-            border-radius: 16px;
-            outline: none;
-            box-sizing: border-box;
-            background-color: #f8f9fa;
-            color: #2f3542;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .portal-input {
-            cursor: text;
-        }
-
-        .portal-dropdown:focus, .portal-input:focus {
-            border-color: #fdcb6e;
-            background-color: #ffffff;
-            box-shadow: 0 0 12px rgba(253, 203, 110, 0.4);
-        }
-
-        /* Dynamic submission button */
-        .portal-button {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            font-family: inherit;
-            color: white;
-            background: linear-gradient(45deg, #2ecc71, #00b894);
-            border: none;
-            border-radius: 18px;
-            cursor: pointer;
-            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
-            transition: all 0.15s ease;
-            margin-top: 10px;
-        }
-
-        .portal-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.6);
-        }
-
-        .portal-button:active {
-            transform: translateY(1px);
-        }
-
-        .error-message {
-            color: #d63031;
-            font-weight: bold;
-            margin-top: 15px;
-            min-height: 24px;
-            font-size: 0.95rem;
-        }
-    </style>
 </head>
-<body>
+<body class="split-body">
 
     <div class="portal-card">
-        <h1 class="portal-title">Choose & Enter!</h1>
+        <h1 style="margin: 0 0 20px 0; font-size: 2.2rem; color: #2f3542;">Secret Dashboard Sign In</h1>
         
-        <div class="input-group">
-            <label class="input-label" for="childSelect">Who Are You? ✨</label>
+        <div style="text-align: left; margin-bottom: 15px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Select Adventurer:</label>
             <select id="childSelect" class="portal-dropdown">
-                <option value="" disabled selected>Select your name...</option>
-                <option value="sophia">Sophia 🌊 (Ocean Mode)</option>
-                <option value="natalia">Natalia 🪄 (Magic Mode)</option>
+                <option value="" disabled selected>Who is signing in? ...</option>
+                <option value="sophia">Sophia 🌊 (Ocean Base)</option>
+                <option value="natalia">Natalia 🪄 (Magic Base)</option>
             </select>
         </div>
 
-        <div class="input-group">
-            <label class="input-label" for="childCode">Secret Code 🔑</label>
-            <input type="password" id="childCode" class="portal-input" placeholder="Type secret code here...">
+        <div style="text-align: left; margin-bottom: 25px;">
+            <label style="font-weight: bold; display: block; margin-bottom: 6px;">Enter Passkey:</label>
+            <input type="password" id="childCode" class="portal-input" placeholder="Type password here...">
         </div>
 
-        <button onclick="verifyAndRoute()" class="portal-button">Open Portal! 🚀</button>
-        
-        <div id="errorBox" class="error-message"></div>
+        <button onclick="verifyAndLogin()" class="portal-button">Launch Dashboard 🚀</button>
+        <div id="errorBox" style="color: #e74c3c; font-weight: bold; margin-top: 15px; min-height: 20px;"></div>
     </div>
 
     <script>
-        function verifyAndRoute() {
-            const selectedUser = document.getElementById('childSelect').value;
-            const enteredCode = document.getElementById('childCode').value.trim().toLowerCase();
-            const errorBox = document.getElementById('errorBox');
-            
-            // Clear prior errors
-            errorBox.textContent = "";
+        function verifyAndLogin() {
+            const user = document.getElementById('childSelect').value;
+            const pass = document.getElementById('childCode').value.trim();
+            const err = document.getElementById('errorBox');
+            err.textContent = "";
 
-            if (!selectedUser) {
-                errorBox.textContent = "Please pick your name first! 🤔";
+            if (!user) {
+                err.textContent = "Please choose a name first!";
                 return;
             }
 
-            if (!enteredCode) {
-                errorBox.textContent = "Don't forget your secret code! 🔑";
-                return;
-            }
-
-            // Enforced exact credentials matching last week's keys
-            if (selectedUser === 'sophia') {
-                if (enteredCode === 'ocean10') {
+            if (user === 'sophia') {
+                if (pass === 'ocean10') {
                     window.location.href = 'marine.html';
                 } else {
-                    errorBox.textContent = "Wrong code for Sophia's Ocean! 🐠";
+                    err.textContent = "Wrong passcode for Sophia's Ocean!";
                 }
-            } else if (selectedUser === 'natalia') {
-                if (enteredCode === 'magic7') {
+            } else if (user === 'natalia') {
+                if (pass === 'magic7') {
                     window.location.href = 'playful.html';
                 } else {
-                    errorBox.textContent = "Wrong code for Natalia's Magic! 🔮";
+                    err.textContent = "Wrong passcode for Natalia's Magic!";
                 }
             }
         }
-
-        // Trigger sign-in on Enter press inside the password box
         document.getElementById('childCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                verifyAndRoute();
-            }
+            if (e.key === 'Enter') verifyAndLogin();
         });
     </script>
 </body>
