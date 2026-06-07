@@ -1,0 +1,13 @@
+body, html { 
+    margin: 0; padding: 0; width: 100%; height: 100%; 
+    background: #020202; overflow: hidden; 
+    font-family: 'Inter', sans-serif;
+}
+#glCanvas { width: 100vw; height: 100vh; display: block; }
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; display: flex; flex-direction: column;
+    justify-content: space-between; padding: 40px; box-sizing: border-box;
+    color: rgba(255, 255, 255, 0.4); text-transform: uppercase;
+    letter-spacing: 0.3rem; font-size: 0.7rem;
+}
