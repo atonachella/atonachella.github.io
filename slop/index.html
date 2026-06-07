@@ -2,17 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Neural Fluidity // Zen State</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimensional Portal Engine</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
 </head>
 <body>
-    <div class="viewport-overlay">
-        <div class="status-bar">
-            <span>INTERFACE: ACTIVE</span>
-            <span>RESONANCE: 432Hz</span>
+    <div id="canvas-container"></div>
+
+    <div id="hud-container">
+        <div class="scanlines"></div>
+        <div class="vignette"></div>
+
+        <header id="top-nav">
+            <div class="nav-left">
+                <h1 id="system-title">AURA // LUSH_SYNC</h1>
+                <p class="subtitle">DIMENSIONAL TETHER ACTIVE</p>
+            </div>
+            <div class="nav-right">
+                <div class="status-indicator">
+                    <span id="status-dot"></span>
+                    <span id="status-text">HARMONIC</span>
+                </div>
+            </div>
+        </header>
+
+        <main id="telemetry-grid">
+            <aside class="panel left-panel">
+                <div class="data-block">
+                    <h3>COORDINATES</h3>
+                    <p>X: <span id="coord-x">0.000</span></p>
+                    <p>Y: <span id="coord-y">0.000</span></p>
+                    <p>Z: <span id="coord-z">0.000</span></p>
+                </div>
+                <div class="data-block">
+                    <h3>ENVIRONMENT</h3>
+                    <p>FLORA: <span id="env-flora">100%</span></p>
+                    <p>RADIATION: <span id="env-rad">0.02 mSv</span></p>
+                </div>
+            </aside>
+
+            <aside class="panel right-panel">
+                <div class="data-block right-align">
+                    <h3>TRAVERSAL VELOCITY</h3>
+                    <h2 class="speed-readout" id="speed-readout">WARP 1.0</h2>
+                </div>
+                <div class="visualizer-block">
+                    <div class="bar-chart" id="audio-viz">
+                        </div>
+                </div>
+            </aside>
+        </main>
+
+        <div id="glitch-overlay" class="hidden">
+            <h2 data-text="WARNING: WRECKAGE AHEAD">WARNING: WRECKAGE AHEAD</h2>
+            <p>STRUCTURAL INTEGRITY COMPROMISED</p>
         </div>
     </div>
-    <canvas id="liquid-canvas"></canvas>
-    <script type="module" src="app.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>

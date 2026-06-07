@@ -1,22 +1,211 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body, html { width: 100vw; height: 100vh; background: #020202; overflow: hidden; }
+/* Remove all browser defaults */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden; /* This removes the scrollbars */
+    background-color: #000;
+}
 
-#liquid-canvas {
+/* Ensure the canvas container fills the screen exactly */
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+
+/* --- Base Variables & Reset --- */
+:root {
+    --color-utopia-primary: #00f0ff;
+    --color-utopia-glow: rgba(0, 240, 255, 0.5);
+    --color-utopia-bg: rgba(10, 20, 30, 0.4);
+    
+    --color-cyber-primary: #ff003c;
+    --color-cyber-glow: rgba(255, 0, 60, 0.6);
+    --color-cyber-bg: rgba(20, 5, 5, 0.7);
+
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #000;
+    color: var(--color-utopia-primary);
+    font-family: var(--font-main);
+    transition: color 2s ease;
+}
+
+/* --- WebGL Canvas --- */
+#canvas-container {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    filter: contrast(1.2) brightness(1.1);
+    z-index: 1;
 }
 
-.viewport-overlay {
+/* --- HUD Overlay & Analog Nuances --- */
+#hud-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.scanlines {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    padding: 2rem; pointer-events: none;
-    display: flex; flex-direction: column; justify-content: flex-end;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 3px, 3px 100%;
+    z-index: 100;
+    pointer-events: none;
 }
 
-.status-bar {
-    color: rgba(255, 255, 255, 0.3);
-    font-family: 'Courier New', monospace;
-    font-size: 0.75rem; letter-spacing: 0.2rem;
+.vignette {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);
+    z-index: 99;
+}
+
+/* --- Top Navigation --- */
+#top-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 3rem;
+    background: linear-gradient(180deg, var(--color-utopia-bg) 0%, transparent 100%);
+    border-bottom: 1px solid var(--color-utopia-glow);
+    transition: all 2s ease;
+}
+
+#system-title {
+    font-size: 1.5rem;
+    letter-spacing: 0.2rem;
+    text-shadow: 0 0 10px var(--color-utopia-glow);
+}
+
+.subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-top: 0.5rem;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+}
+
+#status-dot {
+    width: 12px; height: 12px;
+    background-color: var(--color-utopia-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--color-utopia-primary);
+    animation: pulse 2s infinite;
+}
+
+/* --- Telemetry Grid --- */
+#telemetry-grid {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 3rem;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.data-block {
+    background: var(--color-utopia-bg);
+    padding: 1.5rem;
+    border-left: 3px solid var(--color-utopia-primary);
+    backdrop-filter: blur(5px);
+    transition: all 2s ease;
+}
+
+.data-block h3 {
+    font-size: 0.9rem;
+    letter-spacing: 0.15rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+.data-block p {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+
+.right-align { text-align: right; border-left: none; border-right: 3px solid var(--color-utopia-primary); }
+.speed-readout { font-size: 2.5rem; text-shadow: 0 0 15px var(--color-utopia-glow); }
+
+/* --- Cyberpunk/Dystopian State Classes --- */
+body.cyberpunk-mode {
+    color: var(--color-cyber-primary);
+}
+
+body.cyberpunk-mode #top-nav {
+    background: linear-gradient(180deg, var(--color-cyber-bg) 0%, transparent 100%);
+    border-bottom: 1px solid var(--color-cyber-glow);
+}
+
+body.cyberpunk-mode #system-title { text-shadow: 0 0 10px var(--color-cyber-glow); }
+body.cyberpunk-mode #status-dot { background-color: var(--color-cyber-primary); box-shadow: 0 0 10px var(--color-cyber-primary); animation: erratic-pulse 0.5s infinite; }
+body.cyberpunk-mode .data-block { background: var(--color-cyber-bg); border-color: var(--color-cyber-primary); }
+body.cyberpunk-mode .speed-readout { text-shadow: 0 0 15px var(--color-cyber-glow); }
+
+/* --- Glitch Overlay --- */
+#glitch-overlay {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgba(20, 0, 0, 0.8);
+    padding: 2rem 4rem;
+    border: 2px dashed var(--color-cyber-primary);
+    z-index: 50;
+}
+
+#glitch-overlay h2 {
+    font-size: 3rem;
+    letter-spacing: 0.3rem;
+    position: relative;
+    animation: text-glitch 0.3s infinite;
+}
+
+#glitch-overlay p {
+    font-family: var(--font-mono);
+    margin-top: 1rem;
+    font-size: 1.2rem;
+}
+
+.hidden { display: none !important; }
+
+/* --- Animations --- */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes erratic-pulse { 0% { opacity: 1; } 25% { opacity: 0; } 50% { opacity: 1; } 75% { opacity: 0.5; } 100% { opacity: 1; } }
+@keyframes text-glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-5px, 2px); }
+    40% { transform: translate(5px, -2px); }
+    60% { transform: translate(-2px, 5px); }
+    80% { transform: translate(2px, -5px); }
+    100% { transform: translate(0); }
 }
