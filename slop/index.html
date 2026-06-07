@@ -1,302 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><HTA:APPLICATION 
-        ID="oHTA"
-        BORDER="none" 
-        CAPTION="no" 
-        SHOWINTASKBAR="yes" 
-        SINGLEINSTANCE="yes"
-        SYSMENU="no"
-        SCROLL="no"
-        WINDOWSTATE="maximize">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYS // BREACH - TETHER ACTIVE</title>
+    <title>Screensaver</title>
     <style>
-        /* CSS Reset and Strict Color Palette: Black, Red, White */
-        * {
+        /* Forces the container to be the absolute size of the screen */
+        body, html {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            cursor: none; /* Hide cursor for screensaver effect */
-            user-select: none; /* Prevent text selection */
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000; /* Change color here */
+            cursor: none; /* Hides cursor while active */
         }
-
-        html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-        }
-
-        /* Canvas Background */
-        #breachCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
+        
+        #content {
             width: 100%;
             height: 100%;
-            z-index: 1;
-        }
-
-        /* UI Overlays */
-        .overlay {
-            position: absolute;
-            z-index: 10;
-            pointer-events: none; /* Let clicks pass through to the document listener */
-        }
-
-        .header {
-            top: 20px;
-            left: 20px;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 0 0 10px rgba(255, 0, 60, 0.8);
-            animation: glitch 2s infinite;
-        }
-
-        .header p {
-            font-size: 0.9rem;
-            color: #ffffff; /* White accent */
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-
-        .warning-box {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 2px dashed #ff003c;
-            padding: 40px;
-            text-align: center;
-            background: rgba(5, 0, 0, 0.8);
-            box-shadow: 0 0 30px rgba(255, 0, 60, 0.2);
-        }
-
-        .warning-box h2 {
-            font-size: 4rem;
-            margin-bottom: 10px;
-            animation: pulse 1.5s infinite alternate;
-        }
-
-        .warning-box p {
-            color: #ffffff;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-        }
-
-        .coordinates {
-            bottom: 30px;
-            left: 20px;
-            border-left: 2px solid #ff003c;
-            padding-left: 15px;
-        }
-
-        .coordinates p {
-            margin-bottom: 5px;
-            font-size: 1.1rem;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0% { text-shadow: 0 0 10px #ff003c; opacity: 1; }
-            100% { text-shadow: 0 0 40px #ff003c, 0 0 80px #ff003c; opacity: 0.7; }
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0) }
-            20% { transform: translate(-2px, 2px) }
-            40% { transform: translate(-2px, -2px) }
-            60% { transform: translate(2px, 2px) }
-            80% { transform: translate(2px, -2px) }
-            100% { transform: translate(0) }
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: sans-serif;
         }
     </style>
 </head>
 <body>
 
-    <div class="overlay header">
-        <h1>SYS // BREACH</h1>
-        <p>DIMENSIONAL TETHER ACTIVE</p>
+    <div id="content">
+        <h1>Screensaver Active</h1>
     </div>
-
-    <div class="overlay warning-box">
-        <h2>WARNING:</h2>
-        <h2>WRECKAGE AHEAD</h2>
-        <p>STRUCTURAL INTEGRITY COMPROMISED</p>
-    </div>
-
-    <div class="overlay coordinates">
-        <p>COORDINATES</p>
-        <p style="color: #ffffff;">X: <span id="coordX">49.81</span></p>
-        <p style="color: #ffffff;">Y: <span id="coordY">45.84</span></p>
-        <p style="color: #ffffff;">Z: <span id="coordZ">167.00</span></p>
-    </div>
-
-    <canvas id="breachCanvas"></canvas>
 
     <script>
-        // ==========================================
-        // 1. ROBUST SCREENSAVER EXIT LOGIC
-        // ==========================================
-        let isExiting = false;
-        let initialMouseX = null;
-        let initialMouseY = null;
-
-        // This threshold prevents the app from instantly closing if the mouse drifts 1 pixel when it launches
-        const MOUSE_MOVEMENT_THRESHOLD = 15; 
-
-        function triggerExit(event) {
-            if (isExiting) return;
-
-            // Handle Mouse Movement Logic with Threshold
-            if (event.type === 'mousemove') {
-                if (initialMouseX === null || initialMouseY === null) {
-                    // Record the exact starting position of the mouse
-                    initialMouseX = event.clientX;
-                    initialMouseY = event.clientY;
-                    return; 
-                }
-
-                const deltaX = Math.abs(event.clientX - initialMouseX);
-                const deltaY = Math.abs(event.clientY - initialMouseY);
-
-                // If the mouse hasn't moved past our safety threshold, ignore it
-                if (deltaX < MOUSE_MOVEMENT_THRESHOLD && deltaY < MOUSE_MOVEMENT_THRESHOLD) {
-                    return; 
-                }
-            }
-
-            // Lock the exit function so it doesn't fire 100 times simultaneously
-            isExiting = true;
-
-            // Visual feedback that the exit command was received
-            document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#000; color:#fff; font-size:2rem; font-family:monospace;">TERMINATING SEQUENCE...</div>';
-
-            // Attempt to close the window (Standard for executable wrappers)
-            try {
-                window.close();
-            } catch (e) {
-                console.error("Window close blocked by environment.");
+        // 1. Force Fullscreen on load (requires user interaction)
+        function goFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
             }
         }
 
-        // Bind all possible exit events strictly to the document
-        document.addEventListener('mousemove', triggerExit, { passive: true });
-        document.addEventListener('mousedown', triggerExit);
-        document.addEventListener('keydown', triggerExit);
-        document.addEventListener('wheel', triggerExit, { passive: true });
+        // 2. Trigger fullscreen on first click
+        document.addEventListener('click', goFullscreen, { once: true });
 
-
-        // ==========================================
-        // 2. CANVAS VISUAL RENDERING (THE VIRUS)
-        // ==========================================
-        const canvas = document.getElementById('breachCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let width, height;
-        let nodes = [];
-
-        function resizeCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+        // 3. Exit logic: Close window on mouse move or key press
+        function exitApp() {
+            window.close();
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // Node class for the structural geometry
-        class Node {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
-                this.radius = Math.random() * 2 + 1;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Bounce off edges
-                if (this.x <= 0 || this.x >= width) this.vx *= -1;
-                if (this.y <= 0 || this.y >= height) this.vy *= -1;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#ff003c';
-                ctx.fill();
-            }
-        }
-
-        // Initialize Nodes
-        for (let i = 0; i < 150; i++) {
-            nodes.push(new Node());
-        }
-
-        function drawConnections() {
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    const dx = nodes[i].x - nodes[j].x;
-                    const dy = nodes[i].y - nodes[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < 120) {
-                        ctx.beginPath();
-                        ctx.moveTo(nodes[i].x, nodes[i].y);
-                        ctx.lineTo(nodes[j].x, nodes[j].y);
-                        // Opacity based on distance
-                        const opacity = 1 - (distance / 120);
-                        // Strict red palette
-                        ctx.strokeStyle = `rgba(255, 0, 60, ${opacity})`;
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        // UI Update Logic
-        const coordX = document.getElementById('coordX');
-        const coordY = document.getElementById('coordY');
-        const coordZ = document.getElementById('coordZ');
-
-        function updateUI() {
-            // Randomly fluctuate the coordinates slightly for effect
-            if (Math.random() > 0.8) {
-                coordX.innerText = (49.00 + Math.random() * 2).toFixed(2);
-                coordY.innerText = (45.00 + Math.random() * 2).toFixed(2);
-                coordZ.innerText = (160 + Math.random() * 15).toFixed(2);
-            }
-        }
-
-        // Main Animation Loop
-        function animate() {
-            // Clear canvas with deep black trail effect
-            ctx.fillStyle = 'rgba(5, 0, 0, 0.2)';
-            ctx.fillRect(0, 0, width, height);
-
-            nodes.forEach(node => {
-                node.update();
-                node.draw();
-            });
-
-            drawConnections();
-            updateUI();
-
-            requestAnimationFrame(animate);
-        }
-
-        // Start the engine
-        animate();
+        document.addEventListener('mousemove', exitApp);
+        document.addEventListener('keydown', exitApp);
+        document.addEventListener('mousedown', exitApp);
     </script>
 </body>
 </html>
