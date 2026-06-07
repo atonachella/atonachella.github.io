@@ -382,14 +382,13 @@ bindEvents() {
 }
 
 // Force the screensaver to close on any user input
+const { ipcRenderer } = require('electron');
 function closeScreensaver() {
-    window.close();
+    ipcRenderer.send('quit-app');
 }
-
+// Keep your event listeners here
 window.addEventListener('mousemove', closeScreensaver);
 window.addEventListener('keydown', closeScreensaver);
-window.addEventListener('mousedown', closeScreensaver);
-
 // Boot Sequence
 document.addEventListener('DOMContentLoaded', () => {
     window.engine = new DimensionalEngine();

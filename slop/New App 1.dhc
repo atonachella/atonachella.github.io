@@ -1,8 +1,23 @@
 ﻿﻿<?xml version="1.0" encoding="utf-8"?>
 <HtmlCompiler>
   <App>
-    <ID>{65BFFE7B-0C4F-41A6-8080-ED2C32ED5A02}</ID>
+    <ID>{54277983-0D7B-437F-9F96-C0CABBB0E180}</ID>
+    <Name>Newat</Name>
     <IndexHtml>index.html</IndexHtml>
+    <CompanyName>at</CompanyName>
+    <FileDescription>at</FileDescription>
+    <FileVersion>at</FileVersion>
+    <InternalName>at</InternalName>
+    <LegalCopyright>at</LegalCopyright>
+    <LegalTrademarks>at</LegalTrademarks>
+    <OriginalFileName>at</OriginalFileName>
+    <ProgramID>at</ProgramID>
+    <ProductVersion>at</ProductVersion>
+    <Comments>atatata</Comments>
+    <Width>1024</Width>
+    <Height>768</Height>
+    <WindowBorder>0</WindowBorder>
+    <AllowDebug>1</AllowDebug>
     <Generator>
       <Name>DecSoft HTML Compiler</Name>
       <Website>https://www.decsoftutils.com/</Website>

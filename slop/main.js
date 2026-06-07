@@ -28,3 +28,8 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+
+const { ipcMain } = require('electron');
+ipcMain.on('quit-app', () => {
+    app.quit();
+});
