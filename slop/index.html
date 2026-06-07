@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><HTA:APPLICATION 
+        ID="oHTA"
+        BORDER="none" 
+        CAPTION="no" 
+        SHOWINTASKBAR="yes" 
+        SINGLEINSTANCE="yes"
+        SYSMENU="no"
+        SCROLL="no"
+        WINDOWSTATE="maximize">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYS // BREACH - TETHER ACTIVE</title>
@@ -14,13 +22,12 @@
             user-select: none; /* Prevent text selection */
         }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: #050000; /* Deep almost-black */
-            overflow: hidden;
-            font-family: 'Courier New', Courier, monospace;
-            color: #ff003c; /* Aggressive Red */
+        html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
         }
 
         /* Canvas Background */
