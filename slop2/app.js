@@ -639,3 +639,72 @@ if (document.readyState === "loading") {
 } else {
     initializeEngineSystem();
 }
+
+// --- SCREENSAVER EXIT HANDLER ---
+(function() {
+    // Track initial mouse position to prevent accidental triggers on load
+    let initialX = null;
+    let initialY = null;
+    const MOVE_THRESHOLD = 10; // Pixels of deliberate movement required to close
+
+    /**
+     * Cleanly terminates the screensaver session
+     */
+    function exitScreensaver() {
+        console.log("Exit signal triggered. Closing screensaver...");
+        
+        // 1. Force close if running inside a wrapper like DecSoft App Builder / WebView
+        if (typeof window.close === 'function') {
+            window.close();
+        }
+        
+        // 2. Fallback for standard browsers / wrappers
+        setTimeout(() => {
+            window.location.href = "about:blank"; 
+        }, 50);
+    }
+
+    /**
+     * Monitors mouse movement with a threshold guard
+     */
+    function handleMouseMove(event) {
+        const currentX = event.clientX;
+        const currentY = event.clientY;
+
+        // Establish baseline on first movement
+        if (initialX === null || initialY === null) {
+            initialX = currentX;
+            initialY = currentY;
+            return;
+        }
+
+        // Calculate absolute distance moved
+        const deltaX = Math.abs(currentX - initialX);
+        const deltaY = Math.abs(currentY - initialY);
+
+        // If movement exceeds threshold, exit immediately
+        if (deltaX > MOVE_THRESHOLD || deltaY > MOVE_THRESHOLD) {
+            // Remove listeners immediately to prevent double-firing during shutdown
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('keydown', handleKeydown);
+            exitScreensaver();
+        }
+    }
+
+    /**
+     * Monitors any keyboard activity for instant exit
+     */
+    function handleKeydown() {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('keydown', handleKeydown);
+        exitScreensaver();
+    }
+
+    // Attach listeners globally with 'passive: true' where possible to optimize performance
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('keydown', handleKeydown, { passive: true });
+    
+    // Safety net: Also listen for mouse clicks or touch events
+    window.addEventListener('mousedown', handleKeydown, { passive: true });
+
+})();
