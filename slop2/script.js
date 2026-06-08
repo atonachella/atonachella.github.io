@@ -162,3 +162,4 @@ class DimensionalEngine {
             });
 
             const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+        }
