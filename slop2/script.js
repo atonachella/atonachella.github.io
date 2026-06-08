@@ -108,22 +108,50 @@ class DimensionalEngine {
 
     /**
      * Safe termination sequence to step out of screensaver modes cleanly.
+     * Fires multiple native wrapper exit calls and logs errors directly to the console.
      */
     executeApplicationExit() {
-        console.log("System interrupt registered. Dismantling Three.js pipelines...");
+        console.log("EXIT SEQUENCE TRIGGERED: Attempting application termination...");
         
+        // Kill the listeners immediately to stop duplicate firing loops
         window.removeEventListener('mousemove', this.onMouseMove);
         window.removeEventListener('keydown', this.onHardwareInterrupt);
         window.removeEventListener('mousedown', this.onHardwareInterrupt);
 
-        // Break application wrapping contexts directly
-        if (typeof window.close === 'function') {
-            window.close();
+        // 1. Standard Web Runtime Exit (Works if wrapper permissions allow it)
+        try { 
+            window.close(); 
+            console.log("window.close() executed.");
+        } catch(e) { 
+            console.warn("Standard window.close() rejected by wrapper runtime."); 
         }
 
-        setTimeout(() => {
-            window.location.href = "about:blank";
-        }, 30);
+        // 2. Native Wrapper System Extensions (DecSoft HTML Compiler / HTML Executable API Hooks)
+        try { window.external.Close(); } catch(e) {}
+        try { window.external.close(); } catch(e) {}
+        
+        // 3. Generic App/Global Builder Object Targets
+        if (typeof App !== 'undefined') {
+            try { if (App.Close) App.Close(); } catch(e) {}
+            try { if (App.close) App.close(); } catch(e) {}
+        }
+
+        // 4. Desktop Framework / Node-WebKit Electron Fallbacks
+        if (typeof require !== 'undefined') {
+            try {
+                const { remote } = require('electron');
+                remote.getCurrentWindow().close();
+            } catch(e) {}
+            try {
+                const gui = require('nw.gui');
+                gui.App.quit();
+            } catch(e) {}
+        }
+        
+        /* * NOTE: The window.location.href = "about:blank" line is completely removed.
+         * If the wrapper strictly blocks all close attempts, your 3D portal will now 
+         * keep rendering smoothly instead of leaving you stranded in a black void.
+         */
     }
 
     /**
