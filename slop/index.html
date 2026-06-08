@@ -1,46 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; cursor: none; }
-        canvas { display: block; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ABYSS PROTOCOL — Void Descent</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        // --- 3D SCENE SETUP ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
 
-        // --- LUSH 3D OBJECTS ---
-        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
-        const material = new THREE.MeshNormalMaterial({ wireframe: false });
-        const torus = new THREE.Mesh(geometry, material);
-        scene.add(torus);
-        camera.position.z = 30;
+  <!-- ═══════════════════════════════════════════════════
+       BOOT SEQUENCE LOADER
+  ═══════════════════════════════════════════════════ -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-skull">☠</div>
+      <div class="loader-corruption">
+        <span class="corrupt-char" data-text="A">A</span>
+        <span class="corrupt-char" data-text="B">B</span>
+        <span class="corrupt-char" data-text="Y">Y</span>
+        <span class="corrupt-char" data-text="S">S</span>
+        <span class="corrupt-char" data-text="S">S</span>
+        &nbsp;
+        <span class="corrupt-char" data-text="P">P</span>
+        <span class="corrupt-char" data-text="R">R</span>
+        <span class="corrupt-char" data-text="O">O</span>
+        <span class="corrupt-char" data-text="T">T</span>
+        <span class="corrupt-char" data-text="O">O</span>
+        <span class="corrupt-char" data-text="C">C</span>
+        <span class="corrupt-char" data-text="O">O</span>
+        <span class="corrupt-char" data-text="L">L</span>
+      </div>
+      <div class="loader-warn">⚠ CONTAINMENT BREACH IMMINENT ⚠</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+      <div class="loader-errors" id="boot-errors"></div>
+    </div>
+  </div>
 
-        function animate() {
-            requestAnimationFrame(animate);
-            torus.rotation.x += 0.01;
-            torus.rotation.y += 0.01;
-            renderer.render(scene, camera);
-        }
-        animate();
+  <!-- ═══════════════════════════════════════════════════
+       MAIN CANVAS
+  ═══════════════════════════════════════════════════ -->
+  <canvas id="portal-canvas"></canvas>
 
-        // --- FULLSCREEN & EXIT LOGIC ---
-        function exit() { window.close(); }
-        document.addEventListener('mousemove', exit);
-        document.addEventListener('keydown', exit);
-        
-        // Auto-fullscreen
-        document.body.addEventListener('click', () => {
-            document.documentElement.requestFullscreen();
-        }, { once: true });
-    </script>
+  <!-- ═══════════════════════════════════════════════════
+       HUD — CORRUPTED MILITARY INTERFACE
+  ═══════════════════════════════════════════════════ -->
+  <div id="hud" class="hud-hidden">
+
+    <!-- Top left: threat / system status -->
+    <div class="hud-panel hud-tl">
+      <div class="hud-label">THREAT LEVEL</div>
+      <div class="hud-value threat-val" id="hud-threat">CRITICAL</div>
+      <div class="hud-label">DEPTH</div>
+      <div class="hud-value" id="hud-depth">∞.000 km</div>
+      <div class="hud-label">INTEGRITY</div>
+      <div class="hud-bar-wrap">
+        <div class="hud-bar" id="hud-integrity"></div>
+      </div>
+    </div>
+
+    <!-- Top right: entity / classification -->
+    <div class="hud-panel hud-tr">
+      <div class="hud-label">ENTITY CLASS</div>
+      <div class="hud-value entity-val" id="hud-entity">UNKNOWN</div>
+      <div class="hud-label">VECTOR</div>
+      <div class="hud-value" id="hud-vector">DESCENDING</div>
+      <div class="hud-corner-spike"></div>
+    </div>
+
+    <!-- Bottom left: transmission / last words -->
+    <div class="hud-panel hud-bl">
+      <div class="hud-label">LAST SIGNAL</div>
+      <div class="hud-value hud-last-signal" id="hud-signal">NO CARRIER</div>
+    </div>
+
+    <!-- Bottom right: coordinates / time dilation -->
+    <div class="hud-panel hud-br">
+      <div class="hud-label">TIME DILATION</div>
+      <div class="hud-value" id="hud-dilation">1.000×</div>
+      <div class="hud-label">VOID PRESSURE</div>
+      <div class="hud-value hud-pressure" id="hud-pressure">0.00 atm</div>
+    </div>
+
+    <!-- Center targeting reticle — more aggressive -->
+    <div class="reticle">
+      <div class="reticle-outer"></div>
+      <div class="reticle-ring r1"></div>
+      <div class="reticle-ring r2"></div>
+      <div class="reticle-ring r3"></div>
+      <div class="reticle-cross"></div>
+      <div class="reticle-dot"></div>
+      <div class="reticle-label" id="reticle-label">ACQUIRING</div>
+    </div>
+
+    <!-- Blood drip effect top -->
+    <div class="blood-bar">
+      <div class="blood-drop" style="left:8%;  animation-delay:0s;    animation-duration:2.1s"></div>
+      <div class="blood-drop" style="left:23%; animation-delay:0.7s;  animation-duration:2.8s"></div>
+      <div class="blood-drop" style="left:41%; animation-delay:1.4s;  animation-duration:1.9s"></div>
+      <div class="blood-drop" style="left:67%; animation-delay:0.3s;  animation-duration:3.2s"></div>
+      <div class="blood-drop" style="left:83%; animation-delay:1.1s;  animation-duration:2.4s"></div>
+      <div class="blood-drop" style="left:94%; animation-delay:0.9s;  animation-duration:2.0s"></div>
+    </div>
+
+    <!-- Vignette — heavier, redder -->
+    <div class="vignette"></div>
+
+    <!-- Scanlines -->
+    <div class="scanlines"></div>
+
+    <!-- Noise grain -->
+    <div class="grain"></div>
+
+    <!-- Event flash -->
+    <div id="event-flash" class="event-flash"></div>
+
+    <!-- Glitch bars (random horizontal corruption) -->
+    <div class="glitch-bar gb1"></div>
+    <div class="glitch-bar gb2"></div>
+    <div class="glitch-bar gb3"></div>
+
+    <!-- Message cards -->
+    <div id="message-cards" class="message-cards"></div>
+
+    <!-- Bottom center: audio-waveform style bars (CSS only) -->
+    <div class="waveform" id="waveform">
+      <div class="wf-bar" style="--i:0"></div>
+      <div class="wf-bar" style="--i:1"></div>
+      <div class="wf-bar" style="--i:2"></div>
+      <div class="wf-bar" style="--i:3"></div>
+      <div class="wf-bar" style="--i:4"></div>
+      <div class="wf-bar" style="--i:5"></div>
+      <div class="wf-bar" style="--i:6"></div>
+      <div class="wf-bar" style="--i:7"></div>
+      <div class="wf-bar" style="--i:8"></div>
+      <div class="wf-bar" style="--i:9"></div>
+      <div class="wf-bar" style="--i:10"></div>
+      <div class="wf-bar" style="--i:11"></div>
+      <div class="wf-bar" style="--i:12"></div>
+      <div class="wf-bar" style="--i:13"></div>
+      <div class="wf-bar" style="--i:14"></div>
+      <div class="wf-bar" style="--i:15"></div>
+      <div class="wf-bar" style="--i:16"></div>
+      <div class="wf-bar" style="--i:17"></div>
+      <div class="wf-bar" style="--i:18"></div>
+      <div class="wf-bar" style="--i:19"></div>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="portal.js"></script>
 </body>
 </html>
