@@ -1,144 +1,108 @@
-/* Modified Core Layout Reset for True Screensaver Mode */
+/* --- MASTER ENGINE STYLING & CORE ACCENTS --- */
 * {
     box-sizing: border-box;
-    margin: 0 !important;
-    padding: 0 !important;
-    user-select: none !important;
-    outline: none !important;
-    border: none !important;
+    margin: 0;
+    padding: 0;
+    user-select: none;
 }
 
-body, html {
-    width: 100vw;
-    height: 100vh;
+html, body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    background-color: #020208;
+    background-color: #000103; /* Absolute deep space void */
     font-family: 'Courier New', Courier, monospace;
-    cursor: none !important; /* Hides the mouse pointer entirely */
-    position: fixed;
-    top: 0;
-    left: 0;
+    cursor: none; /* Suppress system cursor for immersive screensaver deployment */
 }
 
-/* Master Canvas Styling */
-#engineCanvas {
+#canvas-container {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    display: block;
+    width: 100%;
+    height: 100%;
     z-index: 1;
 }
 
-/* Analog CRT Screen Glass Simulation */
-.crt-overlay {
+/* --- FUTURE HIGH-TECH HUD LAYER --- */
+.hud-layer {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.2) 100%);
-    pointer-events: none;
-    z-index: 5;
-}
-
-/* Moving Scanlines Effect */
-.scanlines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.3) 50%
-    ), linear-gradient(
-        90deg,
-        rgba(255, 0, 0, 0.03),
-        rgba(0, 255, 0, 0.01),
-        rgba(0, 0, 255, 0.03)
-    );
-    background-size: 100% 4px, 6px 100%;
-    pointer-events: none;
+    width: 100%;
+    height: 100%;
     z-index: 10;
+    pointer-events: none; /* Mouse events pass directly through to background listeners */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px;
+    box-sizing: border-box;
 }
 
-/* Heavy Cinematic Vignette */
-.vignette {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.85) 150%);
-    pointer-events: none;
-    z-index: 15;
-}
-
-/* Futuristic HUD Overlays */
-#hud {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 20;
-    padding: 30px;
-    color: rgba(0, 255, 200, 0.65);
-    text-shadow: 0 0 5px rgba(0, 255, 200, 0.5);
-    font-size: 12px;
+.hud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+    padding-bottom: 12px;
+    color: #00f0ff;
+    font-size: 0.85rem;
     letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
 }
 
-.hud-box {
-    position: absolute;
-    background: rgba(5, 15, 25, 0.4);
-    border: 1px solid rgba(0, 255, 200, 0.2);
-    padding: 10px 15px;
-    box-shadow: inset 0 0 10px rgba(0, 255, 200, 0.05);
+.hud-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.hud-box::before {
-    content: '';
-    position: absolute;
+.pulse-indicator {
     width: 8px;
     height: 8px;
-    border: 1px solid rgba(0, 255, 200, 0.8);
+    background-color: #39ff14; /* High-tech neon green pulse */
+    border-radius: 50%;
+    box-shadow: 0 0 10px #39ff14;
+    animation: status-pulse 1.8s infinite alternate;
 }
 
-.top-left { top: 30px; left: 30px; border-left: 3px solid rgba(0, 255, 200, 0.8); }
-.top-left::before { bottom: -5px; right: -5px; border-top: none; border-left: none; }
-
-.top-right { top: 30px; right: 30px; border-right: 3px solid rgba(255, 0, 100, 0.8); color: rgba(255, 0, 100, 0.7); text-shadow: 0 0 5px rgba(255, 0, 100, 0.5); }
-.top-right::before { bottom: -5px; left: -5px; border-top: none; border-right: none; }
-
-.bottom-left { bottom: 30px; left: 30px; border-left: 3px solid rgba(0, 255, 200, 0.8); }
-.bottom-left::before { top: -5px; right: -5px; border-bottom: none; border-left: none; }
-
-.bottom-right { bottom: 30px; right: 30px; border-right: 3px solid rgba(0, 255, 200, 0.8); }
-.bottom-right::before { top: -5px; left: -5px; border-bottom: none; border-right: none; }
-
-.label {
-    font-size: 9px;
-    color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 3px;
+.hud-telemetry {
+    align-self: flex-start;
+    background: rgba(0, 4, 12, 0.75);
+    border-left: 4px solid #00f0ff;
+    border-right: 1px solid rgba(0, 240, 255, 0.1);
+    border-top: 1px solid rgba(0, 240, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
 }
 
-.value {
+.data-bit {
+    font-size: 0.9rem;
+    color: rgba(0, 240, 255, 0.7);
+    letter-spacing: 1px;
+}
+
+.data-bit span {
+    color: #ffffff;
     font-weight: bold;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
 
-/* Glitch Animation for Hectic States */
-@keyframes screenGlitch {
-    0% { transform: translate(0,0) skewX(0deg); filter: hue-rotate(0deg); }
-    10% { transform: translate(-2px, 1px) skewX(-1deg); }
-    20% { transform: translate(1px, -1px) skewX(2deg); filter: hue-rotate(90deg); }
-    21% { transform: translate(0,0) skewX(0deg); filter: hue-rotate(0deg); }
-    100% { transform: translate(0,0) skewX(0deg); }
+.hud-footer {
+    display: flex;
+    justify-content: center;
+    color: rgba(0, 240, 255, 0.4);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
 }
 
-.glitching {
-    animation: screenGlitch 0.4s infinite;
+/* --- VISUAL ANIMATIONS --- */
+@keyframes status-pulse {
+    0% { opacity: 0.3; transform: scale(0.9); box-shadow: 0 0 4px #39ff14; }
+    100% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 14px #39ff14; }
 }

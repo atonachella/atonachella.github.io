@@ -3,35 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinite Portal Engine</title>
+    <title>Dimensional Portal Screensaver</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="engineCanvas"></canvas>
+    <div id="canvas-container"></div>
 
-    <div class="crt-overlay"></div>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
+    <div class="hud-layer">
+        <div class="hud-header">
+            <div class="hud-status"><span class="pulse-indicator"></span>ENG ENGINE: OPERATIONAL</div>
+            <div class="hud-title">INFINITE_PORTAL_LOG // SYSTEM_STREAM</div>
+        </div>
+        
+        <div class="hud-telemetry">
+            <div class="data-bit">WARP_VELOCITY: <span id="hud-speed">MACH 14.2</span></div>
+            <div class="data-bit">CURRENT_SECTOR: <span id="hud-sector">INITIALIZING...</span></div>
+            <div class="data-bit">FIELD_DENSITY: <span id="hud-density">94.2%</span></div>
+        </div>
 
-    <div id="hud">
-        <div class="hud-box top-left">
-            <div class="label">SYS.CORE</div>
-            <div class="value" id="hud-state">INITIALIZING...</div>
-        </div>
-        <div class="hud-box top-right">
-            <div class="label">VELOCITY</div>
-            <div class="value" id="hud-velocity">0.00 KM/S</div>
-        </div>
-        <div class="hud-box bottom-left">
-            <div class="label">COORDINATES</div>
-            <div class="value" id="hud-coords">X: 0 | Y: 0 | Z: 0</div>
-        </div>
-        <div class="hud-box bottom-right">
-            <div class="label">CHRONO</div>
-            <div class="value" id="hud-timer">00:00:00</div>
+        <div class="hud-footer">
+            <div class="hud-sysinfo">ALPHA_BUILD_v4.52 // MULTI_MONITOR_COMPATIBLE</div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
