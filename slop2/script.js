@@ -1,8 +1,10 @@
 /**
  * 3D PORTAL SCREENSAVER - DIMENSIONAL ENGINE (THREE.JS)
- * Architectural Flow: Moves continuously forward through a complex procedural geometry.
- * State Machine: Transitions smoothly between dystopian wireframe wreckage and utopian astral galaxies.
+ * Fully integrated with native compiler execution hooks and startup jitter filters.
  */
+
+// Track the absolute launch time to prevent Windows startup events from triggering an instant crash
+const ENGINE_LAUNCH_TIMESTAMP = Date.now();
 
 class DimensionalEngine {
     constructor() {
@@ -29,7 +31,7 @@ class DimensionalEngine {
         this.hudSector = document.getElementById('hud-sector');
         this.hudSpeed = document.getElementById('hud-speed');
 
-        // Fire Engine Modules
+        // Core System Initializations
         this.initThree();
         this.initInputListeners();
         this.buildInfiniteTunnel();
@@ -37,7 +39,7 @@ class DimensionalEngine {
         this.buildUtopianGalaxy();
         this.registerGlobalEvents();
         
-        // Execute primary render sequence
+        // Kick off primary render loop
         this.animate();
     }
 
@@ -57,7 +59,6 @@ class DimensionalEngine {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.container.appendChild(this.renderer.domElement);
 
-        // Ambient and directional layout for technical surface lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
         this.scene.add(ambientLight);
 
@@ -69,34 +70,30 @@ class DimensionalEngine {
     }
 
     /**
-     * Natively sets up an ironclad, threshold-guarded input execution engine.
-     * Keeps high-polling devices from false-triggering, but terminates instantly on deliberate intent.
+     * Ironclad input listener engine with threshold guarding to prevent phantom exits.
      */
     initInputListeners() {
-        this.baselineX = null;
-        this.baselineY = null;
-        this.exitThreshold = 12; // Complete immune buffer block against micro-vibrations
+        this.exitThreshold = 2; // Strict pixel movement threshold
 
         this.onMouseMove = (event) => {
-            const currentX = event.clientX;
-            const currentY = event.clientY;
-
-            if (this.baselineX === null || this.baselineY === null) {
-                this.baselineX = currentX;
-                this.baselineY = currentY;
+            // GRACE PERIOD: Ignore all mouse polling for the first 1.5 seconds to bypass Windows launch glitches
+            if (Date.now() - ENGINE_LAUNCH_TIMESTAMP < 1500) {
                 return;
             }
 
-            const driftX = Math.abs(currentX - this.baselineX);
-            const driftY = Math.abs(currentY - this.baselineY);
+            // Track actual physical pixel displacement vectors
+            const deltaX = Math.abs(event.movementX || 0);
+            const deltaY = Math.abs(event.movementY || 0);
 
             // Break thread only if tracking displacement values pierce threshold window
-            if (driftX > this.exitThreshold || driftY > this.exitThreshold) {
+            if (deltaX > this.exitThreshold || deltaY > this.exitThreshold) {
+                console.log(`Deliberate mouse movement detected (X: ${deltaX}, Y: ${deltaY}). Executing shutdown.`);
                 this.executeApplicationExit();
             }
         };
 
         this.onHardwareInterrupt = () => {
+            if (Date.now() - ENGINE_LAUNCH_TIMESTAMP < 1500) return;
             this.executeApplicationExit();
         };
 
@@ -107,51 +104,44 @@ class DimensionalEngine {
     }
 
     /**
-     * Safe termination sequence to step out of screensaver modes cleanly.
-     * Fires multiple native wrapper exit calls and logs errors directly to the console.
+     * Hard-terminates the application container by directly targeting the compiler shell namespaces.
      */
     executeApplicationExit() {
-        console.log("EXIT SEQUENCE TRIGGERED: Attempting application termination...");
+        console.log("SHUTDOWN INITIATED: Cleaning WebGL contexts and unbinding listeners...");
         
-        // Kill the listeners immediately to stop duplicate firing loops
+        // Strip listeners instantly to halt any recursive execution loops
         window.removeEventListener('mousemove', this.onMouseMove);
         window.removeEventListener('keydown', this.onHardwareInterrupt);
         window.removeEventListener('mousedown', this.onHardwareInterrupt);
 
-        // 1. Standard Web Runtime Exit (Works if wrapper permissions allow it)
-        try { 
-            window.close(); 
-            console.log("window.close() executed.");
-        } catch(e) { 
-            console.warn("Standard window.close() rejected by wrapper runtime."); 
+        // TARGET 1: DecSoft HTML Compiler Proprietary Namespace Hook
+        if (typeof dhc !== 'undefined' && dhc.app && typeof dhc.app.close === 'function') {
+            try {
+                dhc.app.close();
+                return; 
+            } catch(e) {
+                console.error("Native dhc.app.close() failed: ", e);
+            }
         }
 
-        // 2. Native Wrapper System Extensions (DecSoft HTML Compiler / HTML Executable API Hooks)
-        try { window.external.Close(); } catch(e) {}
-        try { window.external.close(); } catch(e) {}
-        
-        // 3. Generic App/Global Builder Object Targets
-        if (typeof App !== 'undefined') {
-            try { if (App.Close) App.Close(); } catch(e) {}
-            try { if (App.close) App.close(); } catch(e) {}
+        // TARGET 2: Generic Global App Framework Callbacks
+        if (typeof App !== 'undefined' && typeof App.close === 'function') {
+            try { App.close(); return; } catch(e) {}
+        }
+        if (typeof App !== 'undefined' && typeof App.Close === 'function') {
+            try { App.Close(); return; } catch(e) {}
         }
 
-        // 4. Desktop Framework / Node-WebKit Electron Fallbacks
-        if (typeof require !== 'undefined') {
-            try {
-                const { remote } = require('electron');
-                remote.getCurrentWindow().close();
-            } catch(e) {}
-            try {
-                const gui = require('nw.gui');
-                gui.App.quit();
-            } catch(e) {}
+        // TARGET 3: Legacy IE/Wrapper Windows Object Extensions
+        try { window.external.Close(); return; } catch(e) {}
+        try { window.external.close(); return; } catch(e) {}
+
+        // TARGET 4: Standard Browser DOM window close (Fallback for DevTools live testing)
+        try {
+            window.close();
+        } catch(e) {
+            console.warn("Standard window.close() blocked by browser security restrictions.");
         }
-        
-        /* * NOTE: The window.location.href = "about:blank" line is completely removed.
-         * If the wrapper strictly blocks all close attempts, your 3D portal will now 
-         * keep rendering smoothly instead of leaving you stranded in a black void.
-         */
     }
 
     /**
@@ -161,11 +151,9 @@ class DimensionalEngine {
         this.tunnelGroup = new THREE.Group();
         this.ringsArray = [];
 
-        // Geometries for multi-faceted geometric ring cuts
         const ringGeometry = new THREE.TorusGeometry(8, 0.08, 8, 24);
 
         for (let i = 0; i < this.maxTunnelRings; i++) {
-            // High-tech material profiles using cyan emissive properties
             const ringMaterial = new THREE.MeshBasicMaterial({
                 color: 0x00f0ff,
                 wireframe: true,
@@ -174,262 +162,3 @@ class DimensionalEngine {
             });
 
             const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-            
-            // Stagger position down the Z-depth field sequentially
-            const initialZ = -i * this.tunnelZSpacing;
-            ringMesh.position.set(0, 0, initialZ);
-            
-            // Incremental spiraling rotation transform mapping
-            ringMesh.rotation.z = i * 0.08;
-
-            this.tunnelGroup.add(ringMesh);
-            this.ringsArray.push({
-                mesh: ringMesh,
-                baseZ: initialZ
-            });
-        }
-
-        this.scene.add(this.tunnelGroup);
-    }
-
-    /**
-     * Generates floating, multi-faceted dystopian debris shrapnel fields
-     */
-    buildDystopianWreckage() {
-        this.debrisGroup = new THREE.Group();
-        this.debrisArray = [];
-
-        // Jagged architectural forms
-        const boxGeom = new THREE.BoxGeometry(1, 1, 1);
-        const icoGeom = new THREE.IcosahedronGeometry(1, 0);
-
-        for (let i = 0; i < this.maxDebrisCount; i++) {
-            const isBox = Math.random() > 0.5;
-            const targetGeom = isBox ? boxGeom : icoGeom;
-
-            const debrisMaterial = new THREE.MeshStandardMaterial({
-                color: Math.random() > 0.3 ? 0xff1e3c : 0x00f0ff, // Deep Dark Crimson vs Vivid Cyan
-                wireframe: true,
-                roughness: 0.9,
-                metalness: 0.2,
-                transparent: true,
-                opacity: 0.6
-            });
-
-            const mesh = new THREE.Mesh(targetGeom, debrisMaterial);
-            
-            // Random distribution vectors around the outer limits of the tunnel structure
-            const angle = Math.random() * Math.PI * 2;
-            const radius = 9.0 + Math.random() * 6.0;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            const z = -(Math.random() * (this.maxTunnelRings * this.tunnelZSpacing));
-
-            mesh.position.set(x, y, z);
-            
-            // Unique tumble vectors
-            const scaleMultiplier = 0.4 + Math.random() * 1.2;
-            mesh.scale.set(scaleMultiplier, scaleMultiplier, scaleMultiplier);
-            
-            const rotationSpeedX = (Math.random() - 0.5) * 0.03;
-            const rotationSpeedY = (Math.random() - 0.5) * 0.03;
-
-            this.debrisGroup.add(mesh);
-            this.debrisArray.push({
-                mesh: mesh,
-                rotX: rotationSpeedX,
-                rotY: rotationSpeedY,
-                radius: radius,
-                angle: angle
-            });
-        }
-
-        this.scene.add(this.debrisGroup);
-    }
-
-    /**
-     * Assembles a performance-optimized volumetric point cloud buffer for the utopian star galaxies.
-     */
-    buildUtopianGalaxy() {
-        const starGeometry = new THREE.BufferGeometry();
-        const starPositions = new Float32Array(this.starCount * 3);
-        const starColors = new Float32Array(this.starCount * 3);
-
-        const cyanColor = new THREE.Color(0x00ffc8); // Mint Utopian Cyan
-        const purpleColor = new THREE.Color(0x9632ff); // Astral Deep Purple
-        const whiteColor = new THREE.Color(0xffffffff);
-
-        for (let i = 0; i < this.starCount; i++) {
-            // Spiral distribution configurations
-            const angle = Math.random() * Math.PI * 2;
-            const radialSpread = 1.5 + Math.random() * 25.0;
-            
-            const x = Math.cos(angle) * radialSpread;
-            const y = Math.sin(angle) * radialSpread;
-            const z = -(Math.random() * 300.0);
-
-            starPositions[i * 3] = x;
-            starPositions[i * 3 + 1] = y;
-            starPositions[i * 3 + 2] = z;
-
-            // Interpolate color values across galaxy arrays procedurally
-            let pickedColor = whiteColor;
-            const diceRoll = Math.random();
-            if (diceRoll > 0.6) pickedColor = cyanColor;
-            else if (diceRoll > 0.3) pickedColor = purpleColor;
-
-            starColors[i * 3] = pickedColor.r;
-            starColors[i * 3 + 1] = pickedColor.g;
-            starColors[i * 3 + 2] = pickedColor.b;
-        }
-
-        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-
-        // Use standard round texture generation using particle math to keep layout external CDN free
-        const starMaterial = new THREE.PointsMaterial({
-            size: 0.22,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.0, // Instantiates hidden; blended in systematically during phase transitions
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-
-        this.galaxyPoints = new THREE.Points(starGeometry, starMaterial);
-        this.scene.add(this.galaxyPoints);
-    }
-
-    /**
-     * Direct linear interpolation controller for transition values
-     */
-    lerp(start, end, amt) {
-        return (1 - amt) * start + amt * end;
-    }
-
-    /**
-     * Master State Matrix Scheduler loop
-     */
-    processPhaseTransition() {
-        this.elapsedFrames++;
-
-        // Switch objective profiles cyclical timelines (~15 seconds)
-        if (this.elapsedFrames % 900 === 0) {
-            this.currentThemeState = this.currentThemeState === 0 ? 1 : 0;
-        }
-
-        // Lock interpolation transitions smoothly
-        const shiftRate = 0.004;
-        this.interpolationValue = this.lerp(this.interpolationValue, this.currentThemeState, shiftRate);
-
-        // Update active rendering parameters across groups based on active configurations
-        if (this.interpolationValue < 0.3) {
-            this.hudSector.innerText = "RECKONING_VOID // SEC_01";
-            this.hudSector.style.color = "#ff1e3c";
-            this.forwardSpeed = this.lerp(this.forwardSpeed, 0.04, 0.01);
-            this.hudSpeed.innerText = `MACH ${(12.4 + Math.sin(this.elapsedFrames * 0.02) * 0.2).toFixed(1)}`;
-        } else if (this.interpolationValue > 0.7) {
-            this.hudSector.innerText = "TRANSCENDENT_GALAXY // SEC_02";
-            this.hudSector.style.color = "#00ffc8";
-            this.forwardSpeed = this.lerp(this.forwardSpeed, 0.12, 0.01); // Visibly accelerate through galaxies
-            this.hudSpeed.innerText = `MACH ${(24.8 + Math.sin(this.elapsedFrames * 0.04) * 0.5).toFixed(1)}`;
-        } else {
-            this.hudSector.innerText = "SHIFTING_QUANTUM_BRIDGE...";
-            this.hudSector.style.color = "#9632ff";
-        }
-
-        // Morph material attributes directly across the WebGL contexts
-        this.galaxyPoints.material.opacity = this.interpolationValue;
-        
-        // Dynamically alter ring attributes based on theme blends
-        this.ringsArray.forEach((ring, idx) => {
-            if (this.currentThemeState === 1) {
-                ring.mesh.material.color.setHex(0x9632ff); // Shift rings to purple during galaxy phase
-                ring.mesh.material.opacity = this.lerp(0.4, 0.15, this.interpolationValue);
-            } else {
-                ring.mesh.material.color.setHex(0x00f0ff); // Restore core high tech cyan
-                ring.mesh.material.opacity = this.lerp(0.4, 0.5, 1 - this.interpolationValue);
-            }
-        });
-
-        // Dim down wreckage groups dynamically as galaxy systems bloom
-        this.debrisGroup.position.z += this.forwardSpeed * 20;
-        if (this.debrisGroup.position.z > (this.maxTunnelRings * this.tunnelZSpacing)) {
-            this.debrisGroup.position.z = 0; // Seamlessly loop block arrays back to horizons
-        }
-    }
-
-    /**
-     * Primary Animation Frame Pipeline Loop Engine
-     */
-    animate() {
-        requestAnimationFrame(() => this.animate());
-
-        const delta = this.clock.getDelta();
-        const absoluteTime = this.clock.getElapsedTime();
-
-        // 1. Process environmental transforms
-        this.processPhaseTransition();
-
-        // 2. Drive the Camera or objects infinitely down the Z axis
-        this.ringsArray.forEach((ring) => {
-            // Move ring towards camera perspective plane
-            ring.mesh.position.z += this.forwardSpeed * 60 * delta;
-
-            // When passing camera view limits, reset immediately to deep horizon
-            const limitThreshold = 15.0;
-            if (ring.mesh.position.z > limitThreshold) {
-                const furthestZ = -((this.maxTunnelRings - 1) * this.tunnelZSpacing);
-                ring.mesh.position.z = furthestZ;
-            }
-
-            // Continuous architectural rotation matrix updates
-            ring.mesh.rotation.z += 0.003;
-        });
-
-        // 3. Update debris tracking tumble matrix routines
-        this.debrisArray.forEach((item) => {
-            item.mesh.rotation.x += item.rotX;
-            item.mesh.rotation.y += item.rotY;
-            
-            // Slowly rotate entire debris fields around outer paths
-            if (this.interpolationValue < 0.5) {
-                item.angle += 0.001;
-                item.mesh.position.x = Math.cos(item.angle) * item.radius;
-                item.mesh.position.y = Math.sin(item.angle) * item.radius;
-            }
-        });
-
-        // 4. Vortex spiral updates on galaxy cloud sets
-        if (this.interpolationValue > 0.05) {
-            this.galaxyPoints.rotation.z = absoluteTime * 0.015;
-        }
-
-        // Synchronize lights properties
-        this.pointLight.position.z = Math.sin(absoluteTime) * 5;
-
-        // Render Frame Output Context
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    /**
-     * System event registers
-     */
-    registerGlobalEvents() {
-        window.addEventListener('resize', () => {
-            this.width = window.innerWidth;
-            this.height = window.innerHeight;
-            this.aspectRatio = this.width / this.height;
-
-            this.camera.aspect = this.aspectRatio;
-            this.camera.updateProjectionMatrix();
-
-            this.renderer.setSize(this.width, this.height);
-        });
-    }
-}
-
-// Instantiate engine context instantly on thread distribution loading
-window.addEventListener('DOMContentLoaded', () => {
-    const coreEngine = new DimensionalEngine();
-});
