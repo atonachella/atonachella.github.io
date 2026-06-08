@@ -1,6 +1,6 @@
 /**
  * Monolithic 3D Graphics & Engine Software Pipeline
- * Pre-patched for Full-Screen Screensaver Execution
+ * Hardcoded Canvas Layout and Visual Exit State Pipeline
  */
 
 // --- ENGINE CONFIGURATION & CONSTANTS ---
@@ -467,11 +467,23 @@ class ParticleSystem {
     }
 }
 
-// --- MASTER GRAPHICS CORE ENGINE (SCREENSAVER READY) ---
+// --- MASTER GRAPHICS CORE ENGINE ---
 class MasterGraphicsEngine {
     constructor() {
         this.canvas = document.getElementById("engineCanvas");
         this.ctx = this.canvas.getContext("2d");
+        
+        // HARDCODED LAYOUT OVERRIDES - Bypasses layout collapse faults from CSS anomalies
+        this.canvas.style.position = "fixed";
+        this.canvas.style.top = "0";
+        this.canvas.style.left = "0";
+        this.canvas.style.width = "100vw";
+        this.canvas.style.height = "100vh";
+        this.canvas.style.zIndex = "1";
+        this.canvas.style.display = "block";
+
+        this.isExiting = false;
+
         this.starfield = new Starfield();
         this.tunnel = new SpiralTunnel();
         this.particles = new ParticleSystem();
@@ -491,10 +503,26 @@ class MasterGraphicsEngine {
         this.hudCoords = document.getElementById("hud-coords");
         this.hudTimer = document.getElementById("hud-timer");
 
-        // --- FIXED INTEGRATED SCREENSAVER INTERRUPTS ---
+        // --- HARDCODED SCREENSAVER INTERRUPTS ---
         this.initialMouseX = null;
         this.initialMouseY = null;
         this.mouseThreshold = 15; 
+
+        const triggerExit = () => {
+            if (this.isExiting) return;
+            this.isExiting = true;
+            
+            // Explicit visual confirmation for runtime checking in raw browser space
+            this.ctx.fillStyle = "#000000";
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.font = "bold 28px 'Courier New'";
+            this.ctx.fillStyle = "#ff0055";
+            this.ctx.textAlign = "center";
+            this.ctx.fillText("EXITING SCREENSAVER...", this.canvas.width / 2, this.canvas.height / 2);
+            
+            // Calls wrapper process kill for deployed environments
+            window.close(); 
+        };
 
         window.addEventListener("mousemove", (e) => {
             if (this.initialMouseX === null || this.initialMouseY === null) {
@@ -506,17 +534,12 @@ class MasterGraphicsEngine {
             let deltaY = Math.abs(e.clientY - this.initialMouseY);
             
             if (deltaX > this.mouseThreshold || deltaY > this.mouseThreshold) {
-                window.close(); 
+                triggerExit();
             }
         });
 
-        window.addEventListener("keydown", () => {
-            window.close();
-        });
-        
-        window.addEventListener("mousedown", () => {
-            window.close();
-        });
+        window.addEventListener("keydown", triggerExit);
+        window.addEventListener("mousedown", triggerExit);
     }
 
     resizeCanvas() {
@@ -553,7 +576,66 @@ class MasterGraphicsEngine {
     }
 
     updateHUDDisplay() {
-        if (engine.globalTime % 6 !== 0) return; 
-        this.hudState.textContent = engine.getStateString();
+        if (engine.globalTime % 6 !== 0 || !this.hudState) return; 
+        this.hudState.textContent = engine.getStageString();
         this.hudVelocity.textContent = `${(engine.velocity * 4200).toFixed(2)} KM/S`;
-        this.hudCoords.textContent = `X:${(Math.sin(engine.globalTime*0.01)*100).toFixed(0)} Y
+        this.hudCoords.textContent = `X:${(Math.sin(engine.globalTime*0.01)*100).toFixed(0)} Y:${(Math.cos(engine.globalTime*0.015)*100).toFixed(0)} Z:${Math.floor(engine.cameraPos.z * 10)}`;
+        
+        let sec = Math.floor(engine.globalTime / 60);
+        let min = Math.floor(sec / 60);
+        let hr = Math.floor(min / 60);
+        this.hudTimer.textContent = `${String(hr % 24).padStart(2,'0')}:${String(min % 60).padStart(2,'0')}:${String(sec % 60).padStart(2,'0')}`;
+    }
+
+    renderPipelineFrame() {
+        let ctx = this.ctx;
+        let w = this.canvas.width;
+        let h = this.canvas.height;
+
+        ctx.fillStyle = engine.palette.bg.toString();
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.globalCompositeOperation = "screen";
+
+        let renderList = [];
+        this.starfield.collectRenderables(renderList, w, h);
+        this.tunnel.collectRenderables(renderList, w, h);
+        this.particles.collectRenderables(renderList, w, h);
+        for(let piece of this.wreckagePieces) piece.collectRenderables(renderList, w, h);
+
+        renderList.sort((objA, objB) => objB.depth - objA.depth);
+
+        if (engine.chaosFactor > 0.6) {
+            ctx.save();
+            ctx.translate(Math.random() * 3 - 1.5, 0);
+            for (let element of renderList) element.render(ctx);
+            ctx.restore();
+        } else {
+            for (let element of renderList) element.render(ctx);
+        }
+
+        ctx.globalCompositeOperation = "source-over";
+    }
+
+    startEngineLoop() {
+        const loop = () => {
+            if (this.isExiting) return; 
+            this.updatePhysics();
+            this.renderPipelineFrame();
+            requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+    }
+}
+
+// --- SAFE ENGINE EXECUTION CONTAINER ---
+function initializeEngineSystem() {
+    const coreEngine = new MasterGraphicsEngine();
+    coreEngine.startEngineLoop();
+}
+
+if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", initializeEngineSystem);
+} else {
+    initializeEngineSystem();
+}
