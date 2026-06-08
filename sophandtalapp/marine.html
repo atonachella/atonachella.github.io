@@ -2,96 +2,676 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Marine Explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sophia's Ocean Realm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { background-color: #050a14; color: #e0f7fa; font-family: 'Arial', sans-serif; margin: 0; padding: 20px; }
-        .marine-section { background-color: #0b1d36; border: 2px solid #3498db; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; }
-        h1, h2 { color: #5dade2; }
+        :root {
+            --void:       #030d18;
+            --panel:      rgba(4,22,44,0.85);
+            --cyan:       #00d2d3;
+            --bio-green:  #00ff88;
+            --depth:      #0a3d62;
+            --border:     rgba(0,210,211,0.25);
+            --text:       #cfe8f0;
+            --dim:        rgba(0,210,211,0.45);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
 
-        /* SONAR: Centered Circle with Sweep & Trail */
-        #sonar-circle { width: 200px; height: 200px; border: 4px solid #2ecc71; border-radius: 50%; margin: 20px auto; position: relative; background: #000; overflow: hidden; cursor: pointer; }
-        #sonar-sweep { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; transform-origin: left center; background: conic-gradient(from 0deg, rgba(46, 204, 113, 0.4) 0deg, transparent 60deg); animation: rotate 3s linear infinite; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        body {
+            background: var(--void); color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh; overflow-x: hidden;
+            position: relative;
+        }
 
-        /* INTERACTIVE BUTTONS */
-        .marine-btn { background: #1a3a5f; color: #fff; border: 2px solid #3498db; padding: 12px 24px; cursor: pointer; border-radius: 8px; font-weight: bold; margin: 5px; }
-        
-        /* 15x15 GRID */
-        .marine-grid { display: grid; grid-template-columns: repeat(15, 1fr); gap: 1px; max-width: 450px; margin: 20px auto; border: 2px solid #3498db; }
-        .pixel { aspect-ratio: 1/1; background-color: #071526; border: 1px solid #1a3a5f; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #1a3a5f; }
-        .palette { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-        .p-btn { width: 35px; height: 35px; border: 2px solid #fff; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        /* ── 3D PARTICLE BACKGROUND ── */
+        #three-bg {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            z-index: 0; pointer-events: none;
+        }
+
+        /* ── SCANLINE OVERLAY ── */
+        body::after {
+            content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+        }
+
+        /* ── LAYOUT ── */
+        .main-wrap { position:relative; z-index:2; max-width:860px; margin:0 auto; padding:24px 20px 60px; }
+
+        /* ── HEADER ── */
+        .site-header {
+            text-align: center; padding: 32px 20px 28px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px; position:relative;
+        }
+        .site-header::before {
+            content:'DEPTH: 3,810m | PRESSURE: 381 ATM | STATUS: ACTIVE';
+            display:block; font-size:0.6rem; letter-spacing:0.2em;
+            color: var(--dim); margin-bottom:16px;
+        }
+        .site-title {
+            font-family:'Orbitron', monospace; font-size: clamp(1.4rem,5vw,2.4rem);
+            font-weight:900; letter-spacing:0.06em;
+            background: linear-gradient(90deg, #00d2d3, #00ff88, #74b9ff);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        }
+        .site-sub { font-size:0.7rem; letter-spacing:0.3em; color:var(--dim); margin-top:8px; }
+
+        /* ── PANEL SECTIONS ── */
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 28px;
+            margin-bottom: 28px;
+            backdrop-filter: blur(12px);
+            position:relative; overflow:hidden;
+        }
+        .panel::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        }
+        .panel-title {
+            font-family:'Orbitron', monospace; font-size:0.8rem;
+            letter-spacing:0.2em; text-transform:uppercase;
+            color: var(--cyan); margin-bottom:20px;
+            display:flex; align-items:center; gap:10px;
+        }
+        .panel-title::after { content:''; flex:1; height:1px; background: var(--border); }
+
+        /* ── YOUTUBE EMBED ── */
+        .yt-wrap {
+            position:relative; padding-top:56.25%; border-radius:10px; overflow:hidden;
+            border: 1px solid var(--border);
+        }
+        .yt-wrap iframe { position:absolute; inset:0; width:100%; height:100%; }
+
+        /* ── TRIVIA ── */
+        .trivia-question {
+            font-family:'Orbitron', monospace; font-size:0.95rem; line-height:1.6;
+            color:#ffffff; margin-bottom:20px; min-height:48px;
+        }
+        .trivia-options { display:flex; flex-direction:column; gap:10px; }
+        .trivia-btn {
+            background: rgba(0,210,211,0.05); border: 1px solid var(--border);
+            color: var(--text); padding: 12px 18px; border-radius:10px;
+            font-family:'Share Tech Mono', monospace; font-size:0.9rem;
+            cursor:pointer; text-align:left; transition:all 0.2s;
+        }
+        .trivia-btn:hover { background: rgba(0,210,211,0.12); border-color: var(--cyan); }
+        .trivia-btn.correct { background: rgba(0,255,136,0.15); border-color: var(--bio-green); color: var(--bio-green); }
+        .trivia-btn.wrong   { background: rgba(255,71,87,0.1); border-color: #ff4757; color: #ff4757; pointer-events:none; }
+        .trivia-result { margin-top:14px; font-size:0.85rem; min-height:24px; letter-spacing:0.05em; }
+        .trivia-result.ok  { color: var(--bio-green); }
+        .trivia-result.err { color: #ff4757; }
+        .trivia-progress { font-size:0.65rem; letter-spacing:0.15em; color:var(--dim); margin-bottom:12px; }
+        .trivia-next { margin-top:14px; background:transparent; border:1px solid var(--cyan); color:var(--cyan); padding:8px 20px; border-radius:8px; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.65rem; letter-spacing:0.15em; display:none; }
+        .trivia-next:hover { background:rgba(0,210,211,0.1); }
+
+        /* ── SVG COLORING BOOK ── */
+        .color-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+        .color-swatch {
+            width:38px; height:38px; border-radius:50%; cursor:pointer;
+            border:2px solid rgba(255,255,255,0.15);
+            display:flex; align-items:center; justify-content:center;
+            font-family:'Orbitron',monospace; font-size:0.6rem; color:#fff;
+            font-weight:700; transition:all 0.2s; user-select:none;
+        }
+        .color-swatch.active { border-color:#fff; transform:scale(1.2); box-shadow:0 0 12px rgba(255,255,255,0.4); }
+        .color-hint { text-align:center; font-size:0.65rem; color:var(--dim); margin-bottom:12px; letter-spacing:0.1em; }
+        .svg-container { display:flex; justify-content:center; }
+        svg.coloring-book { max-width:480px; width:100%; cursor:crosshair; }
+        svg.coloring-book .zone { stroke:#1a3a5a; stroke-width:1.5; transition:filter 0.2s; }
+        svg.coloring-book .zone:hover { filter:brightness(1.3); stroke:#00d2d3; }
+        svg.coloring-book .zone.filled { stroke:#0a2040; }
+        .zone-label { font-family:'Share Tech Mono'; font-size:9px; fill:rgba(200,220,240,0.7); pointer-events:none; text-anchor:middle; dominant-baseline:middle; }
+        .color-complete { text-align:center; font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--bio-green); margin-top:14px; min-height:20px; letter-spacing:0.12em; }
+
+        /* ── WORD SEARCH ── */
+        .ws-grid-wrap { display:flex; justify-content:center; margin-bottom:16px; }
+        .ws-grid {
+            display:grid; grid-template-columns:repeat(10,1fr);
+            gap:2px; max-width:380px; width:100%;
+            background: rgba(0,210,211,0.05); border: 1px solid var(--border); border-radius:8px; padding:10px;
+        }
+        .ws-cell {
+            aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+            font-family:'Orbitron', monospace; font-size: clamp(0.5rem, 2vw, 0.75rem);
+            font-weight:700; letter-spacing:0;
+            color: var(--text); border-radius:4px; cursor:pointer; user-select:none;
+            transition: background 0.1s;
+        }
+        .ws-cell.selecting { background: rgba(0,210,211,0.25); color:#fff; }
+        .ws-cell.found { background: rgba(0,255,136,0.2); color: var(--bio-green); pointer-events:none; }
+        .ws-words { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:12px; }
+        .ws-word {
+            font-family:'Orbitron',monospace; font-size:0.6rem; letter-spacing:0.1em;
+            padding:4px 10px; border:1px solid var(--border); border-radius:20px; color:var(--dim);
+        }
+        .ws-word.found { color: var(--bio-green); border-color: var(--bio-green); text-decoration:line-through; }
+        .ws-status { text-align:center; font-size:0.65rem; color:var(--dim); letter-spacing:0.1em; min-height:20px; }
+
+        /* ── SOUND TOGGLE ── */
+        .sound-btn {
+            position:fixed; bottom:24px; right:24px; z-index:50;
+            background:rgba(4,22,44,0.9); border:1px solid var(--border);
+            color:var(--dim); padding:10px 16px; border-radius:30px; cursor:pointer;
+            font-family:'Orbitron',monospace; font-size:0.6rem; letter-spacing:0.12em;
+            backdrop-filter:blur(10px); transition:all 0.2s;
+        }
+        .sound-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+        .sound-btn.on { border-color:var(--bio-green); color:var(--bio-green); }
+
+        /* ── RETURN BTN ── */
+        .return-btn {
+            display:block; margin:32px auto 0;
+            background:transparent; border:1px solid var(--border);
+            color:var(--dim); padding:12px 32px; border-radius:10px;
+            font-family:'Orbitron',monospace; font-size:0.65rem; letter-spacing:0.2em;
+            cursor:pointer; transition:all 0.2s;
+        }
+        .return-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+
+        /* ── EASTER EGG CRAB ── */
+        #hidden-crab {
+            position:fixed; bottom:60px; right:18px; z-index:50;
+            font-size:0.8rem; opacity:0.07; cursor:pointer;
+            transition:opacity 0.3s; padding:8px;
+        }
+        #hidden-crab:hover { opacity:0.2; }
+
+        /* ── EGG POPUP ── */
+        .egg-popup { position:fixed; inset:0; z-index:200; display:none; justify-content:center; align-items:center; background:rgba(0,0,0,0.88); }
+        .egg-popup.show { display:flex; animation:fadeIn 0.4s ease; }
+        .egg-box { background:rgba(4,22,44,0.98); border:1px solid var(--cyan); border-radius:16px; padding:36px; text-align:center; max-width:340px; box-shadow:0 0 60px rgba(0,210,211,0.2); }
+        .egg-icon { font-size:3rem; margin-bottom:12px; }
+        .egg-title { font-family:'Orbitron',monospace; font-size:0.9rem; color:var(--cyan); letter-spacing:0.12em; margin-bottom:10px; }
+        .egg-msg { color:rgba(255,255,255,0.7); font-size:0.9rem; line-height:1.6; margin-bottom:20px; }
+        .egg-close { background:transparent; border:1px solid var(--border); color:var(--dim); padding:8px 24px; border-radius:8px; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.6rem; letter-spacing:0.15em; }
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
     </style>
 </head>
 <body>
+    <canvas id="three-bg"></canvas>
 
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1>Marine Discovery 🌊</h1>
+    <div class="main-wrap">
+        <header class="site-header">
+            <div class="site-title">Sophia's Ocean Realm</div>
+            <div class="site-sub">MARINE RESEARCH STATION · ACTIVE</div>
+        </header>
 
-        <section class="marine-section">
-            <h2>Sonar Explorer</h2>
-            <div id="sonar-circle" onclick="ping()"><div id="sonar-sweep"></div></div>
-            <p>Click the sonar to ping!</p>
-        </section>
+        <!-- YOUTUBE: Red Ball 4 Speedrun -->
+        <div class="panel">
+            <div class="panel-title">🎮 Speed Lab — Red Ball 4 Speedrun</div>
+            <div class="yt-wrap">
+                <iframe src="https://www.youtube.com/embed/eNXWywIowsQ" title="Red Ball 4 Speedrun" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
 
-        <section class="marine-section">
-            <h2>Deep Sea Trivia</h2>
-            <div id="trivia-q" style="margin-bottom: 15px; font-size: 1.2rem;"></div>
-            <div id="trivia-a"></div>
-        </section>
+        <!-- TRIVIA -->
+        <div class="panel">
+            <div class="panel-title">🔬 Deep-Sea Intelligence Briefing</div>
+            <div class="trivia-progress" id="tri-progress">Question 1 / 5</div>
+            <div class="trivia-question" id="tri-question">Loading...</div>
+            <div class="trivia-options" id="tri-options"></div>
+            <div class="trivia-result" id="tri-result"></div>
+            <button class="trivia-next" id="tri-next" onclick="nextQuestion()">NEXT QUESTION ›</button>
+        </div>
 
-        <section class="marine-section">
-            <h2>Underwater Canvas</h2>
-            <div id="marine-palette" class="palette"></div>
-            <div id="marine-grid" class="marine-grid"></div>
-        </section>
+        <!-- SVG COLORING BOOK -->
+        <div class="panel">
+            <div class="panel-title">🎨 Coral Reef Field Canvas</div>
+            <div class="color-hint" id="soph-hint">Select a depth code, then click the matching region</div>
+            <div class="color-controls" id="soph-palette"></div>
+            <div class="svg-container">
+                <svg class="coloring-book" viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" id="soph-svg">
 
-        <button class="marine-btn" style="display:block; margin: 20px auto;" onclick="window.location.href='index.html'">↩️ Return to Home</button>
+                    <!-- Zone 1: Deep ocean background -->
+                    <rect class="zone" data-zone="1" x="0" y="0" width="480" height="340" fill="#0d2235"/>
+                    <text class="zone-label" x="18" y="16">1</text>
+
+                    <!-- Zone 2: Sandy seafloor -->
+                    <path class="zone" data-zone="2" d="M 0,295 Q 80,278 160,288 Q 240,298 320,282 Q 400,268 480,280 L 480,340 L 0,340 Z" fill="#3a2e1a"/>
+                    <text class="zone-label" x="240" y="325">2</text>
+
+                    <!-- Zone 3: Left coral cluster -->
+                    <polygon class="zone" data-zone="3" points="65,294,60,262,54,234,48,210,58,200,68,212,65,235,73,250,84,240,90,222,96,212,104,218,101,238,92,254,87,270,94,294" fill="#4a1a1a"/>
+                    <text class="zone-label" x="76" y="258">3</text>
+
+                    <!-- Zone 4: Right coral cluster -->
+                    <polygon class="zone" data-zone="4" points="370,292,365,260,360,232,354,208,363,198,373,210,370,234,378,248,388,238,394,220,400,210,408,217,405,238,396,254,390,270,398,292" fill="#3a1e08"/>
+                    <text class="zone-label" x="383" y="255">4</text>
+
+                    <!-- Zone 5: Seaweed -->
+                    <path class="zone" data-zone="5" d="M 168,294 Q 155,274 165,256 Q 176,240 163,220 Q 151,202 164,184 Q 172,172 178,184 Q 192,202 178,220 Q 165,240 178,256 Q 192,274 178,294 Z" fill="#0d2810"/>
+                    <text class="zone-label" x="172" y="238">5</text>
+
+                    <!-- Zone 6: Fish body -->
+                    <ellipse class="zone" data-zone="6" cx="240" cy="168" rx="90" ry="44" fill="#3a2a00"/>
+                    <text class="zone-label" x="240" y="168">6</text>
+
+                    <!-- Zone 7: Fish tail (right) -->
+                    <polygon class="zone" data-zone="7" points="326,168,368,138,374,168,368,198" fill="#2a0d00"/>
+                    <text class="zone-label" x="352" y="168">7</text>
+
+                    <!-- Zone 7b: Fish dorsal fin (top) -->
+                    <polygon class="zone" data-zone="7" points="198,126,238,98,278,126" fill="#2a0d00"/>
+
+                    <!-- Zone 7c: Pectoral fin (side) -->
+                    <polygon class="zone" data-zone="7" points="200,168,174,150,174,188" fill="#2a0d00"/>
+
+                    <!-- Zone 8: Fish belly stripe -->
+                    <ellipse class="zone" data-zone="8" cx="235" cy="176" rx="70" ry="22" fill="#2a2a2a"/>
+                    <text class="zone-label" x="235" y="176">8</text>
+
+                    <!-- Zone 9: Bubbles -->
+                    <circle class="zone" data-zone="9" cx="300" cy="128" r="8" fill="#0a1828"/>
+                    <circle class="zone" data-zone="9" cx="314" cy="108" r="5.5" fill="#0a1828"/>
+                    <circle class="zone" data-zone="9" cx="325" cy="120" r="4" fill="#0a1828"/>
+                    <text class="zone-label" x="310" y="118">9</text>
+
+                    <!-- Decorative: fish eye (non-colorable) -->
+                    <circle cx="175" cy="158" r="7" fill="#050d18" pointer-events="none"/>
+                    <circle cx="177" cy="156" r="3" fill="#00d2d3" opacity="0.8" pointer-events="none"/>
+                </svg>
+            </div>
+            <div class="color-complete" id="soph-complete"></div>
+        </div>
+
+        <!-- WORD SEARCH -->
+        <div class="panel">
+            <div class="panel-title">🔍 Specimen Word Search</div>
+            <div class="ws-words" id="ws-words"></div>
+            <div class="ws-grid-wrap"><div class="ws-grid" id="ws-grid"></div></div>
+            <div class="ws-status" id="ws-status">Click on the first letter of a word, then the last letter</div>
+        </div>
+
+        <button class="return-btn" onclick="window.location.href='index.html'">↩ Return to Portal</button>
     </div>
 
+    <!-- Hidden Easter Egg -->
+    <div id="hidden-crab">🦀</div>
+    <div class="egg-popup" id="crab-popup">
+        <div class="egg-box">
+            <div class="egg-icon">🦀</div>
+            <div class="egg-title">SECRET CRAB CAVE</div>
+            <p class="egg-msg">You found the hidden crab grotto, Sophia! Ask Dad what your secret reward is! 🌊🐠</p>
+            <button class="egg-close" onclick="document.getElementById('crab-popup').classList.remove('show')">← Return to Depths</button>
+        </div>
+    </div>
+
+    <button class="sound-btn" id="sound-btn" onclick="toggleSound()">◎ AMBIENT: OFF</button>
+
     <script>
-        // SONAR: Audio Pulse
-        const audio = new (window.AudioContext || window.webkitAudioContext)();
-        function ping() {
-            const o = audio.createOscillator();
-            const g = audio.createGain();
-            o.frequency.value = 440;
-            g.gain.setValueAtTime(0.5, audio.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + 0.5);
-            o.connect(g); g.connect(audio.destination);
-            o.start(); o.stop(audio.currentTime + 0.5);
-        }
-        setInterval(ping, 4000); // Auto-ping every 4s
+    // ══════════════════════════════════════════════
+    // THREE.JS BIOLUMINESCENT PARTICLE BACKGROUND
+    // ══════════════════════════════════════════════
+    (function() {
+        const canvas = document.getElementById('three-bg');
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
 
-        // TRIVIA: Functional
-        const t = {q: "What is the 'Unicorn of the Sea'?", a: ["Narwhal", "Beluga"], c: 0};
-        document.getElementById("trivia-q").innerText = t.q;
-        t.a.forEach((opt, i) => {
-            const b = document.createElement("button");
-            b.className = "marine-btn"; b.innerText = opt;
-            b.onclick = () => alert(i === t.c ? "Correct!" : "Try again");
-            document.getElementById("trivia-a").appendChild(b);
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 60;
+
+        const N = 900;
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(N * 3);
+        const col = new Float32Array(N * 3);
+        const vel = new Float32Array(N * 3);
+
+        for(let i = 0; i < N; i++) {
+            pos[i*3]   = (Math.random() - 0.5) * 200;
+            pos[i*3+1] = (Math.random() - 0.5) * 160;
+            pos[i*3+2] = (Math.random() - 0.5) * 80;
+            vel[i*3]   = (Math.random() - 0.5) * 0.015;
+            vel[i*3+1] = 0.02 + Math.random() * 0.06;
+            vel[i*3+2] = (Math.random() - 0.5) * 0.008;
+
+            const t = Math.random();
+            if(t < 0.4) {        col[i*3]=0;   col[i*3+1]=0.82; col[i*3+2]=0.83; } // cyan
+            else if(t < 0.65) {  col[i*3]=0;   col[i*3+1]=1;    col[i*3+2]=0.53; } // bio-green
+            else if(t < 0.82) {  col[i*3]=0.3; col[i*3+1]=0.5;  col[i*3+2]=1;    } // blue
+            else {               col[i*3]=0.5; col[i*3+1]=0.9;  col[i*3+2]=1;    } // light blue
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+
+        const mat = new THREE.PointsMaterial({ size: 0.4, vertexColors: true, transparent: true, opacity: 0.55, sizeAttenuation: true });
+        const pts = new THREE.Points(geo, mat);
+        scene.add(pts);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // GRID: 15x15
-        const colors = { 1: "#2980b9", 2: "#3498db", 3: "#5dade2", 4: "#aed6f1", 5: "#27ae60", 6: "#2ecc71", 7: "#abebc6", 8: "#f1c40f", 9: "#e67e22", 10: "#d35400", 11: "#f39c12", 12: "#ffffff" };
-        let active = 1;
-        const pal = document.getElementById("marine-palette");
-        const grid = document.getElementById("marine-grid");
+        (function tick() {
+            requestAnimationFrame(tick);
+            const p = geo.attributes.position.array;
+            for(let i = 0; i < N; i++) {
+                p[i*3]   += vel[i*3];
+                p[i*3+1] += vel[i*3+1];
+                p[i*3+2] += vel[i*3+2];
+                if(p[i*3+1] > 80) p[i*3+1] = -80;
+            }
+            geo.attributes.position.needsUpdate = true;
+            pts.rotation.y += 0.0003;
+            renderer.render(scene, camera);
+        })();
+    })();
 
-        Object.keys(colors).forEach(n => {
-            const b = document.createElement("div");
-            b.className = "p-btn"; b.style.backgroundColor = colors[n]; b.innerText = n;
-            b.onclick = () => active = n;
-            pal.appendChild(b);
+    // ══════════════════════════════════════════════
+    // TRIVIA
+    // ══════════════════════════════════════════════
+    const questions = [
+        { q: "What is the deepest point in all of Earth's oceans?",
+          a: ["Challenger Deep (Mariana Trench)", "Puerto Rico Trench", "Java Trench"], c: 0 },
+        { q: "Approximately what percentage of Earth's oxygen is produced by the ocean?",
+          a: ["About 50 percent", "About 10 percent", "About 90 percent"], c: 0 },
+        { q: "Which jellyfish is considered biologically immortal — able to revert back to its juvenile state?",
+          a: ["Turritopsis dohrnii", "Moon Jellyfish", "Box Jellyfish"], c: 0 },
+        { q: "What is the largest animal ever known to have existed on Earth?",
+          a: ["Blue Whale", "Megalodon", "Giant Squid"], c: 0 },
+        { q: "What ocean creature has THREE hearts and blue blood?",
+          a: ["Octopus", "Sea Turtle", "Horseshoe Crab"], c: 0 }
+    ];
+    let qIdx = 0, score = 0;
+
+    function loadQ() {
+        const q = questions[qIdx];
+        document.getElementById('tri-progress').textContent = `Question ${qIdx+1} / ${questions.length}  ·  Score: ${score}`;
+        document.getElementById('tri-question').textContent = q.q;
+        document.getElementById('tri-result').textContent = '';
+        document.getElementById('tri-result').className = 'trivia-result';
+        document.getElementById('tri-next').style.display = 'none';
+        const box = document.getElementById('tri-options');
+        box.innerHTML = '';
+        q.a.forEach((opt, i) => {
+            const b = document.createElement('button');
+            b.className = 'trivia-btn'; b.textContent = opt;
+            b.onclick = () => {
+                document.querySelectorAll('.trivia-btn').forEach(x => x.onclick = null);
+                if(i === q.c) {
+                    b.classList.add('correct');
+                    document.getElementById('tri-result').textContent = '✓ Correct! Well done, Sophia!';
+                    document.getElementById('tri-result').className = 'trivia-result ok';
+                    score++;
+                } else {
+                    b.classList.add('wrong');
+                    document.querySelectorAll('.trivia-btn')[q.c].classList.add('correct');
+                    document.getElementById('tri-result').textContent = `✗ Not quite. The answer is: ${q.a[q.c]}`;
+                    document.getElementById('tri-result').className = 'trivia-result err';
+                }
+                if(qIdx < questions.length - 1) document.getElementById('tri-next').style.display = 'inline-block';
+                else {
+                    setTimeout(() => {
+                        document.getElementById('tri-result').textContent = `🎓 Complete! Final score: ${score} / ${questions.length}`;
+                        document.getElementById('tri-result').className = 'trivia-result ok';
+                    }, 1200);
+                }
+            };
+            box.appendChild(b);
         });
+    }
+    function nextQuestion() { qIdx++; if(qIdx < questions.length) loadQ(); }
+    loadQ();
 
-        for(let i=0; i<225; i++) {
-            const p = document.createElement("div");
-            p.className = "pixel"; p.innerText = (i % 12) + 1;
-            p.onclick = () => { if(active == p.innerText) { p.style.backgroundColor = colors[active]; p.innerText = ""; } };
-            grid.appendChild(p);
+    // ══════════════════════════════════════════════
+    // SVG COLORING BOOK
+    // ══════════════════════════════════════════════
+    const sophPalette = [
+        null,
+        { color:'#0a1e38', label:'1', name:'Deep Ocean' },
+        { color:'#c4a35a', label:'2', name:'Sand' },
+        { color:'#ff6b6b', label:'3', name:'Pink Coral' },
+        { color:'#e67e22', label:'4', name:'Orange Coral' },
+        { color:'#2ecc71', label:'5', name:'Seaweed' },
+        { color:'#f4d03f', label:'6', name:'Golden Fish' },
+        { color:'#e74c3c', label:'7', name:'Red Fins' },
+        { color:'#dfe6e9', label:'8', name:'Belly' },
+        { color:'#74b9ff', label:'9', name:'Bubbles' }
+    ];
+    let sophSelected = 1;
+    let sophFilled = 0;
+    const sophTotal = 9;
+
+    const palBox = document.getElementById('soph-palette');
+    sophPalette.slice(1).forEach((p, i) => {
+        const sw = document.createElement('div');
+        sw.className = 'color-swatch' + (i===0 ? ' active' : '');
+        sw.style.background = p.color;
+        sw.title = p.name;
+        sw.textContent = p.label;
+        sw.addEventListener('click', () => {
+            sophSelected = i+1;
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+            sw.classList.add('active');
+            document.getElementById('soph-hint').textContent = `Selected: ${p.name} [${p.label}] — click matching zone`;
+        });
+        palBox.appendChild(sw);
+    });
+
+    const zonesColored = {};
+    document.querySelectorAll('#soph-svg .zone').forEach(el => {
+        el.addEventListener('click', () => {
+            const target = parseInt(el.dataset.zone);
+            if(sophSelected === target) {
+                const pal = sophPalette[target];
+                // Fill ALL elements with matching zone number
+                document.querySelectorAll(`#soph-svg .zone[data-zone="${target}"]`).forEach(z => {
+                    z.style.fill = pal.color;
+                    z.classList.add('filled');
+                });
+                // Remove number labels for this zone
+                document.querySelectorAll(`#soph-svg .zone-label[data-for="${target}"]`).forEach(l => l.style.opacity='0');
+                if(!zonesColored[target]) {
+                    zonesColored[target] = true;
+                    sophFilled++;
+                    if(sophFilled >= sophTotal) {
+                        document.getElementById('soph-complete').textContent = '✦ REEF FULLY MAPPED — OUTSTANDING WORK, SOPHIA ✦';
+                    }
+                }
+            } else {
+                // Brief wrong flash
+                el.style.filter = 'brightness(2) saturate(0)';
+                setTimeout(() => el.style.filter = '', 250);
+                document.getElementById('soph-hint').textContent = `Zone ${target} needs code ${target} — not code ${sophSelected}`;
+            }
+        });
+    });
+
+    // ══════════════════════════════════════════════
+    // WORD SEARCH
+    // ══════════════════════════════════════════════
+    const wordList = ['CORAL','WHALE','REEF','SHARK','KELP','TRENCH','DOLPHIN','TURTLE','CRAB','WAVE'];
+
+    // Pre-built 10x10 grid layout
+    const gridLetters = [
+        ['C','O','R','A','L','V','K','B','T','Q'],
+        ['W','H','A','L','E','X','E','Z','R','P'],
+        ['N','M','R','E','E','F','L','Y','E','J'],
+        ['S','H','A','R','K','G','P','D','N','W'],
+        ['D','O','L','P','H','I','N','U','C','R'],
+        ['Q','B','F','G','J','K','M','N','H','S'],
+        ['T','U','R','T','L','E','A','C','P','X'],
+        ['C','R','A','B','V','Q','Z','M','B','Y'],
+        ['W','A','V','E','G','H','K','L','O','F'],
+        ['N','P','Q','S','T','U','V','W','X','Z']
+    ];
+
+    // Word coordinate map for validation
+    const wordCoords = {
+        'CORAL':  [[0,0],[0,1],[0,2],[0,3],[0,4]],
+        'WHALE':  [[1,0],[1,1],[1,2],[1,3],[1,4]],
+        'REEF':   [[2,2],[2,3],[2,4],[2,5]],
+        'SHARK':  [[3,0],[3,1],[3,2],[3,3],[3,4]],
+        'KELP':   [[0,6],[1,6],[2,6],[3,6]],
+        'TRENCH': [[0,8],[1,8],[2,8],[3,8],[4,8],[5,8]],
+        'DOLPHIN':[[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+        'TURTLE': [[6,0],[6,1],[6,2],[6,3],[6,4],[6,5]],
+        'CRAB':   [[7,0],[7,1],[7,2],[7,3]],
+        'WAVE':   [[8,0],[8,1],[8,2],[8,3]]
+    };
+
+    const wsGrid = document.getElementById('ws-grid');
+    const wsWordsEl = document.getElementById('ws-words');
+
+    // Render word chips
+    wordList.forEach(w => {
+        const chip = document.createElement('span');
+        chip.className = 'ws-word'; chip.textContent = w; chip.id = 'word-'+w;
+        wsWordsEl.appendChild(chip);
+    });
+
+    // Render grid
+    const cells = [];
+    gridLetters.forEach((row, r) => {
+        row.forEach((letter, c) => {
+            const cell = document.createElement('div');
+            cell.className = 'ws-cell';
+            cell.textContent = letter;
+            cell.dataset.r = r; cell.dataset.c = c;
+            wsGrid.appendChild(cell);
+            cells.push(cell);
+        });
+    });
+
+    let wsStart = null, wsFound = 0;
+    const wsFoundCells = new Set();
+
+    function getCellAt(r, c) { return cells[r*10 + c]; }
+
+    cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            if(wsFoundCells.has(`${cell.dataset.r},${cell.dataset.c}`)) return;
+            if(!wsStart) {
+                // First click — select start
+                cell.classList.add('selecting');
+                wsStart = { r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) };
+                document.getElementById('ws-status').textContent = 'Now click the last letter of the word';
+            } else {
+                // Second click — check for word
+                const er = parseInt(cell.dataset.r), ec = parseInt(cell.dataset.c);
+                const sr = wsStart.r, sc = wsStart.c;
+
+                // Clear selecting
+                document.querySelectorAll('.ws-cell.selecting').forEach(x => x.classList.remove('selecting'));
+
+                // Build selected path (horizontal or vertical only)
+                let path = [];
+                if(sr === er) {
+                    const minC = Math.min(sc,ec), maxC = Math.max(sc,ec);
+                    for(let col=minC; col<=maxC; col++) path.push([sr,col]);
+                } else if(sc === ec) {
+                    const minR = Math.min(sr,er), maxR = Math.max(sr,er);
+                    for(let row=minR; row<=maxR; row++) path.push([row,sc]);
+                } else {
+                    document.getElementById('ws-status').textContent = 'Select horizontally or vertically!';
+                    wsStart = null; return;
+                }
+
+                const selectedWord = path.map(([r,c]) => gridLetters[r][c]).join('');
+                const reversed = selectedWord.split('').reverse().join('');
+                const match = wordList.find(w => w === selectedWord || w === reversed);
+
+                if(match) {
+                    const matchPath = selectedWord === match ? path : path.slice().reverse();
+                    const expected = wordCoords[match];
+                    const pathStr = path.map(p=>p.join(',')).sort().join('|');
+                    const expectedStr = expected.map(p=>p.join(',')).sort().join('|');
+
+                    if(pathStr === expectedStr || true) { // accept any correct span
+                        path.forEach(([r,c]) => {
+                            const ce = getCellAt(r,c);
+                            ce.classList.add('found');
+                            wsFoundCells.add(`${r},${c}`);
+                        });
+                        document.getElementById('word-'+match).classList.add('found');
+                        wsFound++;
+                        document.getElementById('ws-status').textContent = `✓ Found: ${match}! (${wsFound}/${wordList.length})`;
+                        if(wsFound === wordList.length) {
+                            document.getElementById('ws-status').textContent = '🏆 ALL SPECIES IDENTIFIED — MISSION COMPLETE!';
+                        }
+                    }
+                } else {
+                    document.getElementById('ws-status').textContent = `"${selectedWord}" not found — try again`;
+                }
+                wsStart = null;
+            }
+        });
+    });
+
+    // ══════════════════════════════════════════════
+    // AMBIENT SOUND (Web Audio API)
+    // ══════════════════════════════════════════════
+    let audioCtx = null, soundOn = false;
+    let droneNode = null, droneGain = null;
+
+    function buildAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        droneGain = audioCtx.createGain(); droneGain.gain.value = 0;
+        droneGain.connect(audioCtx.destination);
+
+        droneNode = audioCtx.createOscillator();
+        droneNode.type = 'sine'; droneNode.frequency.value = 48;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass'; filter.frequency.value = 180;
+        droneNode.connect(filter); filter.connect(droneGain);
+        droneNode.start();
+
+        function bubble() {
+            if(!soundOn) return;
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.frequency.value = 600 + Math.random() * 600;
+            g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + 0.12);
+            setTimeout(bubble, 400 + Math.random() * 2500);
         }
+
+        function whaleSong() {
+            if(!soundOn) return;
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.frequency.setValueAtTime(110, audioCtx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(165, audioCtx.currentTime + 2.5);
+            o.frequency.exponentialRampToValueAtTime(95, audioCtx.currentTime + 5);
+            g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 5);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + 5);
+            setTimeout(whaleSong, 10000 + Math.random() * 15000);
+        }
+        bubble(); whaleSong();
+    }
+
+    function toggleSound() {
+        if(!audioCtx) buildAudio();
+        soundOn = !soundOn;
+        droneGain.gain.setTargetAtTime(soundOn ? 0.06 : 0, audioCtx.currentTime, 0.5);
+        const btn = document.getElementById('sound-btn');
+        btn.textContent = soundOn ? '◉ AMBIENT: ON' : '◎ AMBIENT: OFF';
+        btn.classList.toggle('on', soundOn);
+    }
+
+    // ══════════════════════════════════════════════
+    // EASTER EGG — HIDDEN CRAB
+    // ══════════════════════════════════════════════
+    let crabClicks = 0;
+    document.getElementById('hidden-crab').addEventListener('click', () => {
+        if(++crabClicks >= 3) {
+            document.getElementById('crab-popup').classList.add('show');
+            crabClicks = 0;
+        }
+    });
     </script>
 </body>
 </html>

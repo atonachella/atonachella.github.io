@@ -3,205 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soph and Tal App</title>
+    <title>Soph & Tal — Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* ==========================================================================
-           FUTURISTIC DIAGONAL SPLIT BACKGROUND (UNTOUCHED)
-           ========================================================================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a192f 50%, #ff007f 50%);
-            overflow: hidden;
-            position: relative;
+            height: 100vh; width: 100vw;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden; position: relative;
+            background: #050a14;
         }
 
-        body::before {
+        /* ── SPLIT BACKGROUND ── */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+
+        .split-left, .split-right {
+            position: fixed; top: 0; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+        .split-left { left: 0; width: 50%; background: linear-gradient(180deg, #020d1a 0%, #041526 100%); clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); }
+        .split-right { right: 0; width: 50%; background: linear-gradient(180deg, #0e0015 0%, #1a0028 100%); clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); }
+
+        /* ── SIDE LABELS ── */
+        .side-label {
+            position: fixed; top: 50%; transform: translateY(-50%);
+            z-index: 2; pointer-events: none;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.65rem; letter-spacing: 0.3em;
+            writing-mode: vertical-rl;
+        }
+        .side-label.ocean { left: 18px; color: rgba(0, 210, 211, 0.25); }
+        .side-label.digital { right: 18px; color: rgba(255, 51, 102, 0.25); transform: translateY(-50%) rotate(180deg); }
+
+        /* ── PORTAL CARD ── */
+        .portal-card {
+            position: relative; z-index: 10;
+            background: rgba(8, 16, 32, 0.82);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 44px 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 32px 64px rgba(0,0,0,0.6), 0 0 60px rgba(0,210,211,0.04), 0 0 60px rgba(255,51,102,0.04);
+            text-align: center;
+            width: 92%; max-width: 440px;
+        }
+
+        .portal-card::before {
             content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
+            position: absolute; inset: 0;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(0,210,211,0.06) 0%, transparent 50%, rgba(255,51,102,0.06) 100%);
             pointer-events: none;
         }
 
-        /* ==========================================================================
-           DARK GLASS INTERFACE CARD (UNTOUCHED)
-           ========================================================================== */
-        .portal-card {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                        0 0 40px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 90%;
-            max-width: 420px;
-            box-sizing: border-box;
-            z-index: 10;
-        }
-
         .portal-title {
-            margin: 0 0 30px 0;
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            color: #ffffff;
-            line-height: 1.3;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem; font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #ffffff; line-height: 1.4;
+            margin-bottom: 32px;
         }
+        .portal-title span.soph { color: #00d2d3; }
+        .portal-title span.amp  { color: rgba(255,255,255,0.35); }
+        .portal-title span.tal  { color: #ff3366; }
+        .portal-title .sub { display: block; font-size: 0.65rem; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.25em; color: rgba(255,255,255,0.35); margin-top: 6px; font-weight: 400; }
 
-        .input-group {
-            margin-bottom: 24px;
-            text-align: left;
-        }
-
+        .input-group { margin-bottom: 20px; text-align: left; }
         .input-label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
-            margin-bottom: 8px;
-            padding-left: 4px;
+            display: block; font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            color: rgba(255,255,255,0.4); margin-bottom: 8px;
         }
-
         .portal-dropdown, .portal-input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1rem;
-            font-family: inherit;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            outline: none;
-            color: #ffffff;
-            box-sizing: border-box;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%; padding: 13px 16px;
+            font-size: 0.95rem; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; outline: none; color: #fff;
+            transition: all 0.25s ease;
         }
-
-        .portal-dropdown option {
-            background: #1e293b;
-            color: #ffffff;
-        }
-
+        .portal-dropdown option { background: #0d1a2e; }
         .portal-dropdown:focus, .portal-input:focus {
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(30, 41, 59, 0.9);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.07);
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
         }
-
         .portal-button {
-            width: 100%;
-            padding: 16px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            font-family: inherit;
-            color: #0f172a;
-            background: #ffffff;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+            width: 100%; padding: 15px;
+            font-size: 1rem; font-weight: 700; font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: #050a14; background: linear-gradient(135deg, #00d2d3 0%, #ff3366 100%);
+            border: none; border-radius: 12px; cursor: pointer;
+            transition: all 0.25s ease; margin-top: 8px;
+            box-shadow: 0 4px 24px rgba(0,210,211,0.15);
         }
+        .portal-button:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,210,211,0.25); filter: brightness(1.1); }
+        .portal-button:active { transform: translateY(0); }
 
-        .portal-button:hover {
-            transform: translateY(-1px);
-            background: #f1f5f9;
-            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
-        }
+        .error-message { color: #ff6b6b; font-size: 0.85rem; font-weight: 600; margin-top: 16px; min-height: 20px; }
 
-        .portal-button:active {
-            transform: translateY(1px);
+        /* ── EASTER EGG TRIGGERS ── */
+        .egg-trigger {
+            position: fixed; bottom: 28px; z-index: 20;
+            font-size: 1rem; opacity: 0.08; cursor: pointer;
+            transition: opacity 0.3s; user-select: none;
+            padding: 10px;
         }
+        .egg-trigger:hover { opacity: 0.25; }
+        .egg-trigger.ocean-egg { left: 28px; }
+        .egg-trigger.digital-egg { right: 28px; }
 
-        .error-message {
-            color: #f87171;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-top: 20px;
-            min-height: 20px;
+        /* ── EASTER EGG POPUP ── */
+        .egg-popup {
+            position: fixed; inset: 0; z-index: 100;
+            display: none; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.85);
         }
+        .egg-popup.show { display: flex; animation: fadeIn 0.4s ease; }
+        .egg-box {
+            background: rgba(8,16,32,0.95); border-radius: 20px;
+            padding: 36px 40px; text-align: center; max-width: 360px;
+            border: 1px solid;
+        }
+        .egg-box.ocean { border-color: rgba(0,210,211,0.4); box-shadow: 0 0 40px rgba(0,210,211,0.15); }
+        .egg-box.digital { border-color: rgba(255,51,102,0.4); box-shadow: 0 0 40px rgba(255,51,102,0.15); }
+        .egg-icon { font-size: 3rem; margin-bottom: 12px; }
+        .egg-title { font-family: 'Orbitron', monospace; font-size: 1rem; letter-spacing: 0.08em; margin-bottom: 10px; }
+        .egg-box.ocean .egg-title { color: #00d2d3; }
+        .egg-box.digital .egg-title { color: #ff3366; }
+        .egg-msg { color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
+        .egg-close { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 24px; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; letter-spacing: 0.1em; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
+    <div class="split-left"></div>
+    <div class="split-right"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <span class="side-label ocean">S · O · P · H · I · A</span>
+    <span class="side-label digital">N · A · T · A · L · I · A</span>
+
+    <!-- Easter egg triggers (subtle, hidden in corners) -->
+    <div class="egg-trigger ocean-egg" id="egg1" title="">🌊</div>
+    <div class="egg-trigger digital-egg" id="egg2" title="">🎪</div>
+
     <div class="portal-card">
-        <h1 class="portal-title">Welcome to the<br>Soph and Tal app</h1>
-        
+        <h1 class="portal-title">
+            <span class="soph">SOPH</span> <span class="amp">&</span> <span class="tal">TAL</span>
+            <span class="sub">— SECURE PORTAL —</span>
+        </h1>
+
         <div class="input-group">
             <label class="input-label" for="childSelect">Select User</label>
             <select id="childSelect" class="portal-dropdown">
                 <option value="" disabled selected>Choose your profile...</option>
-                <option value="sophia">Sophia (Deep Blue)</option>
-                <option value="natalia">Natalia (Bright Magenta)</option>
+                <option value="sophia">Sophia — Ocean Realm</option>
+                <option value="natalia">Natalia — Digital Domain</option>
             </select>
         </div>
 
         <div class="input-group">
             <label class="input-label" for="childCode">Access Code</label>
-            <input type="password" id="childCode" class="portal-input" placeholder="••••••••">
+            <input type="password" id="childCode" class="portal-input" placeholder="••••••••" autocomplete="off">
         </div>
 
-        <button id="signInBtn" class="portal-button">Sign In</button>
-        
+        <button id="signInBtn" class="portal-button">Enter ›</button>
         <div id="errorBox" class="error-message"></div>
     </div>
 
+    <!-- Easter Egg Popups -->
+    <div class="egg-popup" id="popup1">
+        <div class="egg-box ocean">
+            <div class="egg-icon">🌊🦈</div>
+            <div class="egg-title">SECRET REEF FOUND</div>
+            <p class="egg-msg">Sophia — you found the hidden ocean portal! Ask Dad what your reward is. 🐠</p>
+            <button class="egg-close" onclick="document.getElementById('popup1').classList.remove('show')">Close</button>
+        </div>
+    </div>
+    <div class="egg-popup" id="popup2">
+        <div class="egg-box digital">
+            <div class="egg-icon">🎪⚡</div>
+            <div class="egg-title">SECRET CIRCUIT FOUND</div>
+            <p class="egg-msg">Natalia — you found the digital circus backdoor! Ask Dad what your surprise is. 🎀</p>
+            <button class="egg-close" onclick="document.getElementById('popup2').classList.remove('show')">Close</button>
+        </div>
+    </div>
+
     <script>
+        // ── LOGIN LOGIC ──
         document.getElementById('signInBtn').addEventListener('click', verifyAndLogin);
-        
-        document.getElementById('childCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                verifyAndLogin();
-            }
-        });
+        document.getElementById('childCode').addEventListener('keypress', e => { if(e.key === 'Enter') verifyAndLogin(); });
 
         function verifyAndLogin() {
-            const userElement = document.getElementById('childSelect');
-            const codeElement = document.getElementById('childCode');
-            const errorElement = document.getElementById('errorBox');
-            
-            if (!userElement || !codeElement || !errorElement) return;
-
-            const selectedUser = userElement.value;
-            // .toLowerCase() prevents mobile auto-capitalization bugs from breaking the input
-            const enteredCode = codeElement.value.trim().toLowerCase();
-            
-            errorElement.textContent = "";
-
-            if (!selectedUser) {
-                errorElement.textContent = "Please select a user profile.";
-                return;
-            }
-
-            if (selectedUser === 'sophia') {
-                if (enteredCode === 'ocean10') {
-                    window.location.href = 'marine.html';
-                } else {
-                    errorElement.textContent = "Invalid access code for Sophia.";
-                }
-            } else if (selectedUser === 'natalia') {
-                if (enteredCode === 'magic7') {
-                    window.location.href = 'playful.html';
-                } else {
-                    errorElement.textContent = "Invalid access code for Natalia.";
-                }
-            }
+            const user = document.getElementById('childSelect').value;
+            const code = document.getElementById('childCode').value.trim().toLowerCase();
+            const err  = document.getElementById('errorBox');
+            err.textContent = '';
+            if(!user) { err.textContent = 'Please select a user profile.'; return; }
+            if(user === 'sophia')  { code === 'ocean10' ? (window.location.href = 'marine.html')  : (err.textContent = 'Invalid access code for Sophia.'); }
+            if(user === 'natalia') { code === 'magic7'  ? (window.location.href = 'playful.html') : (err.textContent = 'Invalid access code for Natalia.'); }
         }
+
+        // ── EASTER EGG LOGIC ──
+        // Click each icon 5 times to unlock
+        let clicks1 = 0, clicks2 = 0;
+        document.getElementById('egg1').addEventListener('click', () => { if(++clicks1 >= 5) { document.getElementById('popup1').classList.add('show'); clicks1=0; } });
+        document.getElementById('egg2').addEventListener('click', () => { if(++clicks2 >= 5) { document.getElementById('popup2').classList.add('show'); clicks2=0; } });
+
+        // ── BACKGROUND CANVAS ──
+        const canvas = document.getElementById('bg-canvas');
+        const ctx    = canvas.getContext('2d');
+        let W = canvas.width  = window.innerWidth;
+        let H = canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+
+        // Left side: ocean bubbles. Right side: digital sparkles.
+        const particles = [];
+
+        function Particle(side) {
+            this.side = side; // 'ocean' | 'digital'
+            this.reset = function() {
+                if(side === 'ocean') {
+                    this.x = Math.random() * W * 0.48;
+                    this.y = H + 20;
+                    this.vy = -(0.3 + Math.random() * 0.8);
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.r  = 1.5 + Math.random() * 4;
+                    this.alpha = 0.05 + Math.random() * 0.25;
+                    this.color = `rgba(${Math.floor(Math.random()*50)}, ${Math.floor(180+Math.random()*75)}, ${Math.floor(200+Math.random()*55)}, `;
+                } else {
+                    this.x = W * 0.52 + Math.random() * W * 0.48;
+                    this.y = -10;
+                    this.vy = 0.4 + Math.random() * 1;
+                    this.vx = (Math.random() - 0.5) * 0.4;
+                    this.r  = 1 + Math.random() * 2.5;
+                    this.alpha = 0.05 + Math.random() * 0.3;
+                    this.rot = Math.random() * Math.PI;
+                    this.color = `rgba(${Math.floor(200+Math.random()*55)}, ${Math.floor(Math.random()*60)}, ${Math.floor(100+Math.random()*80)}, `;
+                }
+            };
+            this.reset();
+        }
+
+        for(let i = 0; i < 60; i++) particles.push(new Particle('ocean'));
+        for(let i = 0; i < 60; i++) particles.push(new Particle('digital'));
+
+        function animate() {
+            ctx.clearRect(0, 0, W, H);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.side === 'ocean') {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                    ctx.strokeStyle = p.color + p.alpha + ')';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    if(p.y < -20) p.reset();
+                } else {
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rot + p.y * 0.01);
+                    ctx.fillStyle = p.color + p.alpha + ')';
+                    ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+                    ctx.restore();
+                    if(p.y > H + 20) p.reset();
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
     </script>
 </body>
 </html>

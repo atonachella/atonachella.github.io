@@ -3,147 +3,732 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Natalia's Magic Land</title>
+    <title>Natalia's Digital Domain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #09040d; margin: 0; padding: 20px; font-family: 'Consolas', monospace; color: #fff; }
-        .magic-section { background-color: #140b1c; border: 2px solid #ed4c67; border-radius: 16px; padding: 25px; margin-bottom: 25px; }
-        h2 { color: #ff6b81; border-bottom: 1px solid #ed4c67; padding-bottom: 8px; }
-        .memory-game-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 500px; margin: 20px auto; }
-        .memory-card { aspect-ratio: 1 / 1; background-color: #2c163f; border: 2px solid #ed4c67; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; }
-        .memory-card.flipped { background-color: #5352ed; }
-        .magic-trivia-btn { background-color: #241233; color: #fff; border: 1px solid #ed4c67; padding: 10px; margin: 5px 0; width: 100%; cursor: pointer; }
-        .cbn-grid-playful { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; max-width: 350px; margin: 20px auto; border: 2px solid #ed4c67; }
-        .cbn-pixel { aspect-ratio: 1 / 1; background-color: #241233; border: 1px solid #3b1d54; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #442a5a; }
+        :root {
+            --void:       #060010;
+            --panel:      rgba(14,2,30,0.88);
+            --neon:       #ff3366;
+            --purple:     #9b59b6;
+            --spooky:     #e65c00;
+            --blush:      #ffb7c5;
+            --cyber:      #cc00ff;
+            --text:       #e8d0f0;
+            --dim:        rgba(255,51,102,0.5);
+            --border:     rgba(255,51,102,0.22);
+        }
+        *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+        body {
+            background: var(--void); color: var(--text);
+            font-family: 'Nunito', sans-serif;
+            min-height:100vh; overflow-x:hidden; position:relative;
+        }
+
+        /* ── BACKGROUND GRID + SCANLINES ── */
+        body::before {
+            content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+            background:
+                linear-gradient(rgba(255,51,102,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,51,102,0.025) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+        body::after {
+            content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+        }
+
+        /* ── FLOATING PARTICLES ── */
+        #nat-canvas-bg {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            z-index:2; pointer-events:none;
+        }
+
+        /* ── LAYOUT ── */
+        .main-wrap { position:relative; z-index:3; max-width:860px; margin:0 auto; padding:24px 20px 60px; }
+
+        /* ── GLITCH HEADER ── */
+        .site-header { text-align:center; padding:32px 20px 28px; border-bottom:1px solid var(--border); margin-bottom:32px; position:relative; }
+        .glitch-title {
+            font-family:'Press Start 2P', monospace;
+            font-size: clamp(0.8rem,3.5vw,1.4rem);
+            color: var(--neon);
+            position:relative; display:inline-block;
+            animation: glitch-anim 4s infinite;
+            text-shadow: 0 0 20px rgba(255,51,102,0.5);
+        }
+        .glitch-title::before, .glitch-title::after {
+            content: attr(data-text); position:absolute; top:0; left:0;
+            width:100%; height:100%;
+        }
+        .glitch-title::before {
+            color:#00ffff; clip-path:polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+            animation: glitch-clip-1 3s infinite; transform:translate(-2px,0);
+        }
+        .glitch-title::after {
+            color:#ff00ff; clip-path:polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+            animation: glitch-clip-2 3.7s infinite; transform:translate(2px,0);
+        }
+        @keyframes glitch-anim {
+            0%,90%,100%{transform:translate(0)}
+            91%{transform:translate(-2px,1px)}
+            93%{transform:translate(2px,-1px)}
+            95%{transform:translate(-1px,2px)}
+            97%{transform:translate(1px,-1px)}
+        }
+        @keyframes glitch-clip-1 {
+            0%,85%,100%{clip-path:polygon(0 30%,100% 30%,100% 50%,0 50%); opacity:0}
+            86%{clip-path:polygon(0 25%,100% 25%,100% 45%,0 45%); opacity:0.8}
+            88%{clip-path:polygon(0 40%,100% 40%,100% 55%,0 55%); opacity:0.6}
+            90%{clip-path:polygon(0 10%,100% 10%,100% 30%,0 30%); opacity:0}
+        }
+        @keyframes glitch-clip-2 {
+            0%,78%,100%{clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%); opacity:0}
+            79%{clip-path:polygon(0 58%,100% 58%,100% 78%,0 78%); opacity:0.7}
+            81%{clip-path:polygon(0 70%,100% 70%,100% 85%,0 85%); opacity:0.5}
+            83%{opacity:0}
+        }
+        .site-sub { font-family:'Nunito',sans-serif; font-size:0.65rem; letter-spacing:0.25em; color:var(--dim); margin-top:10px; }
+
+        /* ── PANELS ── */
+        .panel {
+            background: var(--panel); border:1px solid var(--border);
+            border-radius:16px; padding:28px; margin-bottom:28px;
+            backdrop-filter:blur(10px); position:relative; overflow:hidden;
+        }
+        .panel::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:1px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+        }
+        .panel-title {
+            font-family:'Press Start 2P', monospace; font-size:0.6rem;
+            letter-spacing:0.08em; color:var(--neon); margin-bottom:20px;
+            display:flex; align-items:center; gap:10px;
+            text-shadow: 0 0 12px rgba(255,51,102,0.4);
+        }
+        .panel-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        /* ── YOUTUBE ── */
+        .yt-wrap { position:relative; padding-top:56.25%; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+        .yt-wrap iframe { position:absolute; inset:0; width:100%; height:100%; }
+
+        /* ── TRIVIA ── */
+        .trivia-question { font-size:1rem; font-weight:800; color:#fff; margin-bottom:18px; line-height:1.6; min-height:52px; }
+        .trivia-options { display:flex; flex-direction:column; gap:10px; }
+        .trivia-btn {
+            background: rgba(255,51,102,0.05); border:1px solid var(--border);
+            color:var(--text); padding:12px 18px; border-radius:10px;
+            font-family:'Nunito',sans-serif; font-size:0.95rem; font-weight:700;
+            cursor:pointer; text-align:left; transition:all 0.2s;
+        }
+        .trivia-btn:hover { background:rgba(255,51,102,0.14); border-color:var(--neon); }
+        .trivia-btn.correct { background:rgba(0,255,136,0.12); border-color:#00ff88; color:#00ff88; }
+        .trivia-btn.wrong   { background:rgba(255,100,100,0.1); border-color:#ff6464; color:#ff6464; pointer-events:none; }
+        .trivia-result { margin-top:12px; font-size:0.85rem; font-weight:700; min-height:24px; }
+        .trivia-result.ok  { color:#00ff88; }
+        .trivia-result.err { color:#ff6464; }
+        .trivia-progress { font-size:0.72rem; color:var(--dim); margin-bottom:10px; letter-spacing:0.05em; }
+        .trivia-next { margin-top:14px; background:transparent; border:1px solid var(--neon); color:var(--neon); padding:8px 20px; border-radius:8px; cursor:pointer; font-family:'Press Start 2P',monospace; font-size:0.55rem; letter-spacing:0.1em; display:none; }
+        .trivia-next:hover { background:rgba(255,51,102,0.1); }
+
+        /* ── SVG COLORING ── */
+        .color-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+        .color-swatch {
+            width:36px; height:36px; border-radius:50%; cursor:pointer;
+            border:2px solid rgba(255,255,255,0.15);
+            display:flex; align-items:center; justify-content:center;
+            font-family:'Press Start 2P',monospace; font-size:0.45rem; color:#fff;
+            transition:all 0.2s; user-select:none;
+        }
+        .color-swatch.active { border-color:#fff; transform:scale(1.25); box-shadow:0 0 14px rgba(255,51,102,0.6); }
+        .color-hint { text-align:center; font-size:0.7rem; color:var(--dim); margin-bottom:12px; }
+        .svg-container { display:flex; justify-content:center; }
+        svg.coloring-book { max-width:480px; width:100%; cursor:crosshair; }
+        svg.coloring-book .zone { stroke:#1a0a2e; stroke-width:1.5; transition:filter 0.2s; }
+        svg.coloring-book .zone:hover { filter:brightness(1.4); stroke:var(--neon); }
+        svg.coloring-book .zone.filled { stroke:#0a0018; }
+        .zone-label { font-size:9px; fill:rgba(220,180,240,0.75); pointer-events:none; text-anchor:middle; dominant-baseline:middle; }
+        .color-complete { text-align:center; font-family:'Press Start 2P',monospace; font-size:0.55rem; color:#00ff88; margin-top:14px; min-height:20px; line-height:1.8; }
+
+        /* ── CANVAS GAME ── */
+        .game-hud { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+        .hud-stat { font-family:'Press Start 2P',monospace; font-size:0.6rem; letter-spacing:0.05em; color:var(--neon); }
+        .hud-lives { color: var(--spooky); }
+        #nat-game { border-radius:12px; border:1px solid var(--border); display:block; width:100%; max-width:520px; margin:0 auto; cursor:pointer; background:#070014; }
+        .game-controls { display:flex; gap:10px; justify-content:center; margin-top:12px; }
+        .game-btn {
+            background:rgba(255,51,102,0.08); border:1px solid var(--border);
+            color:var(--neon); padding:8px 20px; border-radius:8px; cursor:pointer;
+            font-family:'Press Start 2P',monospace; font-size:0.55rem; letter-spacing:0.08em;
+            transition:all 0.2s;
+        }
+        .game-btn:hover { background:rgba(255,51,102,0.18); border-color:var(--neon); }
+
+        /* ── SOUND BTN ── */
+        .sound-btn {
+            position:fixed; bottom:24px; right:24px; z-index:50;
+            background:rgba(14,2,30,0.9); border:1px solid var(--border);
+            color:var(--dim); padding:10px 16px; border-radius:30px; cursor:pointer;
+            font-family:'Press Start 2P',monospace; font-size:0.5rem; letter-spacing:0.08em;
+            backdrop-filter:blur(10px); transition:all 0.2s;
+        }
+        .sound-btn:hover { border-color:var(--neon); color:var(--neon); }
+        .sound-btn.on { border-color:#00ff88; color:#00ff88; }
+
+        /* ── RETURN BTN ── */
+        .return-btn { display:block; margin:32px auto 0; background:transparent; border:1px solid var(--border); color:var(--dim); padding:12px 32px; border-radius:10px; font-family:'Press Start 2P',monospace; font-size:0.55rem; letter-spacing:0.12em; cursor:pointer; transition:all 0.2s; }
+        .return-btn:hover { border-color:var(--neon); color:var(--neon); }
+
+        /* ── EASTER EGG POMNI ── */
+        .pomni-overlay { position:fixed; inset:0; z-index:200; display:none; justify-content:center; align-items:center; }
+        .pomni-overlay.show { display:flex; animation:pomni-in 0.1s steps(1) forwards; }
+        .pomni-glitch-bg { position:absolute; inset:0; background:var(--void); animation:bg-flash 0.5s steps(1) 3; }
+        .pomni-box { position:relative; z-index:10; background:rgba(14,2,30,0.97); border:2px solid var(--neon); border-radius:16px; padding:36px 32px; text-align:center; max-width:360px; box-shadow:0 0 80px rgba(255,51,102,0.35); animation:pomni-in 0.3s ease; }
+        .pomni-icon { font-size:3.5rem; margin-bottom:12px; }
+        .pomni-title { font-family:'Press Start 2P',monospace; font-size:0.75rem; color:var(--neon); letter-spacing:0.08em; margin-bottom:12px; line-height:1.6; }
+        .pomni-msg { color:rgba(255,255,255,0.75); font-size:0.95rem; line-height:1.6; margin-bottom:20px; }
+        .pomni-close { background:transparent; border:1px solid var(--border); color:var(--dim); padding:8px 24px; border-radius:8px; cursor:pointer; font-family:'Press Start 2P',monospace; font-size:0.5rem; letter-spacing:0.1em; }
+        @keyframes pomni-in { from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:scale(1)} }
+        @keyframes bg-flash { 0%,100%{background:var(--void)} 50%{background:#200030} }
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
     </style>
 </head>
 <body>
-    <div style="max-width: 800px; margin: 0 auto;">
-        <header style="background: #ed4c67; padding: 15px; text-align: center; border-radius: 12px; margin-bottom: 25px;">
-            <h1>Natalia's Magic Land of Beauty 🦄</h1>
+
+    <canvas id="nat-canvas-bg"></canvas>
+
+    <div class="main-wrap">
+        <header class="site-header">
+            <div class="glitch-title" data-text="NATALIA'S DIGITAL DOMAIN">NATALIA'S DIGITAL DOMAIN</div>
+            <div class="site-sub">⚡ SYSTEM ONLINE · CIRCUS MODE ACTIVE ⚡</div>
         </header>
 
-        <section class="magic-section">
-            <h2>Magical Match Memory 👑</h2>
-            <div class="memory-game-container" id="memory-board"></div>
-            <p id="memory-status" style="text-align: center; font-weight: bold;">Matches Found: 0 / 12</p>
-        </section>
-
-        <section class="magic-section">
-            <h2>Enchanted Fact Explorer ✨</h2>
-            <div id="magic-trivia-box">
-                <p><strong id="magic-question-text">Loading...</strong></p>
-                <div id="magic-answers-box"></div>
-                <div id="t2" style="margin-top: 10px;"></div>
+        <!-- YOUTUBE: Amazing Digital Circus -->
+        <div class="panel">
+            <div class="panel-title">📺 The Amazing Digital Circus</div>
+            <div class="yt-wrap">
+                <iframe src="https://www.youtube.com/embed/HwAPLk_sQ3w" title="The Amazing Digital Circus" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
-        </section>
-
-        <section class="magic-section">
-            <h2>Secret Full-Canvas Art 🎨</h2>
-            <div id="playful-palette" style="display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;"></div>
-            <div class="cbn-grid-playful" id="playful-ocean-grid"></div>
-        </section>
-    </div>
-
-    <script>
-        // 1. MEMORY GAME (24 CARDS + SOUNDS)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(f1, f2, dur) {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.frequency.setValueAtTime(f1, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + dur);
-            g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + dur);
-        }
-
-        const board = document.getElementById("memory-board");
-        const status = document.getElementById("memory-status");
-        const icons = ["🦄","🦄","🧜‍♀️","🧜‍♀️","🧚‍♀️","🧚‍♀️","👑","👑","🌈","🌈","✨","✨","🌸","🌸","🦋","🦋","🍭","🍭","💎","💎","🎀","🎀","🌟","🌟"].sort(() => 0.5 - Math.random());
-        let active = [], matches = 0;
-
-        icons.forEach(icon => {
-            const div = document.createElement("div");
-            div.className = "memory-card";
-            div.innerHTML = `<span style="visibility:hidden">${icon}</span>`;
-            div.onclick = () => {
-                if(div.classList.contains("flipped") || active.length >= 2) return;
-                div.classList.add("flipped");
-                div.firstChild.style.visibility = "visible";
-                active.push(div);
-                if(active.length === 2) {
-                    if(active[0].innerText === active[1].innerText) {
-                        playSound(1200, 1800, 0.3); matches++;
-                        status.innerText = `Matches Found: ${matches} / 12`;
-                        active = [];
-                    } else {
-                        playSound(400, 200, 0.2);
-                        setTimeout(() => { active.forEach(c => { c.classList.remove("flipped"); c.firstChild.style.visibility="hidden"}); active = [] }, 800);
-                    }
-                }
-            };
-            board.appendChild(div);
-        });
-
-        // 2. TRIVIA (Restored)
-        const trivia = [{q: "What creature is the 'Unicorn of the Sea'?", a: ["Narwhal", "Fish"], c: 0}, {q: "What do fairies use to grow flowers?", a: ["Magic Pollen", "Dirt"], c: 0}];
-        let qIdx = 0;
-        function loadQ() {
-            document.getElementById("magic-question-text").innerText = trivia[qIdx].q;
-            const box = document.getElementById("magic-answers-box"); box.innerHTML = "";
-            trivia[qIdx].a.forEach((opt, i) => {
-                const btn = document.createElement("button"); btn.innerText = opt; btn.className = "magic-trivia-btn";
-                btn.onclick = () => { document.getElementById("t2").innerText = i === trivia[qIdx].c ? "Correct! ✨" : "Try again!"; if(i===trivia[qIdx].c) setTimeout(()=>{qIdx++; loadQ()}, 1000) };
-                box.appendChild(btn);
-            });
-        }
-        loadQ();
-
-        // 3. COLOR BY NUMBER (10x10 Full Fill - 8 Colors)
-        const gridMap = [
-            1,1,1,1,2,2,1,1,1,1, 1,1,1,2,3,3,2,1,1,1, 1,1,2,3,3,3,3,2,1,1, 1,2,3,3,3,3,3,3,2,1, 2,2,3,3,4,4,3,3,2,2,
-            2,2,3,3,4,4,3,3,2,2, 1,2,3,5,5,5,5,3,2,1, 1,1,2,5,6,6,5,2,1,1, 1,1,1,7,7,7,7,1,1,1, 1,1,1,8,8,8,8,1,1,1
-        ];
-        const colorKey = { 1: "#241233", 2: "#ed4c67", 3: "#ff6b81", 4: "#00d2d3", 5: "#f1c40f", 6: "#ffffff", 7: "#1e90ff", 8: "#2ed573" };
-        let selectedColorIndex = 1;
-
-        const palette = document.getElementById("playful-palette");
-        [1,2,3,4,5,6,7,8].forEach(num => {
-            const btn = document.createElement("div");
-            btn.style.width = "30px"; btn.style.height = "30px"; btn.style.backgroundColor = colorKey[num];
-            btn.style.borderRadius = "50%"; btn.style.cursor = "pointer"; btn.style.border = "2px solid #fff";
-            btn.innerText = num; btn.style.display="flex"; btn.style.alignItems="center"; btn.style.justifyContent="center";
-            btn.onclick = () => selectedColorIndex = num;
-            palette.appendChild(btn);
-        });
-
-        const grid = document.getElementById("playful-ocean-grid");
-        gridMap.forEach((targetNum) => {
-            const p = document.createElement("div");
-            p.className = "cbn-pixel";
-            p.innerText = targetNum;
-            p.onclick = () => { if (selectedColorIndex === targetNum) { p.style.backgroundColor = colorKey[targetNum]; p.innerText = ""; } };
-            grid.appendChild(p);
-        });
-    </script>
-
-<div style="text-align: center; margin: 30px auto;">
-            <button onclick="window.location.href='index.html'" style="
-                background-color: #140b1c;
-                color: #ed4c67;
-                border: 2px solid #ed4c67;
-                padding: 12px 24px;
-                font-size: 1rem;
-                font-weight: bold;
-                font-family: 'Consolas', 'SF Mono', monospace;
-                border-radius: 8px;
-                cursor: pointer;
-                box-shadow: 0 4px 12px rgba(237, 76, 103, 0.2);
-                transition: all 0.2s ease;">
-                ↩️ Return to Sign-In
-            </button>
         </div>
 
+        <!-- TRIVIA -->
+        <div class="panel">
+            <div class="panel-title">🎮 Digital Knowledge Drop</div>
+            <div class="trivia-progress" id="nat-progress">Question 1 / 5</div>
+            <div class="trivia-question" id="nat-question">Loading...</div>
+            <div class="trivia-options" id="nat-options"></div>
+            <div class="trivia-result" id="nat-result"></div>
+            <button class="trivia-next" id="nat-next" onclick="natNextQ()">NEXT ›</button>
+        </div>
+
+        <!-- SVG COLORING BOOK: Spooky Sanrio Cat -->
+        <div class="panel">
+            <div class="panel-title">🎨 Spooky Kitty Color Lab</div>
+            <div class="color-hint" id="nat-hint">Pick a color code, then click the matching zone</div>
+            <div class="color-controls" id="nat-palette"></div>
+            <div class="svg-container">
+                <svg class="coloring-book" viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" id="nat-svg">
+
+                    <!-- Zone 1: Night sky -->
+                    <rect class="zone" data-zone="1" x="0" y="0" width="480" height="340" fill="#0a0018"/>
+                    <text class="zone-label" x="20" y="20">1</text>
+
+                    <!-- Zone 2: Full moon -->
+                    <circle class="zone" data-zone="2" cx="390" cy="72" r="56" fill="#2a2810"/>
+                    <text class="zone-label" x="390" y="72">2</text>
+
+                    <!-- Zone 3: Cat head (large rounded square-ish face) -->
+                    <ellipse class="zone" data-zone="3" cx="220" cy="205" rx="112" ry="100" fill="#100820"/>
+                    <text class="zone-label" x="220" y="265">3</text>
+
+                    <!-- Zone 4: Left ear outer -->
+                    <polygon class="zone" data-zone="4" points="125,138,150,82,196,130" fill="#1a0a30"/>
+                    <!-- Zone 4: Right ear outer -->
+                    <polygon class="zone" data-zone="4" points="244,130,290,82,315,138" fill="#1a0a30"/>
+                    <text class="zone-label" x="150" y="118">4</text>
+                    <text class="zone-label" x="290" y="118">4</text>
+
+                    <!-- Zone 5: Left ear inner (pink) -->
+                    <polygon class="zone" data-zone="5" points="140,132,162,96,192,126" fill="#2a0818"/>
+                    <!-- Zone 5: Right ear inner (pink) -->
+                    <polygon class="zone" data-zone="5" points="248,126,278,96,300,132" fill="#2a0818"/>
+                    <text class="zone-label" x="165" y="116">5</text>
+                    <text class="zone-label" x="278" y="116">5</text>
+
+                    <!-- Zone 6: Big bow (left side of head) -->
+                    <!-- Bow left flap -->
+                    <polygon class="zone" data-zone="6" points="100,74,136,96,100,118" fill="#2a0010"/>
+                    <!-- Bow right flap -->
+                    <polygon class="zone" data-zone="6" points="172,74,136,96,172,118" fill="#2a0010"/>
+                    <!-- Bow center knot -->
+                    <ellipse class="zone" data-zone="6" cx="136" cy="96" rx="10" ry="9" fill="#2a0010"/>
+                    <text class="zone-label" x="136" y="96">6</text>
+
+                    <!-- Zone 7: Left cheek blush -->
+                    <ellipse class="zone" data-zone="7" cx="155" cy="218" rx="28" ry="17" fill="#2a1018"/>
+                    <!-- Zone 7: Right cheek blush -->
+                    <ellipse class="zone" data-zone="7" cx="285" cy="218" rx="28" ry="17" fill="#2a1018"/>
+                    <text class="zone-label" x="155" y="218">7</text>
+                    <text class="zone-label" x="285" y="218">7</text>
+
+                    <!-- Zone 8: Left eye -->
+                    <ellipse class="zone" data-zone="8" cx="182" cy="185" rx="22" ry="26" fill="#1a0828"/>
+                    <!-- Zone 8: Right eye -->
+                    <ellipse class="zone" data-zone="8" cx="258" cy="185" rx="22" ry="26" fill="#1a0828"/>
+                    <text class="zone-label" x="182" y="185">8</text>
+                    <text class="zone-label" x="258" y="185">8</text>
+
+                    <!-- Zone 9: Pumpkin body -->
+                    <ellipse class="zone" data-zone="9" cx="360" cy="298" rx="42" ry="36" fill="#2a1400"/>
+                    <!-- Pumpkin side bulges -->
+                    <ellipse class="zone" data-zone="9" cx="328" cy="300" rx="20" ry="30" fill="#2a1400"/>
+                    <ellipse class="zone" data-zone="9" cx="392" cy="300" rx="20" ry="30" fill="#2a1400"/>
+                    <text class="zone-label" x="360" y="298">9</text>
+
+                    <!-- Zone 10: Stars (decorative) -->
+                    <polygon class="zone" data-zone="10" points="44,48,48,38,52,48,62,48,54,55,57,66,48,59,39,66,42,55,34,48" fill="#1a1808"/>
+                    <polygon class="zone" data-zone="10" points="420,180,423,173,426,180,433,180,427,185,429,192,423,187,417,192,419,185,413,180" fill="#1a1808"/>
+                    <polygon class="zone" data-zone="10" points="68,160,70,155,72,160,77,160,73,163,75,168,70,165,65,168,67,163,63,160" fill="#1a1808"/>
+                    <text class="zone-label" x="48" y="53">10</text>
+
+                    <!-- Decorative: pumpkin stem, cat eyes X, cat nose (non-zone) -->
+                    <rect x="357" y="258" width="7" height="12" rx="2" fill="#0d0806" pointer-events="none"/>
+                    <!-- Cat X eyes -->
+                    <line x1="175" y1="178" x2="189" y2="192" stroke="#cc00ff" stroke-width="2.5" pointer-events="none"/>
+                    <line x1="189" y1="178" x2="175" y2="192" stroke="#cc00ff" stroke-width="2.5" pointer-events="none"/>
+                    <line x1="251" y1="178" x2="265" y2="192" stroke="#cc00ff" stroke-width="2.5" pointer-events="none"/>
+                    <line x1="265" y1="178" x2="251" y2="192" stroke="#cc00ff" stroke-width="2.5" pointer-events="none"/>
+                    <!-- Cat nose -->
+                    <polygon points="217,228,220,222,223,228" fill="#ff3366" opacity="0.7" pointer-events="none"/>
+                    <!-- Pumpkin face -->
+                    <polygon points="348,292,355,282,360,292" fill="#0a0004" pointer-events="none"/>
+                    <polygon points="365,292,372,282,377,292" fill="#0a0004" pointer-events="none"/>
+                    <path d="M342,305 Q350,318 360,312 Q370,318 378,305" fill="#0a0004" pointer-events="none"/>
+                </svg>
+            </div>
+            <div class="color-complete" id="nat-complete"></div>
+        </div>
+
+        <!-- CANVAS GAME: Spooky Kitty Catch -->
+        <div class="panel">
+            <div class="panel-title">👻 Spooky Kitty Catcher</div>
+            <div class="game-hud">
+                <div class="hud-stat">SCORE: <span id="game-score">0</span></div>
+                <div class="hud-stat hud-lives">LIVES: <span id="game-lives">❤️❤️❤️</span></div>
+                <div class="hud-stat">BEST: <span id="game-best">0</span></div>
+            </div>
+            <canvas id="nat-game" width="520" height="300"></canvas>
+            <div class="game-controls">
+                <button class="game-btn" onclick="startGame()">▶ START</button>
+                <button class="game-btn" onclick="resetGame()">↺ RESET</button>
+            </div>
+        </div>
+
+        <button class="return-btn" onclick="window.location.href='index.html'">↩ RETURN TO PORTAL</button>
+    </div>
+
+    <!-- Easter Egg: POMNI trigger overlay -->
+    <div class="pomni-overlay" id="pomni-popup">
+        <div class="pomni-glitch-bg"></div>
+        <div class="pomni-box">
+            <div class="pomni-icon">🎪⚡🎀</div>
+            <div class="pomni-title">WELCOME BACK,<br>POMNI!</div>
+            <p class="pomni-msg">You found Natalia's Digital Circus secret! Type it again to escape... or just ask Dad what your surprise is! 🌸</p>
+            <button class="pomni-close" onclick="document.getElementById('pomni-popup').classList.remove('show')">◀ LEAVE CIRCUS</button>
+        </div>
+    </div>
+
+    <button class="sound-btn" id="nat-sound-btn" onclick="natToggleSound()">◎ SOUND: OFF</button>
+
+    <script>
+    // ══════════════════════════════════════════════
+    // BACKGROUND PARTICLE CANVAS
+    // ══════════════════════════════════════════════
+    (function() {
+        const cvs = document.getElementById('nat-canvas-bg');
+        const ctx = cvs.getContext('2d');
+        let W = cvs.width = window.innerWidth, H = cvs.height = window.innerHeight;
+        window.addEventListener('resize', () => { W=cvs.width=window.innerWidth; H=cvs.height=window.innerHeight; });
+
+        const parts = [];
+        const colors = ['rgba(255,51,102,', 'rgba(204,0,255,', 'rgba(255,183,197,', 'rgba(230,92,0,', 'rgba(147,51,182,'];
+
+        for(let i=0;i<55;i++) {
+            parts.push({
+                x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight,
+                r: 0.8+Math.random()*2.5,
+                vy: -0.15-Math.random()*0.5, vx: (Math.random()-0.5)*0.2,
+                alpha: 0.1+Math.random()*0.35,
+                col: colors[Math.floor(Math.random()*colors.length)],
+                shape: Math.random() > 0.6 ? 'sq' : 'ci'
+            });
+        }
+
+        function tick() {
+            ctx.clearRect(0,0,W,H);
+            parts.forEach(p => {
+                p.x+=p.vx; p.y+=p.vy;
+                if(p.y<-10) { p.y=H+10; p.x=Math.random()*W; }
+                ctx.fillStyle = p.col+p.alpha+')';
+                ctx.beginPath();
+                if(p.shape==='ci') { ctx.arc(p.x,p.y,p.r,0,Math.PI*2); }
+                else { ctx.rect(p.x-p.r,p.y-p.r,p.r*2,p.r*2); }
+                ctx.fill();
+            });
+            requestAnimationFrame(tick);
+        }
+        tick();
+    })();
+
+    // ══════════════════════════════════════════════
+    // TRIVIA
+    // ══════════════════════════════════════════════
+    const natQs = [
+        { q: "What is the main character's name in The Amazing Digital Circus?",
+          a: ["Pomni", "Caine", "Ragatha"], c: 0 },
+        { q: "What is the virtual currency you use in Roblox?",
+          a: ["Robux", "Coins", "Pixels"], c: 0 },
+        { q: "What is Caine's job in The Amazing Digital Circus?",
+          a: ["The AI Ringmaster", "A trapped player", "The exit guardian"], c: 0 },
+        { q: "What happens to characters in The Digital Circus who completely lose their mind?",
+          a: ["They 'abstract'", "They disappear", "They go to sleep"], c: 0 },
+        { q: "What year did Roblox officially open to players?",
+          a: ["2006", "2012", "2009"], c: 0 }
+    ];
+    let natIdx = 0, natScore = 0;
+
+    function natLoadQ() {
+        const q = natQs[natIdx];
+        document.getElementById('nat-progress').textContent = `Question ${natIdx+1} / ${natQs.length}  ·  Score: ${natScore}`;
+        document.getElementById('nat-question').textContent = q.q;
+        document.getElementById('nat-result').textContent = '';
+        document.getElementById('nat-result').className = 'trivia-result';
+        document.getElementById('nat-next').style.display = 'none';
+        const box = document.getElementById('nat-options'); box.innerHTML = '';
+        q.a.forEach((opt,i) => {
+            const b = document.createElement('button');
+            b.className='trivia-btn'; b.textContent=opt;
+            b.onclick=()=>{
+                document.querySelectorAll('#nat-options .trivia-btn').forEach(x=>x.onclick=null);
+                if(i===q.c){
+                    b.classList.add('correct');
+                    document.getElementById('nat-result').textContent='✓ YES! You got it! 🎉';
+                    document.getElementById('nat-result').className='trivia-result ok';
+                    natScore++;
+                } else {
+                    b.classList.add('wrong');
+                    document.querySelectorAll('#nat-options .trivia-btn')[q.c].classList.add('correct');
+                    document.getElementById('nat-result').textContent=`✗ Not quite! It was: ${q.a[q.c]}`;
+                    document.getElementById('nat-result').className='trivia-result err';
+                }
+                if(natIdx < natQs.length-1) document.getElementById('nat-next').style.display='inline-block';
+                else setTimeout(()=>{
+                    document.getElementById('nat-result').textContent=`🏆 Done! Score: ${natScore}/${natQs.length} — You're a digital genius!`;
+                    document.getElementById('nat-result').className='trivia-result ok';
+                },1200);
+            };
+            box.appendChild(b);
+        });
+    }
+    function natNextQ() { natIdx++; if(natIdx<natQs.length) natLoadQ(); }
+    natLoadQ();
+
+    // ══════════════════════════════════════════════
+    // SVG COLORING BOOK
+    // ══════════════════════════════════════════════
+    const natPalette = [
+        null,
+        { color:'#0a0018', label:'1', name:'Night Sky' },
+        { color:'#ffeaa7', label:'2', name:'Moon' },
+        { color:'#2d1050', label:'3', name:'Kitty Purple' },
+        { color:'#331a4a', label:'4', name:'Dark Ear' },
+        { color:'#ff6b81', label:'5', name:'Pink Inner' },
+        { color:'#ff3366', label:'6', name:'Neon Bow' },
+        { color:'#ffb7c5', label:'7', name:'Blush Pink' },
+        { color:'#cc00ff', label:'8', name:'Magic Eyes' },
+        { color:'#e65c00', label:'9', name:'Pumpkin' },
+        { color:'#ffd700', label:'10', name:'Stars' }
+    ];
+    let natSelected = 1;
+    let natFilled = 0; const natTotal = 10;
+    const natColored = {};
+
+    const natPalEl = document.getElementById('nat-palette');
+    natPalette.slice(1).forEach((p,i) => {
+        const sw = document.createElement('div');
+        sw.className = 'color-swatch' + (i===0?' active':'');
+        sw.style.background = p.color;
+        sw.title = p.name; sw.textContent = p.label;
+        sw.addEventListener('click',()=>{
+            natSelected = i+1;
+            document.querySelectorAll('#nat-palette .color-swatch').forEach(s=>s.classList.remove('active'));
+            sw.classList.add('active');
+            document.getElementById('nat-hint').textContent = `Selected: ${p.name} [${p.label}]`;
+        });
+        natPalEl.appendChild(sw);
+    });
+
+    document.querySelectorAll('#nat-svg .zone').forEach(el => {
+        el.addEventListener('click',()=>{
+            const target = parseInt(el.dataset.zone);
+            if(natSelected===target){
+                const pal = natPalette[target];
+                document.querySelectorAll(`#nat-svg .zone[data-zone="${target}"]`).forEach(z=>{
+                    z.style.fill=pal.color; z.classList.add('filled');
+                });
+                if(!natColored[target]){
+                    natColored[target]=true; natFilled++;
+                    if(natFilled>=natTotal){
+                        document.getElementById('nat-complete').textContent='✦ MASTERPIECE COMPLETE! NATALIA YOU ARE AN ARTIST! ✦';
+                    }
+                }
+            } else {
+                el.style.filter='brightness(2.5) saturate(0)';
+                setTimeout(()=>el.style.filter='',300);
+                document.getElementById('nat-hint').textContent=`Zone ${target} needs code ${target}, not ${natSelected}`;
+            }
+        });
+    });
+
+    // ══════════════════════════════════════════════
+    // CANVAS GAME: SPOOKY KITTY CATCHER
+    // ══════════════════════════════════════════════
+    const gameCvs = document.getElementById('nat-game');
+    const gctx = gameCvs.getContext('2d');
+    let gameRunning = false, gameScore = 0, gameLives = 3, gameBest = 0;
+    let gameObjects = [], gameFrame = 0, gameInterval = null, gameSpawnRate = 90;
+
+    function drawCat(ctx, x, y, size) {
+        // Head
+        ctx.fillStyle='#2d1050';
+        ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2); ctx.fill();
+        // Ears
+        ctx.fillStyle='#4a1a6a';
+        ctx.beginPath(); ctx.moveTo(x-size*0.55,y-size*0.82); ctx.lineTo(x-size*0.12,y-size*1.35); ctx.lineTo(x+size*0.02,y-size*0.82); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x+size*0.02,y-size*0.82); ctx.lineTo(x+size*0.42,y-size*1.35); ctx.lineTo(x+size*0.58,y-size*0.82); ctx.fill();
+        // Ear pink
+        ctx.fillStyle='#ff6b81';
+        ctx.beginPath(); ctx.moveTo(x-size*0.48,y-size*0.82); ctx.lineTo(x-size*0.16,y-size*1.18); ctx.lineTo(x-size*0.05,y-size*0.82); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x+size*0.05,y-size*0.82); ctx.lineTo(x+size*0.36,y-size*1.18); ctx.lineTo(x+size*0.50,y-size*0.82); ctx.fill();
+        // X eyes
+        ctx.strokeStyle='#cc00ff'; ctx.lineWidth=1.8;
+        ctx.beginPath(); ctx.moveTo(x-size*0.35-4,y-4); ctx.lineTo(x-size*0.35+4,y+4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x-size*0.35+4,y-4); ctx.lineTo(x-size*0.35-4,y+4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+size*0.35-4,y-4); ctx.lineTo(x+size*0.35+4,y+4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+size*0.35+4,y-4); ctx.lineTo(x+size*0.35-4,y+4); ctx.stroke();
+        // Bow (tiny, top-left)
+        ctx.fillStyle='#ff3366';
+        ctx.beginPath(); ctx.moveTo(x-size*1.05,y-size*0.95); ctx.lineTo(x-size*0.7,y-size*0.75); ctx.lineTo(x-size*1.05,y-size*0.55); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x-size*0.35,y-size*0.95); ctx.lineTo(x-size*0.7,y-size*0.75); ctx.lineTo(x-size*0.35,y-size*0.55); ctx.fill();
+        ctx.fillStyle='#ff6b81'; ctx.beginPath(); ctx.arc(x-size*0.7,y-size*0.75,size*0.14,0,Math.PI*2); ctx.fill();
+        // Whiskers
+        ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=0.8;
+        ctx.beginPath(); ctx.moveTo(x-size*0.25,y+size*0.1); ctx.lineTo(x-size*0.85,y-size*0.05); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x-size*0.25,y+size*0.1); ctx.lineTo(x-size*0.85,y+size*0.28); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+size*0.25,y+size*0.1); ctx.lineTo(x+size*0.85,y-size*0.05); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+size*0.25,y+size*0.1); ctx.lineTo(x+size*0.85,y+size*0.28); ctx.stroke();
+    }
+
+    function drawPumpkin(ctx, x, y, size) {
+        ctx.fillStyle='#cc4400';
+        ctx.beginPath(); ctx.ellipse(x-size*0.6,y,size*0.65,size,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#e65c00';
+        ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#cc4400';
+        ctx.beginPath(); ctx.ellipse(x+size*0.6,y,size*0.65,size,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#5d4037'; ctx.fillRect(x-3,y-size-8,5,10);
+        ctx.fillStyle='#1a0a00';
+        ctx.beginPath(); ctx.moveTo(x-size*0.32,y-size*0.08); ctx.lineTo(x-size*0.12,y-size*0.32); ctx.lineTo(x-size*0.12,y+size*0.02); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x+size*0.12,y-size*0.32); ctx.lineTo(x+size*0.32,y-size*0.08); ctx.lineTo(x+size*0.12,y+size*0.02); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x-size*0.38,y+size*0.1); ctx.lineTo(x-size*0.22,y+size*0.38); ctx.lineTo(x-size*0.08,y+size*0.1); ctx.lineTo(x+size*0.02,y+size*0.32); ctx.lineTo(x+size*0.18,y+size*0.1); ctx.lineTo(x+size*0.32,y+size*0.38); ctx.lineTo(x+size*0.42,y+size*0.1); ctx.fill();
+    }
+
+    function drawStar(ctx, x, y, size) {
+        ctx.fillStyle='#ffd700';
+        ctx.shadowColor='#ffd700'; ctx.shadowBlur=12;
+        ctx.beginPath();
+        for(let i=0;i<5;i++){
+            const ang = i*(Math.PI*2/5) - Math.PI/2;
+            const ang2 = ang + Math.PI/5;
+            ctx[i===0?'moveTo':'lineTo'](x+Math.cos(ang)*size, y+Math.sin(ang)*size);
+            ctx.lineTo(x+Math.cos(ang2)*size*0.42, y+Math.sin(ang2)*size*0.42);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=0;
+    }
+
+    function spawnObject() {
+        const types = ['cat','cat','pumpkin','pumpkin','star'];
+        const type = types[Math.floor(Math.random()*types.length)];
+        const size = 18 + Math.random()*10;
+        gameObjects.push({
+            type, x: size+Math.random()*(gameCvs.width-size*2), y: gameCvs.height+size*2,
+            size, vy: -(1.2 + Math.random()*1.6 + gameScore*0.01),
+            vx: (Math.random()-0.5)*0.8, alive:true
+        });
+    }
+
+    function gameLoop() {
+        gctx.clearRect(0,0,gameCvs.width,gameCvs.height);
+        // Background
+        gctx.fillStyle='#070014'; gctx.fillRect(0,0,gameCvs.width,gameCvs.height);
+        // Grid lines
+        gctx.strokeStyle='rgba(255,51,102,0.06)'; gctx.lineWidth=1;
+        for(let i=0;i<gameCvs.width;i+=32){ gctx.beginPath(); gctx.moveTo(i,0); gctx.lineTo(i,gameCvs.height); gctx.stroke(); }
+        for(let i=0;i<gameCvs.height;i+=32){ gctx.beginPath(); gctx.moveTo(0,i); gctx.lineTo(gameCvs.width,i); gctx.stroke(); }
+
+        gameFrame++;
+        if(gameFrame % Math.max(30,gameSpawnRate-Math.floor(gameScore/5)) === 0) spawnObject();
+
+        for(let i=gameObjects.length-1;i>=0;i--){
+            const o=gameObjects[i];
+            if(!o.alive){ gameObjects.splice(i,1); continue; }
+            o.x+=o.vx; o.y+=o.vy;
+            if(o.y < -o.size*2){
+                gameLives--;
+                updateHUD();
+                gameObjects.splice(i,1);
+                if(gameLives<=0){ endGame(); return; }
+                continue;
+            }
+            if(o.type==='cat') drawCat(gctx,o.x,o.y,o.size);
+            else if(o.type==='pumpkin') drawPumpkin(gctx,o.x,o.y,o.size);
+            else drawStar(gctx,o.x,o.y,o.size);
+        }
+
+        // "Click the critters!" hint if no objects
+        if(gameObjects.length===0 && gameFrame>30){
+            gctx.fillStyle='rgba(255,51,102,0.4)';
+            gctx.font='12px "Press Start 2P"';
+            gctx.textAlign='center';
+            gctx.fillText('CLICK THE CRITTERS!',gameCvs.width/2,gameCvs.height/2);
+        }
+
+        if(gameRunning) requestAnimationFrame(gameLoop);
+    }
+
+    gameCvs.addEventListener('click', e => {
+        if(!gameRunning) return;
+        const rect = gameCvs.getBoundingClientRect();
+        const scaleX = gameCvs.width / rect.width;
+        const scaleY = gameCvs.height / rect.height;
+        const mx = (e.clientX - rect.left) * scaleX;
+        const my = (e.clientY - rect.top) * scaleY;
+        for(let i=gameObjects.length-1;i>=0;i--){
+            const o=gameObjects[i];
+            const dist=Math.hypot(mx-o.x, my-o.y);
+            if(dist < o.size*1.3){
+                o.alive=false;
+                gameScore += o.type==='star' ? 5 : o.type==='pumpkin' ? 2 : 1;
+                updateHUD(); break;
+            }
+        }
+    });
+
+    function updateHUD(){
+        document.getElementById('game-score').textContent=gameScore;
+        const hearts=['','❤️','❤️❤️','❤️❤️❤️'];
+        document.getElementById('game-lives').textContent=hearts[Math.max(0,gameLives)]||'💀';
+    }
+
+    function startGame(){
+        if(gameRunning) return;
+        gameRunning=true; gameScore=0; gameLives=3; gameObjects=[]; gameFrame=0;
+        updateHUD();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function resetGame(){
+        gameRunning=false;
+        setTimeout(()=>{
+            gameObjects=[]; gameScore=0; gameLives=3; gameFrame=0;
+            gctx.clearRect(0,0,gameCvs.width,gameCvs.height);
+            gctx.fillStyle='#070014'; gctx.fillRect(0,0,gameCvs.width,gameCvs.height);
+            gctx.fillStyle='rgba(255,51,102,0.4)';
+            gctx.font='12px "Press Start 2P"'; gctx.textAlign='center';
+            gctx.fillText('PRESS START',gameCvs.width/2,gameCvs.height/2);
+            updateHUD();
+        },50);
+    }
+
+    function endGame(){
+        gameRunning=false;
+        if(gameScore>gameBest){ gameBest=gameScore; document.getElementById('game-best').textContent=gameBest; }
+        gctx.fillStyle='rgba(0,0,0,0.75)'; gctx.fillRect(0,0,gameCvs.width,gameCvs.height);
+        gctx.fillStyle='#ff3366'; gctx.font='16px "Press Start 2P"'; gctx.textAlign='center';
+        gctx.fillText('GAME OVER',gameCvs.width/2,gameCvs.height/2-20);
+        gctx.fillStyle='#ffb7c5'; gctx.font='9px "Press Start 2P"';
+        gctx.fillText(`SCORE: ${gameScore}`,gameCvs.width/2,gameCvs.height/2+10);
+        gctx.fillText('PRESS START TO PLAY AGAIN',gameCvs.width/2,gameCvs.height/2+36);
+    }
+
+    // Draw initial "press start" screen
+    resetGame();
+
+    // ══════════════════════════════════════════════
+    // AMBIENT SOUND
+    // ══════════════════════════════════════════════
+    let natAudio = null, natSoundOn = false, natDroneGain = null;
+
+    function natBuildAudio(){
+        natAudio = new (window.AudioContext || window.webkitAudioContext)();
+        natDroneGain = natAudio.createGain(); natDroneGain.gain.value=0;
+        natDroneGain.connect(natAudio.destination);
+
+        const osc = natAudio.createOscillator();
+        osc.type='sawtooth'; osc.frequency.value=110;
+        const filt = natAudio.createBiquadFilter();
+        filt.type='lowpass'; filt.frequency.value=220;
+        osc.connect(filt); filt.connect(natDroneGain); osc.start();
+
+        function glitch(){
+            if(!natSoundOn) return;
+            const o=natAudio.createOscillator(), g=natAudio.createGain();
+            o.type='square'; o.frequency.value=200+Math.random()*2400;
+            g.gain.setValueAtTime(0.06, natAudio.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, natAudio.currentTime+0.06);
+            o.connect(g); g.connect(natAudio.destination);
+            o.start(); o.stop(natAudio.currentTime+0.06);
+            setTimeout(glitch, 800+Math.random()*3500);
+        }
+        function theremin(){
+            if(!natSoundOn) return;
+            const o=natAudio.createOscillator(), g=natAudio.createGain();
+            o.type='sine';
+            o.frequency.setValueAtTime(220, natAudio.currentTime);
+            o.frequency.exponentialRampToValueAtTime(440, natAudio.currentTime+1.5);
+            o.frequency.exponentialRampToValueAtTime(180, natAudio.currentTime+3);
+            g.gain.setValueAtTime(0.04, natAudio.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, natAudio.currentTime+3);
+            o.connect(g); g.connect(natAudio.destination);
+            o.start(); o.stop(natAudio.currentTime+3);
+            setTimeout(theremin, 6000+Math.random()*8000);
+        }
+        glitch(); theremin();
+    }
+
+    function natToggleSound(){
+        if(!natAudio) natBuildAudio();
+        natSoundOn=!natSoundOn;
+        natDroneGain.gain.setTargetAtTime(natSoundOn?0.05:0, natAudio.currentTime, 0.5);
+        const btn=document.getElementById('nat-sound-btn');
+        btn.textContent=natSoundOn?'◉ SOUND: ON':'◎ SOUND: OFF';
+        btn.classList.toggle('on',natSoundOn);
+    }
+
+    // ══════════════════════════════════════════════
+    // EASTER EGG: Type "POMNI"
+    // ══════════════════════════════════════════════
+    const secret='POMNI'; let secretBuf='';
+    document.addEventListener('keydown', e=>{
+        secretBuf=(secretBuf+e.key.toUpperCase()).slice(-secret.length);
+        if(secretBuf===secret){
+            document.getElementById('pomni-popup').classList.add('show');
+            secretBuf='';
+        }
+    });
+    </script>
 </body>
 </html>
