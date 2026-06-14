@@ -11,6 +11,16 @@
 </head>
 <body>
 
+  <!-- ANIMATED BACKGROUND -->
+  <div class="bg-fx" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <svg class="bg-wave" viewBox="0 0 1200 200" preserveAspectRatio="none">
+      <path class="wave-path wave1" d="M0,100 Q150,40 300,100 T600,100 T900,100 T1200,100" />
+      <path class="wave-path wave2" d="M0,100 Q150,160 300,100 T600,100 T900,100 T1200,100" />
+      <path class="wave-path wave3" d="M0,100 Q200,70 400,100 T800,100 T1200,100" />
+    </svg>
+  </div>
+
   <div class="rack">
 
     <!-- TOP BAR -->
@@ -185,7 +195,31 @@
           </div>
         </div>
 
-        <div class="keys-hint">Synth keys: Z X C V B N M , (white, one octave C-C) + S F G J L (black keys C# D# F# G# A#) — drum pads use 1-8, Q-I — tap/click or MIDI also work</div>
+        <div class="key-legend" id="keyLegend">
+          <span class="legend-title">KEYBOARD MAP</span>
+          <div class="legend-rows">
+            <div class="legend-row">
+              <span class="legend-group-label">WHITE</span>
+              <span class="legend-chip"><b>Z</b>C</span>
+              <span class="legend-chip"><b>X</b>D</span>
+              <span class="legend-chip"><b>C</b>E</span>
+              <span class="legend-chip"><b>V</b>F</span>
+              <span class="legend-chip"><b>B</b>G</span>
+              <span class="legend-chip"><b>N</b>A</span>
+              <span class="legend-chip"><b>M</b>B</span>
+              <span class="legend-chip"><b>,</b>C</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-group-label">BLACK</span>
+              <span class="legend-chip black"><b>S</b>C#</span>
+              <span class="legend-chip black"><b>F</b>D#</span>
+              <span class="legend-chip black"><b>G</b>F#</span>
+              <span class="legend-chip black"><b>J</b>G#</span>
+              <span class="legend-chip black"><b>L</b>A#</span>
+            </div>
+          </div>
+          <span class="legend-note">Tap keys or pads directly on touchscreen • Use OCTAVE +/- to change range • Drums: 1-8, Q-I</span>
+        </div>
       </section>
 
       <!-- MASTER FX MODULE -->

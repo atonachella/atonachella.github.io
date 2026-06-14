@@ -15,6 +15,69 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ===== ANIMATED BACKGROUND ===== */
+.bg-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: -50%;
+  background-image:
+    linear-gradient(rgba(0,245,212,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,61,127,0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: gridmove 8s linear infinite, gridpulse 4s ease-in-out infinite;
+}
+
+@keyframes gridmove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(44px, 44px); }
+}
+
+@keyframes gridpulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.bg-wave {
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  width: 100%;
+  height: 280px;
+  opacity: 0.55;
+}
+
+.wave-path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.wave1 { stroke: var(--cyan); animation: waveflow 7s ease-in-out infinite; }
+.wave2 { stroke: var(--pink); animation: waveflow 9s ease-in-out infinite reverse; opacity: 0.7; }
+.wave3 { stroke: #6b5cff; animation: waveflow 11s ease-in-out infinite; opacity: 0.5; }
+
+@keyframes waveflow {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  50% { transform: translateX(-40px) scaleY(1.6); }
+}
+
+.bg-top-wave {
+  top: 4%;
+  bottom: auto;
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-grid, .wave1, .wave2, .wave3 { animation: none; }
+}
+
 /* ===== GLOBAL TOUCH PRESS FEEDBACK ===== */
 button:active {
   transform: scale(0.94);
@@ -50,13 +113,15 @@ body {
 }
 
 .rack {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 1100px;
-  background: var(--panel);
+  background: rgba(18, 24, 31, 0.92);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03), 0 0 40px rgba(0,245,212,0.08);
 }
 
 /* ===== TOP BAR ===== */
@@ -840,45 +905,90 @@ body {
 
 .key.white.active .key-label, .key.black.active .key-label { color: var(--bg); font-weight: 700; }
 
-/* ===== COMPUTER-KEY BADGES on the mapped 13-key range ===== */
-.key-badge {
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
+/* ===== KEYBOARD LEGEND ===== */
+.key-legend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.legend-title {
   font-family: var(--font-display);
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.2em;
   color: var(--cyan);
+  text-shadow: 0 0 10px rgba(0,245,212,0.4);
+}
+
+.legend-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.legend-group-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  width: 42px;
+  text-align: right;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--text);
   background: var(--panel-raised);
-  border: 1px solid var(--cyan);
-  border-radius: 4px;
-  padding: 1px 5px;
-  box-shadow: 0 0 8px rgba(0,245,212,0.4);
-  pointer-events: none;
-  z-index: 3;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-width: 40px;
+  justify-content: center;
 }
 
-.key.black .key-badge {
+.legend-chip b {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--cyan);
-  background: #1a222c;
-  top: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  padding: 1px 5px;
 }
 
-.key.white.active .key-badge,
-.key.black.active .key-badge {
-  background: var(--pink);
-  border-color: var(--pink);
-  color: var(--bg);
-  box-shadow: 0 0 10px rgba(255,61,127,0.6);
+.legend-chip.black {
+  background: #11161d;
+  border-color: #2a3340;
 }
 
-.key.key-mapped.white {
-  background: linear-gradient(180deg, #f0f5f4, #dcebe8);
+.legend-chip.black b {
+  color: var(--pink);
 }
 
-.key.key-mapped.black {
-  background: linear-gradient(180deg, #1c3a36, #0e1f1c);
+.legend-note {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
 }
 
 .keys-hint {
