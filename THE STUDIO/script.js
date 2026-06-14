@@ -133,168 +133,442 @@ function sendMidiNote(note, velocity, channel = 0, on = true) {
 
 const DRUM_LABELS = [
   'KICK', 'SNARE', 'CLAP', 'RIM',
-  'CH', 'OH', 'TOM L', 'TOM H',
-  'PERC1', 'PERC2', 'COWBELL', 'SHAKER',
-  'FX1', 'FX2', 'CRASH', 'RIDE'
+  'CH', 'OH', 'TOM 1', 'TOM 2',
+  'SHAKER', 'TAMB', 'COWBELL', 'CRASH',
+  'RIDE', 'SFX 1', 'SFX 2', 'SUB'
 ];
 
 const PAD_KEYS = ['1','2','3','4','Q','W','E','R','A','S','D','F','Z','X','C','V'];
 
 const DRUM_MIDI_BASE = 36;
 
-const KITS = {
-  analog: {
-    name: 'Analog',
-    voices: [
-      () => synthKick(60, 0.5, 'sine'),
-      () => synthNoiseHit(0.2, 1800, 'snare'),
-      () => synthNoiseHit(0.1, 2200, 'clap', 3),
-      () => synthClick(1500, 0.04),
-      () => synthNoiseHit(0.04, 8000, 'hat'),
-      () => synthNoiseHit(0.18, 7000, 'hat'),
-      () => synthTone(140, 0.3, 'triangle'),
-      () => synthTone(220, 0.25, 'triangle'),
-      () => synthClick(900, 0.06),
-      () => synthClick(2500, 0.05),
-      () => synthTone(800, 0.12, 'square'),
-      () => synthNoiseHit(0.08, 5000, 'hat'),
-      () => synthSweep(2000, 200, 0.3),
-      () => synthSweep(400, 1800, 0.25),
-      () => synthNoiseHit(0.6, 6000, 'hat'),
-      () => synthNoiseHit(0.35, 9000, 'hat')
-    ]
-  },
-  electro: {
-    name: 'Electro',
-    voices: [
-      () => synthKick(50, 0.6, 'square'),
-      () => synthNoiseHit(0.15, 2600, 'snare'),
-      () => synthNoiseHit(0.08, 3000, 'clap', 4),
-      () => synthClick(2000, 0.03),
-      () => synthNoiseHit(0.03, 9000, 'hat'),
-      () => synthNoiseHit(0.14, 8500, 'hat'),
-      () => synthTone(110, 0.25, 'sawtooth'),
-      () => synthTone(180, 0.22, 'sawtooth'),
-      () => synthClick(1200, 0.05),
-      () => synthClick(3000, 0.04),
-      () => synthTone(1000, 0.1, 'square'),
-      () => synthNoiseHit(0.06, 6000, 'hat'),
-      () => synthSweep(3000, 100, 0.35),
-      () => synthSweep(200, 2500, 0.3),
-      () => synthNoiseHit(0.5, 7000, 'hat'),
-      () => synthNoiseHit(0.3, 10000, 'hat')
-    ]
-  },
-  acoustic: {
-    name: 'Acoustic',
-    voices: [
-      () => synthKick(70, 0.45, 'sine'),
-      () => synthNoiseHit(0.25, 1500, 'snare'),
-      () => synthNoiseHit(0.12, 1900, 'clap', 3),
-      () => synthClick(1000, 0.05),
-      () => synthNoiseHit(0.05, 6500, 'hat'),
-      () => synthNoiseHit(0.22, 6000, 'hat'),
-      () => synthTone(160, 0.35, 'triangle'),
-      () => synthTone(240, 0.3, 'triangle'),
-      () => synthClick(700, 0.07),
-      () => synthClick(2000, 0.06),
-      () => synthTone(700, 0.14, 'triangle'),
-      () => synthNoiseHit(0.1, 4500, 'hat'),
-      () => synthSweep(1500, 300, 0.28),
-      () => synthSweep(500, 1400, 0.22),
-      () => synthNoiseHit(0.7, 5500, 'hat'),
-      () => synthNoiseHit(0.4, 8000, 'hat')
-    ]
-  }
-};
+// ---------------------------------------------------------------
+// SYNTH VOICE PRIMITIVES
+// ---------------------------------------------------------------
 
-let currentKit = 'analog';
-
-// --- Synth voice generators ---
-function synthKick(freq, duration, type) {
+// Punchy kick: pitched osc sweep + sub layer + click transient
+function synthKickV(opts) {
+  const { startFreq = 180, endFreq = 50, duration = 0.4, type = 'sine', click = true, subLevel = 0.5 } = opts;
   const t = audioCtx.currentTime;
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = type;
-  osc.frequency.setValueAtTime(freq * 4, t);
-  osc.frequency.exponentialRampToValueAtTime(freq, t + 0.08);
+  osc.frequency.setValueAtTime(startFreq, t);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.09);
   gain.gain.setValueAtTime(1, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain);
   gain.connect(masterGain);
   osc.start(t);
   osc.stop(t + duration);
-}
 
-function synthNoiseHit(duration, filterFreq, kind, bursts = 1) {
-  const t = audioCtx.currentTime;
-  for (let b = 0; b < bursts; b++) {
-    const bufferSize = audioCtx.sampleRate * duration;
+  if (subLevel > 0) {
+    const sub = audioCtx.createOscillator();
+    const subGain = audioCtx.createGain();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(endFreq * 0.9, t);
+    subGain.gain.setValueAtTime(subLevel, t);
+    subGain.gain.exponentialRampToValueAtTime(0.001, t + duration * 1.3);
+    sub.connect(subGain);
+    subGain.connect(masterGain);
+    sub.start(t);
+    sub.stop(t + duration * 1.3);
+  }
+
+  if (click) {
+    const noise = audioCtx.createBufferSource();
+    const bufferSize = Math.floor(audioCtx.sampleRate * 0.01);
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
-    const noise = audioCtx.createBufferSource();
     noise.buffer = buffer;
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = kind === 'hat' ? 'highpass' : 'bandpass';
-    filter.frequency.value = filterFreq;
-
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.9, t + b * 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + b * 0.015 + duration);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(masterGain);
-    noise.start(t + b * 0.015);
-    noise.stop(t + b * 0.015 + duration);
+    const clickGain = audioCtx.createGain();
+    clickGain.gain.setValueAtTime(0.5, t);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.01);
+    noise.connect(clickGain);
+    clickGain.connect(masterGain);
+    noise.start(t);
   }
 }
 
-function synthClick(freq, duration) {
+// Snare: noise body + tonal "shell" tone layered
+function synthSnareV(opts) {
+  const { noiseDecay = 0.18, noiseFreq = 1800, toneFreq = 180, toneDecay = 0.1, toneLevel = 0.4, noiseType = 'highpass' } = opts;
   const t = audioCtx.currentTime;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'square';
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0.5, t);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-  osc.connect(gain);
-  gain.connect(masterGain);
-  osc.start(t);
-  osc.stop(t + duration);
+
+  // Noise body
+  const bufferSize = Math.floor(audioCtx.sampleRate * noiseDecay);
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = noiseType;
+  filter.frequency.value = noiseFreq;
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.setValueAtTime(0.9, t);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, t + noiseDecay);
+  noise.connect(filter);
+  filter.connect(noiseGain);
+  noiseGain.connect(masterGain);
+  noise.start(t);
+  noise.stop(t + noiseDecay);
+
+  // Tonal shell
+  if (toneLevel > 0) {
+    const osc = audioCtx.createOscillator();
+    const toneGain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(toneFreq, t);
+    osc.frequency.exponentialRampToValueAtTime(toneFreq * 0.6, t + toneDecay);
+    toneGain.gain.setValueAtTime(toneLevel, t);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, t + toneDecay);
+    osc.connect(toneGain);
+    toneGain.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + toneDecay);
+  }
 }
 
-function synthTone(freq, duration, type) {
+// Clap: multiple staggered noise bursts to simulate flam
+function synthClapV(opts) {
+  const { duration = 0.12, filterFreq = 1500, bursts = 4, spacing = 0.012, tailDecay = 0.25 } = opts;
   const t = audioCtx.currentTime;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0.7, t);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-  osc.connect(gain);
-  gain.connect(masterGain);
-  osc.start(t);
-  osc.stop(t + duration);
+
+  for (let b = 0; b < bursts; b++) {
+    const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = filterFreq;
+    filter.Q.value = 1.5;
+    const gain = audioCtx.createGain();
+    const start = t + b * spacing;
+    const dur = b === bursts - 1 ? tailDecay : duration;
+    gain.gain.setValueAtTime(0.7, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start(start);
+    noise.stop(start + dur);
+  }
 }
 
-function synthSweep(fromFreq, toFreq, duration) {
+// Hi-hat: metallic noise via multiple square oscillators through highpass
+function synthHatV(opts) {
+  const { duration = 0.06, hpfFreq = 7000, level = 0.35 } = opts;
+  const t = audioCtx.currentTime;
+
+  const fundamentals = [320, 540, 800, 1100, 1450];
+  const merger = audioCtx.createGain();
+  merger.gain.value = level;
+
+  const hpf = audioCtx.createBiquadFilter();
+  hpf.type = 'highpass';
+  hpf.frequency.value = hpfFreq;
+
+  const bpf = audioCtx.createBiquadFilter();
+  bpf.type = 'bandpass';
+  bpf.frequency.value = hpfFreq * 1.4;
+
+  merger.connect(hpf);
+  hpf.connect(bpf);
+  bpf.connect(masterGain);
+
+  fundamentals.forEach(freq => {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(1, t);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(oscGain);
+    oscGain.connect(merger);
+    osc.start(t);
+    osc.stop(t + duration);
+  });
+}
+
+// Tom: pitched sine sweep with resonant body
+function synthTomV(opts) {
+  const { startFreq = 200, endFreq = 90, duration = 0.35 } = opts;
   const t = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(fromFreq, t);
-  osc.frequency.exponentialRampToValueAtTime(toFreq, t + duration);
-  gain.gain.setValueAtTime(0.5, t);
+  osc.frequency.setValueAtTime(startFreq, t);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration * 0.7);
+  gain.gain.setValueAtTime(0.9, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain);
   gain.connect(masterGain);
   osc.start(t);
   osc.stop(t + duration);
 }
+
+// Shaker: filtered noise with quick attack/decay, airy
+function synthShakerV(opts) {
+  const { duration = 0.12, bpfFreq = 6000, level = 0.4 } = opts;
+  const t = audioCtx.currentTime;
+  const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = bpfFreq;
+  filter.Q.value = 0.8;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(level, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+  noise.start(t);
+  noise.stop(t + duration);
+}
+
+// Tambourine: layered high-frequency noise bursts (jingly)
+function synthTambourineV(opts) {
+  const { layers = 3, duration = 0.2, baseFreq = 5000 } = opts;
+  const t = audioCtx.currentTime;
+  for (let l = 0; l < layers; l++) {
+    const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = baseFreq + l * 1800;
+    filter.Q.value = 3;
+    const gain = audioCtx.createGain();
+    const start = t + l * 0.008;
+    gain.gain.setValueAtTime(0.35, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start(start);
+    noise.stop(start + duration);
+  }
+}
+
+// Cowbell: two square oscillators, classic dissonant interval
+function synthCowbellV(opts) {
+  const { freq1 = 800, freq2 = 540, duration = 0.3 } = opts;
+  const t = audioCtx.currentTime;
+  [freq1, freq2].forEach(freq => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = freq;
+    filter.Q.value = 2;
+    gain.gain.setValueAtTime(0.5, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + duration);
+  });
+}
+
+// Cymbal (crash/ride): dense noise wash through resonant filters
+function synthCymbalV(opts) {
+  const { duration = 0.8, hpfFreq = 5000, level = 0.3, decayShape = 1 } = opts;
+  const t = audioCtx.currentTime;
+  const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+
+  const hpf = audioCtx.createBiquadFilter();
+  hpf.type = 'highpass';
+  hpf.frequency.value = hpfFreq;
+
+  const bpf1 = audioCtx.createBiquadFilter();
+  bpf1.type = 'bandpass';
+  bpf1.frequency.value = hpfFreq * 1.2;
+
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(level, t);
+  gain.gain.exponentialRampToValueAtTime(0.0005, t + duration * decayShape);
+
+  noise.connect(hpf);
+  hpf.connect(bpf1);
+  bpf1.connect(gain);
+  gain.connect(masterGain);
+  noise.start(t);
+  noise.stop(t + duration);
+}
+
+// SFX sweep: pitch rising or falling sine/sawtooth
+function synthSweepV(opts) {
+  const { fromFreq = 400, toFreq = 2000, duration = 0.3, type = 'sine', level = 0.5 } = opts;
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(fromFreq, t);
+  osc.frequency.exponentialRampToValueAtTime(toFreq, t + duration);
+  gain.gain.setValueAtTime(level, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(t);
+  osc.stop(t + duration);
+}
+
+// Sub: pure low sine thump, long decay
+function synthSubV(opts) {
+  const { freq = 45, duration = 0.6 } = opts;
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.9, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(t);
+  osc.stop(t + duration);
+}
+
+// ---------------------------------------------------------------
+// 5 PRESET KITS - each maps all 16 pads:
+// KICK, SNARE, CLAP, RIM, CH, OH, TOM1, TOM2, SHAKER, TAMB, COWBELL, CRASH, RIDE, SFX1, SFX2, SUB
+// ---------------------------------------------------------------
+
+const KITS = {
+  analog: {
+    name: 'Analog',
+    voices: [
+      () => synthKickV({ startFreq: 150, endFreq: 50, duration: 0.45, type: 'sine', subLevel: 0.4 }),
+      () => synthSnareV({ noiseDecay: 0.18, noiseFreq: 1600, toneFreq: 180, toneDecay: 0.1, toneLevel: 0.45 }),
+      () => synthClapV({ duration: 0.1, filterFreq: 1400, bursts: 4, spacing: 0.012, tailDecay: 0.22 }),
+      () => synthHatV({ duration: 0.04, hpfFreq: 5500, level: 0.3 }),
+      () => synthHatV({ duration: 0.05, hpfFreq: 8000, level: 0.32 }),
+      () => synthHatV({ duration: 0.35, hpfFreq: 7000, level: 0.28 }),
+      () => synthTomV({ startFreq: 180, endFreq: 100, duration: 0.32 }),
+      () => synthTomV({ startFreq: 240, endFreq: 130, duration: 0.28 }),
+      () => synthShakerV({ duration: 0.1, bpfFreq: 6000, level: 0.35 }),
+      () => synthTambourineV({ layers: 3, duration: 0.18, baseFreq: 5000 }),
+      () => synthCowbellV({ freq1: 800, freq2: 540, duration: 0.28 }),
+      () => synthCymbalV({ duration: 0.9, hpfFreq: 5000, level: 0.28, decayShape: 1 }),
+      () => synthCymbalV({ duration: 0.6, hpfFreq: 6500, level: 0.22, decayShape: 0.7 }),
+      () => synthSweepV({ fromFreq: 2000, toFreq: 200, duration: 0.3, type: 'sine', level: 0.4 }),
+      () => synthSweepV({ fromFreq: 300, toFreq: 1800, duration: 0.25, type: 'triangle', level: 0.35 }),
+      () => synthSubV({ freq: 45, duration: 0.5 })
+    ]
+  },
+
+  trap808: {
+    name: '808 / Trap',
+    voices: [
+      () => synthKickV({ startFreq: 120, endFreq: 40, duration: 0.7, type: 'sine', subLevel: 0.8, click: true }),
+      () => synthSnareV({ noiseDecay: 0.22, noiseFreq: 2200, toneFreq: 200, toneDecay: 0.08, toneLevel: 0.3 }),
+      () => synthClapV({ duration: 0.09, filterFreq: 2000, bursts: 5, spacing: 0.01, tailDecay: 0.28 }),
+      () => synthHatV({ duration: 0.03, hpfFreq: 7000, level: 0.32 }),
+      () => synthHatV({ duration: 0.04, hpfFreq: 9000, level: 0.34 }),
+      () => synthHatV({ duration: 0.5, hpfFreq: 8500, level: 0.3 }),
+      () => synthTomV({ startFreq: 150, endFreq: 70, duration: 0.4 }),
+      () => synthTomV({ startFreq: 200, endFreq: 95, duration: 0.35 }),
+      () => synthShakerV({ duration: 0.08, bpfFreq: 7000, level: 0.3 }),
+      () => synthTambourineV({ layers: 3, duration: 0.15, baseFreq: 6000 }),
+      () => synthCowbellV({ freq1: 900, freq2: 600, duration: 0.25 }),
+      () => synthCymbalV({ duration: 1.1, hpfFreq: 4500, level: 0.3, decayShape: 1.1 }),
+      () => synthCymbalV({ duration: 0.7, hpfFreq: 6000, level: 0.24, decayShape: 0.8 }),
+      () => synthSweepV({ fromFreq: 3000, toFreq: 150, duration: 0.4, type: 'sawtooth', level: 0.45 }),
+      () => synthSweepV({ fromFreq: 200, toFreq: 2500, duration: 0.3, type: 'square', level: 0.35 }),
+      () => synthSubV({ freq: 38, duration: 0.8 })
+    ]
+  },
+
+  acoustic: {
+    name: 'Acoustic',
+    voices: [
+      () => synthKickV({ startFreq: 170, endFreq: 65, duration: 0.4, type: 'sine', subLevel: 0.3, click: true }),
+      () => synthSnareV({ noiseDecay: 0.25, noiseFreq: 1400, toneFreq: 210, toneDecay: 0.14, toneLevel: 0.5 }),
+      () => synthClapV({ duration: 0.13, filterFreq: 1300, bursts: 3, spacing: 0.015, tailDecay: 0.25 }),
+      () => synthHatV({ duration: 0.05, hpfFreq: 5000, level: 0.3 }),
+      () => synthHatV({ duration: 0.06, hpfFreq: 6500, level: 0.32 }),
+      () => synthHatV({ duration: 0.4, hpfFreq: 6000, level: 0.28 }),
+      () => synthTomV({ startFreq: 200, endFreq: 110, duration: 0.4 }),
+      () => synthTomV({ startFreq: 260, endFreq: 145, duration: 0.35 }),
+      () => synthShakerV({ duration: 0.14, bpfFreq: 5500, level: 0.38 }),
+      () => synthTambourineV({ layers: 4, duration: 0.22, baseFreq: 4500 }),
+      () => synthCowbellV({ freq1: 750, freq2: 500, duration: 0.3 }),
+      () => synthCymbalV({ duration: 1.0, hpfFreq: 4000, level: 0.3, decayShape: 1.2 }),
+      () => synthCymbalV({ duration: 0.65, hpfFreq: 5500, level: 0.24, decayShape: 0.85 }),
+      () => synthSweepV({ fromFreq: 1500, toFreq: 300, duration: 0.35, type: 'triangle', level: 0.4 }),
+      () => synthSweepV({ fromFreq: 400, toFreq: 1600, duration: 0.3, type: 'sine', level: 0.35 }),
+      () => synthSubV({ freq: 50, duration: 0.45 })
+    ]
+  },
+
+  lofi: {
+    name: 'Lo-Fi',
+    voices: [
+      () => synthKickV({ startFreq: 100, endFreq: 45, duration: 0.5, type: 'triangle', subLevel: 0.5, click: false }),
+      () => synthSnareV({ noiseDecay: 0.2, noiseFreq: 1100, toneFreq: 160, toneDecay: 0.12, toneLevel: 0.35, noiseType: 'bandpass' }),
+      () => synthClapV({ duration: 0.14, filterFreq: 1000, bursts: 3, spacing: 0.018, tailDecay: 0.3 }),
+      () => synthHatV({ duration: 0.05, hpfFreq: 4000, level: 0.22 }),
+      () => synthHatV({ duration: 0.07, hpfFreq: 5000, level: 0.24 }),
+      () => synthHatV({ duration: 0.45, hpfFreq: 4500, level: 0.2 }),
+      () => synthTomV({ startFreq: 160, endFreq: 85, duration: 0.4 }),
+      () => synthTomV({ startFreq: 210, endFreq: 110, duration: 0.35 }),
+      () => synthShakerV({ duration: 0.15, bpfFreq: 4000, level: 0.3 }),
+      () => synthTambourineV({ layers: 2, duration: 0.2, baseFreq: 3500 }),
+      () => synthCowbellV({ freq1: 650, freq2: 430, duration: 0.3 }),
+      () => synthCymbalV({ duration: 0.9, hpfFreq: 3000, level: 0.24, decayShape: 1.3 }),
+      () => synthCymbalV({ duration: 0.6, hpfFreq: 4000, level: 0.2, decayShape: 0.9 }),
+      () => synthSweepV({ fromFreq: 1200, toFreq: 250, duration: 0.4, type: 'triangle', level: 0.35 }),
+      () => synthSweepV({ fromFreq: 250, toFreq: 1000, duration: 0.35, type: 'sine', level: 0.3 }),
+      () => synthSubV({ freq: 42, duration: 0.55 })
+    ]
+  },
+
+  industrial: {
+    name: 'Industrial',
+    voices: [
+      () => synthKickV({ startFreq: 200, endFreq: 55, duration: 0.5, type: 'square', subLevel: 0.6, click: true }),
+      () => synthSnareV({ noiseDecay: 0.2, noiseFreq: 2800, toneFreq: 240, toneDecay: 0.09, toneLevel: 0.3, noiseType: 'highpass' }),
+      () => synthClapV({ duration: 0.08, filterFreq: 2400, bursts: 5, spacing: 0.009, tailDecay: 0.25 }),
+      () => synthHatV({ duration: 0.03, hpfFreq: 9000, level: 0.35 }),
+      () => synthHatV({ duration: 0.04, hpfFreq: 11000, level: 0.36 }),
+      () => synthHatV({ duration: 0.4, hpfFreq: 10000, level: 0.3 }),
+      () => synthTomV({ startFreq: 220, endFreq: 80, duration: 0.35 }),
+      () => synthTomV({ startFreq: 280, endFreq: 110, duration: 0.3 }),
+      () => synthShakerV({ duration: 0.09, bpfFreq: 8000, level: 0.32 }),
+      () => synthTambourineV({ layers: 4, duration: 0.16, baseFreq: 7000 }),
+      () => synthCowbellV({ freq1: 1000, freq2: 670, duration: 0.22 }),
+      () => synthCymbalV({ duration: 1.0, hpfFreq: 6000, level: 0.32, decayShape: 1 }),
+      () => synthCymbalV({ duration: 0.6, hpfFreq: 7500, level: 0.26, decayShape: 0.75 }),
+      () => synthSweepV({ fromFreq: 4000, toFreq: 100, duration: 0.35, type: 'sawtooth', level: 0.45 }),
+      () => synthSweepV({ fromFreq: 150, toFreq: 3500, duration: 0.3, type: 'square', level: 0.4 }),
+      () => synthSubV({ freq: 35, duration: 0.7 })
+    ]
+  }
+};
+
+let currentKit = 'analog';
 
 // --- Build pad grid (4x4) ---
 const padGrid = document.getElementById('padGrid');
@@ -551,35 +825,139 @@ function midiToFreq(midiNote) {
   return 440 * Math.pow(2, (midiNote - 69) / 12);
 }
 
+// ---------------------------------------------------------------
+// KEYBOARD SYNTH PRESETS
+// Each preset defines oscillator types/detune, filter, and gain shaping.
+// noteOn/noteOff read from this based on the active preset.
+// ---------------------------------------------------------------
+const SYNTH_PRESETS = {
+  classic: {
+    name: 'Classic',
+    oscType: 'sawtooth',
+    detune: 0.005,      // ratio offset for osc2
+    filterType: 'lowpass',
+    filterFreq: 12000,
+    filterQ: 0.7,
+    gainLevel: 0.5
+  },
+  bass: {
+    name: 'Bass',
+    oscType: 'sawtooth',
+    detune: 0.01,
+    filterType: 'lowpass',
+    filterFreq: 900,
+    filterQ: 1.2,
+    gainLevel: 0.7,
+    octaveOffset: -1
+  },
+  lead: {
+    name: 'Lead',
+    oscType: 'square',
+    detune: 0.015,
+    filterType: 'lowpass',
+    filterFreq: 6000,
+    filterQ: 2,
+    gainLevel: 0.45
+  },
+  bell: {
+    name: 'Bell',
+    oscType: 'sine',
+    detune: 0.003,
+    extraPartial: true,   // adds a high inharmonic partial for bell character
+    filterType: 'highpass',
+    filterFreq: 200,
+    filterQ: 0.5,
+    gainLevel: 0.4
+  },
+  drone: {
+    name: 'Drone / Pad',
+    oscType: 'triangle',
+    detune: 0.02,
+    filterType: 'lowpass',
+    filterFreq: 2200,
+    filterQ: 0.4,
+    gainLevel: 0.4,
+    slowAttack: true
+  },
+  pluck: {
+    name: 'Pluck',
+    oscType: 'triangle',
+    detune: 0.008,
+    filterType: 'lowpass',
+    filterFreq: 4000,
+    filterQ: 3,
+    gainLevel: 0.5,
+    fastDecay: true
+  }
+};
+
+let currentPreset = 'classic';
+
 function noteOn(midiNote, velocity = 0.9) {
   if (activeOscillators[midiNote]) return;
 
-  const freq = midiToFreq(midiNote);
-  const wave = document.getElementById('waveSelect').value;
+  const preset = SYNTH_PRESETS[currentPreset];
+  const octaveOffset = preset.octaveOffset || 0;
+  const freq = midiToFreq(midiNote + (octaveOffset * 12));
   const attack = parseFloat(document.getElementById('attackKnob').value);
+  const effectiveAttack = preset.slowAttack ? Math.max(attack, 0.4) : Math.max(attack, 0.001);
 
   const osc = audioCtx.createOscillator();
-  osc.type = wave;
+  osc.type = preset.oscType;
   osc.frequency.value = freq;
 
   const osc2 = audioCtx.createOscillator();
-  osc2.type = wave;
-  osc2.frequency.value = freq * 1.005;
+  osc2.type = preset.oscType;
+  osc2.frequency.value = freq * (1 + preset.detune);
+
+  // Tone-shaping filter
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = preset.filterType;
+  filter.frequency.value = preset.filterFreq;
+  filter.Q.value = preset.filterQ;
 
   const gain = audioCtx.createGain();
   gain.gain.setValueAtTime(0, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(Math.max(velocity, 0.0001) * 0.5, audioCtx.currentTime + Math.max(attack, 0.001));
+  gain.gain.linearRampToValueAtTime(
+    Math.max(velocity, 0.0001) * preset.gainLevel,
+    audioCtx.currentTime + effectiveAttack
+  );
 
-  osc.connect(gain);
-  osc2.connect(gain);
+  osc.connect(filter);
+  osc2.connect(filter);
 
+  // Optional inharmonic high partial for bell-type presets
+  let osc3 = null;
+  if (preset.extraPartial) {
+    osc3 = audioCtx.createOscillator();
+    osc3.type = 'sine';
+    osc3.frequency.value = freq * 2.76; // inharmonic ratio for bell-like overtone
+    const partialGain = audioCtx.createGain();
+    partialGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    partialGain.gain.linearRampToValueAtTime(
+      Math.max(velocity, 0.0001) * preset.gainLevel * 0.35,
+      audioCtx.currentTime + effectiveAttack
+    );
+    osc3.connect(partialGain);
+    partialGain.connect(filter);
+    osc3.start();
+    activeOscillators[midiNote] = activeOscillators[midiNote] || {};
+  }
+
+  filter.connect(gain);
   gain.connect(reverbDry);
   gain.connect(reverbNode);
 
   osc.start();
   osc2.start();
 
-  activeOscillators[midiNote] = { osc, osc2, gain };
+  // If a fast-decay preset (pluck), start decaying gain immediately after attack
+  if (preset.fastDecay) {
+    const decayTime = audioCtx.currentTime + effectiveAttack + 0.25;
+    gain.gain.setTargetAtTime(0.0001, decayTime, 0.15);
+  }
+
+  activeOscillators[midiNote] = { osc, osc2, osc3, filter, gain };
 
   const keyEl = keyEls[midiNote];
   if (keyEl) keyEl.classList.add('active');
@@ -594,13 +972,15 @@ function noteOff(midiNote) {
 
   const release = parseFloat(document.getElementById('releaseKnob').value);
   const t = audioCtx.currentTime;
+  const safeRelease = Math.max(release, 0.02);
 
   voice.gain.gain.cancelScheduledValues(t);
   voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), t);
-  voice.gain.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(release, 0.02));
+  voice.gain.gain.exponentialRampToValueAtTime(0.0001, t + safeRelease);
 
-  voice.osc.stop(t + release + 0.05);
-  voice.osc2.stop(t + release + 0.05);
+  voice.osc.stop(t + safeRelease + 0.05);
+  voice.osc2.stop(t + safeRelease + 0.05);
+  if (voice.osc3) voice.osc3.stop(t + safeRelease + 0.05);
 
   delete activeOscillators[midiNote];
 
@@ -657,6 +1037,11 @@ buildKeyboard();
 // Reverb wet amount
 document.getElementById('reverbKnob').addEventListener('input', (e) => {
   reverbWet.gain.value = parseFloat(e.target.value);
+});
+
+// Synth preset selector
+document.getElementById('presetSelect').addEventListener('change', (e) => {
+  currentPreset = e.target.value;
 });
 
 // Octave shift

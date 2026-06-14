@@ -78,10 +78,12 @@
           <div class="kit-controls">
             <label class="kit-label">KIT</label>
             <select id="kitSelect" class="kit-select">
-              <option value="analog">Analog</option>
-              <option value="electro">Electro</option>
-              <option value="acoustic">Acoustic</option>
-            </select>
+  <option value="analog">Analog</option>
+  <option value="trap808">808 / Trap</option>
+  <option value="acoustic">Acoustic</option>
+  <option value="lofi">Lo-Fi</option>
+  <option value="industrial">Industrial</option>
+</select>
             <button id="clearPatternBtn" class="ghost-btn">CLEAR</button>
             <button id="savePatternBtn" class="ghost-btn">SAVE</button>
             <select id="loadPatternSelect" class="kit-select">
@@ -105,14 +107,16 @@
 
         <div class="synth-controls">
           <div class="control-group">
-            <label>WAVE</label>
-            <select id="waveSelect" class="kit-select">
-              <option value="sawtooth">Saw</option>
-              <option value="square">Square</option>
-              <option value="triangle">Triangle</option>
-              <option value="sine">Sine</option>
-            </select>
-          </div>
+  <label>PRESET</label>
+  <select id="presetSelect" class="kit-select">
+    <option value="classic">Classic</option>
+    <option value="bass">Bass</option>
+    <option value="lead">Lead</option>
+    <option value="bell">Bell</option>
+    <option value="drone">Drone/Pad</option>
+    <option value="pluck">Pluck</option>
+  </select>
+</div>
           <div class="control-group">
             <label>ATTACK</label>
             <input type="range" id="attackKnob" min="0" max="1" step="0.01" value="0.02">
