@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio // Dual Workhorse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="rack">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span class="brand-text">STUDIO<span class="brand-sub">// DUAL WORKHORSE</span></span>
+      </div>
+
+      <div class="status-cluster">
+        <div class="status-item" id="midiStatus">
+          <span class="status-dot" id="midiDot"></span>
+          <span class="status-label">MIDI OUT</span>
+          <span class="status-value" id="midiValue">SEARCHING...</span>
+        </div>
+        <select id="midiOutSelect" class="midi-select">
+          <option value="">No MIDI outputs found</option>
+        </select>
+        <div class="status-item">
+          <span class="status-label">BPM</span>
+          <input type="number" id="bpmInput" class="bpm-input" value="96" min="40" max="240">
+        </div>
+        <button id="transportBtn" class="transport-btn">
+          <span class="transport-icon">▶</span>
+          <span class="transport-text">RUN</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN: TWO MODULES SIDE BY SIDE -->
+    <main class="modules">
+
+      <!-- DRUM MACHINE MODULE -->
+      <section class="module drum-module" id="drumModule">
+        <div class="module-header">
+          <h2 class="module-title">PAD<span class="title-accent">16</span></h2>
+          <span class="module-tag">DRUM MACHINE</span>
+        </div>
+
+        <div class="pad-grid" id="padGrid">
+          <!-- 16 pads injected by JS -->
+        </div>
+
+        <div class="seq-controls">
+          <div class="seq-steps" id="seqSteps">
+            <!-- 16 step indicators injected by JS -->
+          </div>
+          <div class="kit-controls">
+            <label class="kit-label">KIT</label>
+            <select id="kitSelect" class="kit-select">
+              <option value="analog">Analog</option>
+              <option value="electro">Electro</option>
+              <option value="acoustic">Acoustic</option>
+            </select>
+            <button id="clearPatternBtn" class="ghost-btn">CLEAR</button>
+            <button id="savePatternBtn" class="ghost-btn">SAVE</button>
+            <select id="loadPatternSelect" class="kit-select">
+              <option value="">LOAD PATTERN...</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- SIGNAL DIVIDER -->
+      <div class="signal-divider" id="signalDivider">
+        <div class="signal-line" id="signalLine"></div>
+      </div>
+
+      <!-- KEYBOARD MODULE -->
+      <section class="module keys-module" id="keysModule">
+        <div class="module-header">
+          <h2 class="module-title">KEY<span class="title-accent">61</span></h2>
+          <span class="module-tag">SYNTH KEYBOARD</span>
+        </div>
+
+        <div class="synth-controls">
+          <div class="control-group">
+            <label>WAVE</label>
+            <select id="waveSelect" class="kit-select">
+              <option value="sawtooth">Saw</option>
+              <option value="square">Square</option>
+              <option value="triangle">Triangle</option>
+              <option value="sine">Sine</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>ATTACK</label>
+            <input type="range" id="attackKnob" min="0" max="1" step="0.01" value="0.02">
+          </div>
+          <div class="control-group">
+            <label>RELEASE</label>
+            <input type="range" id="releaseKnob" min="0.05" max="2" step="0.01" value="0.3">
+          </div>
+          <div class="control-group">
+            <label>REVERB</label>
+            <input type="range" id="reverbKnob" min="0" max="1" step="0.01" value="0.25">
+          </div>
+          <div class="control-group">
+            <label>OCTAVE</label>
+            <div class="octave-shift">
+              <button id="octDown" class="ghost-btn small">-</button>
+              <span id="octDisplay">4</span>
+              <button id="octUp" class="ghost-btn small">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="keyboard-wrap">
+          <div class="keyboard" id="keyboard">
+            <!-- 61 keys injected by JS -->
+          </div>
+        </div>
+
+        <div class="keys-hint">Use computer keys A–L / W,E,T,Y,U,O,P for quick play, or click/MIDI</div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM MASTER STRIP -->
+    <footer class="masterstrip">
+      <div class="master-item">
+        <label>MASTER</label>
+        <input type="range" id="masterVol" min="0" max="1" step="0.01" value="0.7">
+      </div>
+      <div class="master-item meter-item">
+        <label>OUT</label>
+        <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+      </div>
+      <div class="master-item">
+        <span class="footer-note">Web Audio synth engine — no samples — MIDI route-ready for Ableton Live</span>
+      </div>
+    </footer>
+
+  </div>
+
+<script src="script.js"></script>
+</body>
+</html>
