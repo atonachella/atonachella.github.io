@@ -304,6 +304,16 @@ body {
 
 .drum-module .title-accent { color: var(--cyan); text-shadow: 0 0 14px rgba(0,245,212,0.5); }
 .keys-module .title-accent { color: var(--pink); text-shadow: 0 0 14px rgba(255,61,127,0.5); }
+.fx-module .title-accent { color: var(--cyan); text-shadow: 0 0 14px rgba(0,245,212,0.5); }
+
+.fx-controls {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 
 .module-tag {
   font-family: var(--font-display);
@@ -490,7 +500,43 @@ body {
   gap: 4px;
 }
 
-.bar-btn {
+.loop-btn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.loop-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.loop-btn.active {
+  background: var(--cyan-dim);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,245,212,0.35), inset 0 0 8px rgba(0,245,212,0.2);
+}
+
+.bar-page-wrap {
+  display: flex;
+  gap: 4px;
+}
+
+.bar-page-wrap.hidden {
+  display: none;
+}
+
+.bar-page-btn {
   width: 34px;
   height: 34px;
   border-radius: 6px;
@@ -504,16 +550,16 @@ body {
   transition: all 0.15s ease;
 }
 
-.bar-btn:hover {
-  border-color: var(--cyan);
-  color: var(--cyan);
+.bar-page-btn:hover {
+  border-color: var(--pink);
+  color: var(--pink);
 }
 
-.bar-btn.active {
-  background: var(--cyan-dim);
-  border-color: var(--cyan);
-  color: var(--cyan);
-  box-shadow: 0 0 12px rgba(0,245,212,0.35), inset 0 0 8px rgba(0,245,212,0.2);
+.bar-page-btn.active {
+  background: var(--pink-dim);
+  border-color: var(--pink);
+  color: var(--pink);
+  box-shadow: 0 0 12px rgba(255,61,127,0.35), inset 0 0 8px rgba(255,61,127,0.2);
 }
 
 /* ===== BEAT MARKERS on step strip ===== */
@@ -677,7 +723,7 @@ body {
 }
 
 .key.white {
-  width: 30px;
+  width: 27px;
   height: 100%;
   background: linear-gradient(180deg, #e8e8e4, #d4d4d0);
   z-index: 1;
@@ -689,7 +735,7 @@ body {
 }
 
 .key.black {
-  width: 18px;
+  width: 16px;
   height: 60%;
   background: linear-gradient(180deg, #2a2f38, #14171c);
   position: absolute;
@@ -718,6 +764,64 @@ body {
   color: var(--text-dim);
   text-align: center;
   letter-spacing: 0.02em;
+}
+
+/* ===== MOD WHEEL / PITCH BEND ===== */
+.wheel-row {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.wheel-track {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel-track input[type="range"] {
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 28px;
+  height: 90px;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+.wheel-track input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 36px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+  cursor: pointer;
+}
+
+#pitchWheel::-webkit-slider-thumb {
+  background: var(--pink);
+  box-shadow: 0 0 10px var(--pink);
+}
+
+.wheel-unit label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
 }
 
 /* ===== MASTER STRIP ===== */

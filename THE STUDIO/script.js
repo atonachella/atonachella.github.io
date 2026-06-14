@@ -6,7 +6,10 @@
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// Master chain: everything -> masterGain -> analyser -> destination
+// Master chain: everything -> masterFXInput -> [HPF -> LPF -> flange -> phaser -> chorus] -> masterGain -> analyser -> destination
+const masterFXInput = audioCtx.createGain();
+masterFXInput.gain.value = 1.0;
+
 const masterGain = audioCtx.createGain();
 masterGain.gain.value = 0.7;
 
@@ -15,6 +18,108 @@ analyser.fftSize = 256;
 
 masterGain.connect(analyser);
 analyser.connect(audioCtx.destination);
+
+// ---- Master FX: High-pass / Low-pass filters ----
+const masterHPF = audioCtx.createBiquadFilter();
+masterHPF.type = 'highpass';
+masterHPF.frequency.value = 20; // fully open by default
+
+const masterLPF = audioCtx.createBiquadFilter();
+masterLPF.type = 'lowpass';
+masterLPF.frequency.value = 20000; // fully open by default
+
+// ---- Master FX: Flanger (short modulated delay, fed back) ----
+const flangeInput = audioCtx.createGain();
+const flangeDelay = audioCtx.createDelay(0.05);
+flangeDelay.delayTime.value = 0.003;
+const flangeLFO = audioCtx.createOscillator();
+flangeLFO.frequency.value = 0.25;
+const flangeLFODepth = audioCtx.createGain();
+flangeLFODepth.gain.value = 0.002;
+const flangeFeedback = audioCtx.createGain();
+flangeFeedback.gain.value = 0;
+const flangeWet = audioCtx.createGain();
+flangeWet.gain.value = 0; // off by default
+const flangeDry = audioCtx.createGain();
+flangeDry.gain.value = 1;
+const flangeOutput = audioCtx.createGain();
+
+flangeLFO.connect(flangeLFODepth);
+flangeLFODepth.connect(flangeDelay.delayTime);
+flangeLFO.start();
+
+flangeInput.connect(flangeDelay);
+flangeInput.connect(flangeDry);
+flangeDelay.connect(flangeFeedback);
+flangeFeedback.connect(flangeDelay);
+flangeDelay.connect(flangeWet);
+flangeWet.connect(flangeOutput);
+flangeDry.connect(flangeOutput);
+
+// ---- Master FX: Phaser (allpass filter chain modulated by LFO) ----
+const phaserInput = audioCtx.createGain();
+const phaserStages = [];
+const NUM_PHASER_STAGES = 4;
+for (let i = 0; i < NUM_PHASER_STAGES; i++) {
+  const ap = audioCtx.createBiquadFilter();
+  ap.type = 'allpass';
+  ap.frequency.value = 800;
+  phaserStages.push(ap);
+}
+for (let i = 0; i < phaserStages.length - 1; i++) {
+  phaserStages[i].connect(phaserStages[i + 1]);
+}
+const phaserLFO = audioCtx.createOscillator();
+phaserLFO.frequency.value = 0.3;
+const phaserLFODepth = audioCtx.createGain();
+phaserLFODepth.gain.value = 600;
+phaserLFO.connect(phaserLFODepth);
+phaserStages.forEach(ap => phaserLFODepth.connect(ap.frequency));
+phaserLFO.start();
+
+const phaserWet = audioCtx.createGain();
+phaserWet.gain.value = 0; // off by default
+const phaserDry = audioCtx.createGain();
+phaserDry.gain.value = 1;
+const phaserOutput = audioCtx.createGain();
+
+phaserInput.connect(phaserStages[0]);
+phaserInput.connect(phaserDry);
+phaserStages[phaserStages.length - 1].connect(phaserWet);
+phaserWet.connect(phaserOutput);
+phaserDry.connect(phaserOutput);
+
+// ---- Master FX: Chorus / Detune (modulated delay, wider sweep, dual voice) ----
+const chorusInput = audioCtx.createGain();
+const chorusDelay = audioCtx.createDelay(0.05);
+chorusDelay.delayTime.value = 0.012;
+const chorusLFO = audioCtx.createOscillator();
+chorusLFO.frequency.value = 1.1;
+const chorusLFODepth = audioCtx.createGain();
+chorusLFODepth.gain.value = 0.004;
+const chorusWet = audioCtx.createGain();
+chorusWet.gain.value = 0; // off by default
+const chorusDry = audioCtx.createGain();
+chorusDry.gain.value = 1;
+const chorusOutput = audioCtx.createGain();
+
+chorusLFO.connect(chorusLFODepth);
+chorusLFODepth.connect(chorusDelay.delayTime);
+chorusLFO.start();
+
+chorusInput.connect(chorusDelay);
+chorusInput.connect(chorusDry);
+chorusDelay.connect(chorusWet);
+chorusWet.connect(chorusOutput);
+chorusDry.connect(chorusOutput);
+
+// ---- Wire the master FX chain in series ----
+masterFXInput.connect(masterHPF);
+masterHPF.connect(masterLPF);
+masterLPF.connect(flangeInput);
+flangeOutput.connect(phaserInput);
+phaserOutput.connect(chorusInput);
+chorusOutput.connect(masterGain);
 
 // ---- Simple convolver reverb (impulse generated, no sample files) ----
 function createReverbImpulse(duration = 2, decay = 2) {
@@ -39,8 +144,8 @@ const reverbDry = audioCtx.createGain();
 reverbDry.gain.value = 1.0;
 
 reverbNode.connect(reverbWet);
-reverbWet.connect(masterGain);
-reverbDry.connect(masterGain);
+reverbWet.connect(masterFXInput);
+reverbDry.connect(masterFXInput);
 
 // ============================================================
 // METER
@@ -68,6 +173,33 @@ function pulseSignalLine() {
   clearTimeout(pulseTimeout);
   pulseTimeout = setTimeout(() => signalLine.classList.remove('pulse'), 120);
 }
+
+// ============================================================
+// MASTER FX CONTROLS - HPF / LPF / Flange / Phaser / Detune (chorus)
+// ============================================================
+document.getElementById('hpfKnob').addEventListener('input', (e) => {
+  masterHPF.frequency.value = parseFloat(e.target.value);
+});
+document.getElementById('lpfKnob').addEventListener('input', (e) => {
+  masterLPF.frequency.value = parseFloat(e.target.value);
+});
+document.getElementById('flangeKnob').addEventListener('input', (e) => {
+  const v = parseFloat(e.target.value);
+  flangeWet.gain.value = v;
+  flangeDry.gain.value = 1 - v * 0.5;
+  flangeFeedback.gain.value = v * 0.5;
+});
+document.getElementById('phaserKnob').addEventListener('input', (e) => {
+  const v = parseFloat(e.target.value);
+  phaserWet.gain.value = v;
+  phaserDry.gain.value = 1 - v * 0.3;
+});
+document.getElementById('detuneKnob').addEventListener('input', (e) => {
+  const v = parseFloat(e.target.value);
+  chorusWet.gain.value = v;
+  chorusDry.gain.value = 1;
+  chorusLFODepth.gain.value = 0.002 + v * 0.006;
+});
 
 // ============================================================
 // MASTER VOLUME
@@ -159,7 +291,7 @@ function synthKickV(opts) {
   gain.gain.setValueAtTime(1, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain);
-  gain.connect(masterGain);
+  gain.connect(masterFXInput);
   osc.start(t);
   osc.stop(t + duration);
 
@@ -171,7 +303,7 @@ function synthKickV(opts) {
     subGain.gain.setValueAtTime(subLevel, t);
     subGain.gain.exponentialRampToValueAtTime(0.001, t + duration * 1.3);
     sub.connect(subGain);
-    subGain.connect(masterGain);
+    subGain.connect(masterFXInput);
     sub.start(t);
     sub.stop(t + duration * 1.3);
   }
@@ -187,7 +319,7 @@ function synthKickV(opts) {
     clickGain.gain.setValueAtTime(0.5, t);
     clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.01);
     noise.connect(clickGain);
-    clickGain.connect(masterGain);
+    clickGain.connect(masterFXInput);
     noise.start(t);
   }
 }
@@ -212,7 +344,7 @@ function synthSnareV(opts) {
   noiseGain.gain.exponentialRampToValueAtTime(0.001, t + noiseDecay);
   noise.connect(filter);
   filter.connect(noiseGain);
-  noiseGain.connect(masterGain);
+  noiseGain.connect(masterFXInput);
   noise.start(t);
   noise.stop(t + noiseDecay);
 
@@ -226,7 +358,7 @@ function synthSnareV(opts) {
     toneGain.gain.setValueAtTime(toneLevel, t);
     toneGain.gain.exponentialRampToValueAtTime(0.001, t + toneDecay);
     osc.connect(toneGain);
-    toneGain.connect(masterGain);
+    toneGain.connect(masterFXInput);
     osc.start(t);
     osc.stop(t + toneDecay);
   }
@@ -255,7 +387,7 @@ function synthClapV(opts) {
     gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
     noise.connect(filter);
     filter.connect(gain);
-    gain.connect(masterGain);
+    gain.connect(masterFXInput);
     noise.start(start);
     noise.stop(start + dur);
   }
@@ -280,7 +412,7 @@ function synthHatV(opts) {
 
   merger.connect(hpf);
   hpf.connect(bpf);
-  bpf.connect(masterGain);
+  bpf.connect(masterFXInput);
 
   fundamentals.forEach(freq => {
     const osc = audioCtx.createOscillator();
@@ -308,7 +440,7 @@ function synthTomV(opts) {
   gain.gain.setValueAtTime(0.9, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain);
-  gain.connect(masterGain);
+  gain.connect(masterFXInput);
   osc.start(t);
   osc.stop(t + duration);
 }
@@ -332,7 +464,7 @@ function synthShakerV(opts) {
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   noise.connect(filter);
   filter.connect(gain);
-  gain.connect(masterGain);
+  gain.connect(masterFXInput);
   noise.start(t);
   noise.stop(t + duration);
 }
@@ -358,7 +490,7 @@ function synthTambourineV(opts) {
     gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
     noise.connect(filter);
     filter.connect(gain);
-    gain.connect(masterGain);
+    gain.connect(masterFXInput);
     noise.start(start);
     noise.stop(start + duration);
   }
@@ -381,7 +513,7 @@ function synthCowbellV(opts) {
     gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
     osc.connect(filter);
     filter.connect(gain);
-    gain.connect(masterGain);
+    gain.connect(masterFXInput);
     osc.start(t);
     osc.stop(t + duration);
   });
@@ -413,7 +545,7 @@ function synthCymbalV(opts) {
   noise.connect(hpf);
   hpf.connect(bpf1);
   bpf1.connect(gain);
-  gain.connect(masterGain);
+  gain.connect(masterFXInput);
   noise.start(t);
   noise.stop(t + duration);
 }
@@ -430,7 +562,7 @@ function synthSweepV(opts) {
   gain.gain.setValueAtTime(level, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain);
-  gain.connect(masterGain);
+  gain.connect(masterFXInput);
   osc.start(t);
   osc.stop(t + duration);
 }
@@ -446,7 +578,7 @@ function synthSubV(opts) {
   gain.gain.setValueAtTime(0.9, t);
   gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
   osc.connect(gain);
-  gain.connect(masterGain);
+  gain.connect(masterFXInput);
   osc.start(t);
   osc.stop(t + duration);
 }
@@ -614,7 +746,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-// SEQUENCER - 16 step pattern grid, 4 bars per pad (64 steps total)
+// SEQUENCER - 16 step pattern grid, up to 4 bars per pad (64 steps total)
 // ============================================================
 
 const BARS = 4;
@@ -627,6 +759,7 @@ let pattern = Array.from({ length: 16 }, () =>
 
 let currentStepRowFocus = 0;
 let currentBar = 0;
+let loopLength = 1; // 1, 2, or 4 bars
 
 const seqStepsEl = document.getElementById('seqSteps');
 const seqSteps = [];
@@ -677,29 +810,52 @@ function refreshStepStrip() {
   });
 }
 
-// --- Bar paging (1/2/3/4 buttons) ---
-const barBtns = document.querySelectorAll('.bar-btn');
-barBtns.forEach(btn => {
+// --- Loop length toggle (1 / 2 / 4 bars) ---
+const loopBtns = document.querySelectorAll('.loop-btn');
+const barPageWrap = document.getElementById('barPageWrap');
+
+loopBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    currentBar = parseInt(btn.dataset.bar);
-    barBtns.forEach(b => b.classList.toggle('active', b === btn));
+    loopLength = parseInt(btn.dataset.bars);
+    loopBtns.forEach(b => b.classList.toggle('active', b === btn));
+    if (currentBar >= loopLength) currentBar = 0;
+    refreshBarPages();
     refreshStepStrip();
   });
 });
 
-// --- Copy bar (copy current bar's pattern for ALL pads into another bar) ---
-document.getElementById('copyBarBtn').addEventListener('click', () => {
-  const target = prompt('Copy bar ' + (currentBar + 1) + ' into which bar? (1-4)');
-  if (!target) return;
-  const targetBar = parseInt(target) - 1;
-  if (isNaN(targetBar) || targetBar < 0 || targetBar >= BARS) {
-    alert('Enter a number 1-4');
+function refreshBarPages() {
+  barPageWrap.innerHTML = '';
+  if (loopLength === 1) {
+    barPageWrap.classList.add('hidden');
     return;
   }
-  if (targetBar === currentBar) return;
+  barPageWrap.classList.remove('hidden');
+  const labels = ['A', 'B', 'C', 'D'];
+  for (let b = 0; b < loopLength; b++) {
+    const btn = document.createElement('button');
+    btn.className = 'bar-page-btn' + (b === currentBar ? ' active' : '');
+    btn.textContent = labels[b];
+    btn.dataset.bar = b;
+    btn.addEventListener('click', () => {
+      currentBar = b;
+      refreshBarPages();
+      refreshStepStrip();
+    });
+    barPageWrap.appendChild(btn);
+  }
+}
+refreshBarPages();
+
+// --- Copy: one tap, copies current bar -> next bar in the active loop (wraps) ---
+document.getElementById('copyBarBtn').addEventListener('click', () => {
+  if (loopLength === 1) return; // nothing to copy to
+  const targetBar = (currentBar + 1) % loopLength;
   for (let p = 0; p < 16; p++) {
     pattern[p][targetBar] = pattern[p][currentBar].slice();
   }
+  currentBar = targetBar;
+  refreshBarPages();
   refreshStepStrip();
 });
 
@@ -778,7 +934,7 @@ function stopSequencer() {
   clearInterval(schedulerTimer);
   currentStep = 0;
   currentBar = 0;
-  barBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.bar) === 0));
+  refreshBarPages();
   refreshStepStrip();
   seqSteps.forEach(s => s.classList.remove('playhead'));
 }
@@ -788,19 +944,19 @@ function schedulerTick() {
   while (nextStepTime < audioCtx.currentTime + 0.1) {
     playStep(currentStep, nextStepTime);
     nextStepTime += stepDuration;
-    currentStep = (currentStep + 1) % (BARS * STEPS_PER_BAR);
+    currentStep = (currentStep + 1) % (loopLength * STEPS_PER_BAR);
   }
 }
 
 function playStep(globalStep, time) {
-  const bar = Math.floor(globalStep / STEPS_PER_BAR);
+  const bar = Math.floor(globalStep / STEPS_PER_BAR) % loopLength;
   const step = globalStep % STEPS_PER_BAR;
   const delay = Math.max(0, (time - audioCtx.currentTime) * 1000);
   setTimeout(() => {
     // Auto-page the step strip to follow playback
     if (bar !== currentBar) {
       currentBar = bar;
-      barBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.bar) === currentBar));
+      refreshBarPages();
       refreshStepStrip();
     }
     seqSteps.forEach(s => s.classList.remove('playhead'));
@@ -889,7 +1045,7 @@ const activeOscillators = {};
 const keyboardEl = document.getElementById('keyboard');
 const keyEls = {};
 
-const WHITE_KEY_WIDTH = 30;
+const WHITE_KEY_WIDTH = 27;
 
 function midiToFreq(midiNote) {
   return 440 * Math.pow(2, (midiNote - 69) / 12);
@@ -963,6 +1119,82 @@ const SYNTH_PRESETS = {
 
 let currentPreset = 'classic';
 
+// ---- Mod wheel (vibrato) + pitch bend ----
+let modWheelValue = 0;      // 0-1
+let pitchBendCents = 0;     // -200 to +200 cents
+
+const vibratoLFO = audioCtx.createOscillator();
+vibratoLFO.frequency.value = 5.5;
+vibratoLFO.start();
+const vibratoDepth = audioCtx.createGain();
+vibratoDepth.gain.value = 0; // scaled by mod wheel, in cents
+vibratoLFO.connect(vibratoDepth);
+
+function applyPitchModToVoice(voice) {
+  // Vibrato (mod wheel) — connect LFO depth to detune
+  vibratoDepth.connect(voice.osc.detune);
+  vibratoDepth.connect(voice.osc2.detune);
+  if (voice.osc3) vibratoDepth.connect(voice.osc3.detune);
+  // Pitch bend — static detune offset
+  voice.osc.detune.value += pitchBendCents;
+  voice.osc2.detune.value += pitchBendCents;
+  if (voice.osc3) voice.osc3.detune.value += pitchBendCents;
+}
+
+function updateAllVoicesPitchBend() {
+  Object.values(activeOscillators).forEach(voice => {
+    if (!voice || !voice.osc) return;
+    const t = audioCtx.currentTime;
+    voice.osc.detune.setTargetAtTime(pitchBendCents, t, 0.01);
+    voice.osc2.detune.setTargetAtTime(pitchBendCents, t, 0.01);
+    if (voice.osc3) voice.osc3.detune.setTargetAtTime(pitchBendCents, t, 0.01);
+  });
+}
+
+// ============================================================
+// MOD WHEEL + PITCH BEND WHEEL (MPK261-style)
+// ============================================================
+function sendMidiCC(cc, value) {
+  if (!activeMidiOutput) return;
+  activeMidiOutput.send([0xB0, cc, value]);
+}
+
+function sendMidiPitchBend(value14bit) {
+  if (!activeMidiOutput) return;
+  const lsb = value14bit & 0x7F;
+  const msb = (value14bit >> 7) & 0x7F;
+  activeMidiOutput.send([0xE0, lsb, msb]);
+}
+
+const modWheelEl = document.getElementById('modWheel');
+const pitchWheelEl = document.getElementById('pitchWheel');
+
+modWheelEl.addEventListener('input', (e) => {
+  modWheelValue = parseFloat(e.target.value) / 127;
+  vibratoDepth.gain.value = modWheelValue * 35; // up to ~35 cents vibrato depth
+  sendMidiCC(1, Math.round(modWheelValue * 127));
+});
+
+pitchWheelEl.addEventListener('input', (e) => {
+  const raw = parseFloat(e.target.value); // -100 to 100
+  pitchBendCents = (raw / 100) * 200; // up to +/- 200 cents (2 semitones)
+  updateAllVoicesPitchBend();
+  const midiVal = Math.round(((raw / 100) + 1) * 0.5 * 16383); // 0-16383, center 8192
+  sendMidiPitchBend(midiVal);
+});
+
+function springBackPitchWheel() {
+  pitchWheelEl.value = 0;
+  pitchBendCents = 0;
+  updateAllVoicesPitchBend();
+  sendMidiPitchBend(8192);
+}
+pitchWheelEl.addEventListener('mouseup', springBackPitchWheel);
+pitchWheelEl.addEventListener('touchend', springBackPitchWheel);
+pitchWheelEl.addEventListener('mouseleave', (e) => {
+  if (e.buttons === 1) springBackPitchWheel();
+});
+
 function noteOn(midiNote, velocity = 0.9) {
   if (activeOscillators[midiNote]) return;
 
@@ -1028,6 +1260,7 @@ function noteOn(midiNote, velocity = 0.9) {
   }
 
   activeOscillators[midiNote] = { osc, osc2, osc3, filter, gain };
+  applyPitchModToVoice(activeOscillators[midiNote]);
 
   const keyEl = keyEls[midiNote];
   if (keyEl) keyEl.classList.add('active');
@@ -1084,7 +1317,7 @@ function buildKeyboard() {
 
     if (isBlack) {
       keyEl.className = 'key black';
-      keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH - 9) + 'px';
+      keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH - 8) + 'px';
       keyboardEl.appendChild(keyEl);
     } else {
       keyEl.className = 'key white';
