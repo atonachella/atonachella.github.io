@@ -904,6 +904,25 @@ transportStopBtn.addEventListener('click', () => {
   stopSequencer();
 });
 
+// Spacebar: toggle play/pause
+window.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' && e.key !== ' ') return;
+  // Don't hijack space if user is typing in a select/input/button
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'SELECT' || tag === 'INPUT' || tag === 'BUTTON') {
+    document.activeElement.blur();
+  }
+  e.preventDefault();
+
+  if (isPlaying) {
+    pauseSequencer();
+  } else if (isPaused) {
+    resumeSequencer();
+  } else {
+    startSequencer();
+  }
+});
+
 function startSequencer() {
   isPlaying = true;
   isPaused = false;
