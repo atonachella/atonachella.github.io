@@ -29,24 +29,33 @@
         <select id="midiOutSelect" class="midi-select">
           <option value="">No MIDI outputs found</option>
         </select>
-        <div class="status-item">
+        <div class="status-item bpm-group">
           <span class="status-label">BPM</span>
-          <input type="number" id="bpmInput" class="bpm-input" value="96" min="40" max="240">
+          <button id="bpmDown" class="bpm-step-btn">−</button>
+          <span id="bpmValue" class="bpm-display">96</span>
+          <button id="bpmUp" class="bpm-step-btn">+</button>
         </div>
-        <button id="transportBtn" class="transport-btn">
-          <span class="transport-icon">▶</span>
-          <span class="transport-text">RUN</span>
-        </button>
+        <div class="transport-group">
+          <button id="playBtn" class="transport-btn play-btn" title="Play">
+            <span class="transport-icon">▶</span>
+          </button>
+          <button id="pauseBtn" class="transport-btn pause-btn" title="Pause">
+            <span class="transport-icon">❚❚</span>
+          </button>
+          <button id="stopBtn" class="transport-btn stop-btn" title="Stop">
+            <span class="transport-icon">■</span>
+          </button>
+        </div>
       </div>
     </header>
 
-    <!-- MAIN: TWO MODULES SIDE BY SIDE -->
+    <!-- MAIN: STACKED MODULES -->
     <main class="modules">
 
       <!-- DRUM MACHINE MODULE -->
       <section class="module drum-module" id="drumModule">
         <div class="module-header">
-          <h2 class="module-title">PAD<span class="title-accent">16</span></h2>
+          <h2 class="module-title">TAL<span class="title-accent">16</span></h2>
           <span class="module-tag">DRUM MACHINE</span>
         </div>
 
@@ -74,7 +83,7 @@
         </div>
       </section>
 
-      <!-- SIGNAL DIVIDER -->
+      <!-- SIGNAL DIVIDER (horizontal now) -->
       <div class="signal-divider" id="signalDivider">
         <div class="signal-line" id="signalLine"></div>
       </div>
@@ -82,7 +91,7 @@
       <!-- KEYBOARD MODULE -->
       <section class="module keys-module" id="keysModule">
         <div class="module-header">
-          <h2 class="module-title">KEY<span class="title-accent">61</span></h2>
+          <h2 class="module-title">SOPH<span class="title-accent">61</span></h2>
           <span class="module-tag">SYNTH KEYBOARD</span>
         </div>
 
