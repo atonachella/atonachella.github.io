@@ -349,10 +349,11 @@ body {
 /* ===== DRUM PADS (4x4, centered) ===== */
 .pad-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
   width: 100%;
-  max-width: 400px;
+  max-width: 100%;
 }
 
 .pad {
@@ -758,6 +759,47 @@ body {
 .key.black .key-label { color: #aaa; }
 
 .key.white.active .key-label, .key.black.active .key-label { color: var(--bg); font-weight: 700; }
+
+/* ===== COMPUTER-KEY BADGES on the mapped 13-key range ===== */
+.key-badge {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+  background: var(--panel-raised);
+  border: 1px solid var(--cyan);
+  border-radius: 4px;
+  padding: 1px 5px;
+  box-shadow: 0 0 8px rgba(0,245,212,0.4);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.key.black .key-badge {
+  color: var(--cyan);
+  background: #1a222c;
+  top: 6px;
+}
+
+.key.white.active .key-badge,
+.key.black.active .key-badge {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--bg);
+  box-shadow: 0 0 10px rgba(255,61,127,0.6);
+}
+
+.key.key-mapped.white {
+  background: linear-gradient(180deg, #f0f5f4, #dcebe8);
+}
+
+.key.key-mapped.black {
+  background: linear-gradient(180deg, #1c3a36, #0e1f1c);
+}
 
 .keys-hint {
   font-size: 11px;

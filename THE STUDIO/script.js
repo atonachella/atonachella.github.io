@@ -1384,6 +1384,13 @@ function buildKeyboard() {
   keyboardEl.innerHTML = '';
   for (const k in keyEls) delete keyEls[k];
 
+  // Reverse lookup: midi note (relative to current octave's C) -> computer key label
+  const baseMidi = 60 + (octaveShift * 12); // C4 reference, shifts with octave
+  const offsetToKey = {};
+  Object.entries(COMPUTER_KEY_MAP).forEach(([key, offset]) => {
+    offsetToKey[offset] = key;
+  });
+
   let whiteKeyIndex = 0;
   const startMidi = KEYBOARD_START_MIDI + (octaveShift * 12);
 
@@ -1396,14 +1403,21 @@ function buildKeyboard() {
 
     const keyEl = document.createElement('div');
     keyEl.dataset.midi = midiNote;
-    keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
+
+    // Show a computer-key badge if this note is in the mapped range
+    const relOffset = midiNote - baseMidi;
+    const keyLetter = offsetToKey[relOffset];
+    const badgeHTML = keyLetter ? `<span class="key-badge">${keyLetter.toUpperCase()}</span>` : '';
+
+    keyEl.innerHTML = `${badgeHTML}<span class="key-label">${noteName}${octaveNum}</span>`;
+    let classes = isBlack ? 'key black' : 'key white';
+    if (keyLetter) classes += ' key-mapped';
+    keyEl.className = classes;
 
     if (isBlack) {
-      keyEl.className = 'key black';
       keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH - 8) + 'px';
       keyboardEl.appendChild(keyEl);
     } else {
-      keyEl.className = 'key white';
       keyboardEl.appendChild(keyEl);
       whiteKeyIndex++;
     }
