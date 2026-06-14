@@ -9,6 +9,10 @@
   --pink-dim: #4a1428;
   --text: #f4f4f0;
   --text-dim: #6b7785;
+  --soph: #ff3d7f;
+  --soph-glow: rgba(255,61,127,0.5);
+  --tal: #00f5d4;
+  --tal-glow: rgba(0,245,212,0.5);
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
 }
@@ -1127,4 +1131,263 @@ body {
 @media (max-width: 700px) {
   .footer-note { display: none; }
   .status-cluster { justify-content: center; }
+}
+/* ============================================================
+   WELCOME SPLASH SCREEN
+   ============================================================ */
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,61,127,0.18), transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(0,245,212,0.18), transparent 50%),
+    #06090f;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+
+.welcome.dismissed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.welcome-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  animation: welcomeRise 1s ease-out;
+}
+
+@keyframes welcomeRise {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-orbits {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 12px;
+}
+
+.welcome-core {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 28px; height: 28px;
+  margin: -14px 0 0 -14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--soph), var(--tal));
+  box-shadow: 0 0 30px var(--soph-glow), 0 0 50px var(--tal-glow);
+  animation: corePulse 2s ease-in-out infinite;
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 30px var(--soph-glow), 0 0 50px var(--tal-glow); }
+  50% { transform: scale(1.25); box-shadow: 0 0 45px var(--soph-glow), 0 0 70px var(--tal-glow); }
+}
+
+.orbit {
+  position: absolute;
+  top: 50%; left: 50%;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transform: translate(-50%, -50%);
+}
+
+.orbit1 {
+  width: 80px; height: 80px;
+  border-top-color: var(--soph);
+  border-right-color: var(--soph);
+  animation: spin 3s linear infinite;
+  box-shadow: 0 0 14px var(--soph-glow);
+}
+
+.orbit2 {
+  width: 120px; height: 120px;
+  border-bottom-color: var(--tal);
+  border-left-color: var(--tal);
+  animation: spin 4.5s linear infinite reverse;
+  box-shadow: 0 0 14px var(--tal-glow);
+}
+
+.orbit3 {
+  width: 160px; height: 160px;
+  border-top-color: #6b5cff;
+  border-left-color: #6b5cff;
+  animation: spin 6s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.welcome-title {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.wt-soph { color: var(--soph); text-shadow: 0 0 24px var(--soph-glow); }
+.wt-amp { color: var(--text-dim); margin: 0 6px; font-weight: 400; }
+.wt-tal { color: var(--tal); text-shadow: 0 0 24px var(--tal-glow); }
+
+.welcome-sub {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.welcome-names {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+.welcome-enter {
+  margin-top: 28px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--bg);
+  background: linear-gradient(135deg, var(--soph), var(--tal));
+  border: none;
+  border-radius: 10px;
+  padding: 14px 36px;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(255,61,127,0.4), 0 0 24px rgba(0,245,212,0.3);
+  animation: enterGlow 2s ease-in-out infinite;
+  transition: transform 0.15s ease;
+}
+
+.welcome-enter:hover { transform: scale(1.05); }
+.welcome-enter:active { transform: scale(0.97); }
+
+@keyframes enterGlow {
+  0%, 100% { box-shadow: 0 0 24px rgba(255,61,127,0.4), 0 0 24px rgba(0,245,212,0.3); }
+  50% { box-shadow: 0 0 40px rgba(255,61,127,0.7), 0 0 40px rgba(0,245,212,0.6); }
+}
+
+/* ============================================================
+   MODE TOGGLE (SOLO / 2-PLAYER)
+   ============================================================ */
+.mode-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mode-btn:hover { color: var(--text); }
+
+.mode-btn.active {
+  background: var(--panel-raised);
+  color: #fff;
+  background-image: linear-gradient(135deg, rgba(255,61,127,0.25), rgba(0,245,212,0.25));
+  box-shadow: 0 0 12px rgba(255,61,127,0.25), 0 0 12px rgba(0,245,212,0.2);
+}
+
+/* ============================================================
+   PLAYER NAME BANNERS
+   ============================================================ */
+.player-banner {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.player-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.player-inst {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  opacity: 0.7;
+}
+
+.natalia-banner {
+  background: linear-gradient(90deg, transparent, rgba(0,245,212,0.12), transparent);
+  border: 1px solid rgba(0,245,212,0.3);
+}
+.natalia-banner .player-name { color: var(--tal); text-shadow: 0 0 14px var(--tal-glow); }
+.natalia-banner .player-inst { color: var(--tal); }
+
+.sophia-banner {
+  background: linear-gradient(90deg, transparent, rgba(255,61,127,0.12), transparent);
+  border: 1px solid rgba(255,61,127,0.3);
+}
+.sophia-banner .player-name { color: var(--soph); text-shadow: 0 0 14px var(--soph-glow); }
+.sophia-banner .player-inst { color: var(--soph); }
+
+/* ============================================================
+   2-PLAYER MODE LAYOUT
+   Natalia's drums on top (flipped 180 for across-table), Sophia's keys on bottom
+   ============================================================ */
+.duo-mode .player-banner { display: flex; }
+
+.duo-mode .view-toggle { display: none; }
+
+.duo-mode .drum-module {
+  transform: rotate(180deg);
+  border: 2px solid rgba(0,245,212,0.35);
+  box-shadow: 0 0 30px rgba(0,245,212,0.12), inset 0 0 30px rgba(0,245,212,0.04);
+}
+
+.duo-mode .keys-module {
+  border: 2px solid rgba(255,61,127,0.35);
+  box-shadow: 0 0 30px rgba(255,61,127,0.12), inset 0 0 30px rgba(255,61,127,0.04);
+}
+
+.duo-mode .signal-divider .signal-line {
+  opacity: 0.8;
+  box-shadow: 0 0 16px rgba(0,245,212,0.5), 0 0 16px rgba(255,61,127,0.4);
+}
+
+/* In duo mode both modules always show regardless of view toggle */
+.duo-mode .drum-module.hidden,
+.duo-mode .keys-module.hidden,
+.duo-mode .signal-divider.hidden {
+  display: flex;
 }

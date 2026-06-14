@@ -11,6 +11,24 @@
 </head>
 <body>
 
+  <!-- WELCOME SPLASH -->
+  <div class="welcome" id="welcome">
+    <div class="welcome-inner">
+      <div class="welcome-orbits" aria-hidden="true">
+        <span class="orbit orbit1"></span>
+        <span class="orbit orbit2"></span>
+        <span class="orbit orbit3"></span>
+        <span class="welcome-core"></span>
+      </div>
+      <h1 class="welcome-title">
+        <span class="wt-soph">SOPH</span><span class="wt-amp">&amp;</span><span class="wt-tal">TAL</span>
+      </h1>
+      <p class="welcome-sub">MUSIC STUDIO</p>
+      <p class="welcome-names">Sophia &amp; Natalia</p>
+      <button class="welcome-enter" id="welcomeEnter">TAP TO START</button>
+    </div>
+  </div>
+
   <!-- ANIMATED BACKGROUND -->
   <div class="bg-fx" aria-hidden="true">
     <div class="bg-grid"></div>
@@ -27,7 +45,7 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark"></span>
-        <span class="brand-text">STUDIO<span class="brand-sub">// DUAL WORKHORSE</span></span>
+        <span class="brand-text">SOPH&amp;TAL<span class="brand-sub">// MUSIC STUDIO</span></span>
       </div>
 
       <div class="status-cluster">
@@ -39,6 +57,11 @@
         <select id="midiOutSelect" class="midi-select">
           <option value="">No MIDI outputs found</option>
         </select>
+
+        <div class="mode-toggle" id="modeToggle">
+          <button class="mode-btn active" data-mode="solo">SOLO</button>
+          <button class="mode-btn" data-mode="duo">2-PLAYER</button>
+        </div>
 
         <div class="view-toggle" id="viewToggle">
           <button class="toggle-btn active" data-view="both">BOTH</button>
@@ -72,6 +95,10 @@
 
       <!-- DRUM MACHINE MODULE -->
       <section class="module drum-module" id="drumModule">
+        <div class="player-banner natalia-banner">
+          <span class="player-name">NATALIA</span>
+          <span class="player-inst">DRUMS</span>
+        </div>
         <div class="module-header">
           <h2 class="module-title">TAL<span class="title-accent">16</span></h2>
           <span class="module-tag">DRUM MACHINE</span>
@@ -126,6 +153,10 @@
 
       <!-- KEYBOARD MODULE -->
       <section class="module keys-module" id="keysModule">
+        <div class="player-banner sophia-banner">
+          <span class="player-name">SOPHIA</span>
+          <span class="player-inst">KEYS</span>
+        </div>
         <div class="module-header">
           <h2 class="module-title">SOPH<span class="title-accent">61</span></h2>
           <span class="module-tag">SYNTH KEYBOARD</span>

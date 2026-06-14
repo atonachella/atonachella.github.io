@@ -1508,6 +1508,46 @@ toggleBtns.forEach(btn => {
 });
 
 // ============================================================
+// MODE TOGGLE - Solo / 2-Player
+// ============================================================
+const modeBtns = document.querySelectorAll('.mode-btn');
+const rackEl = document.querySelector('.rack');
+
+modeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    modeBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.dataset.mode;
+    if (mode === 'duo') {
+      rackEl.classList.add('duo-mode');
+      // Force both modules visible in 2-player mode
+      drumModule.classList.remove('hidden');
+      keysModule.classList.remove('hidden');
+      signalDivider.classList.remove('hidden');
+    } else {
+      rackEl.classList.remove('duo-mode');
+      // Restore "both" view as default when returning to solo
+      toggleBtns.forEach(b => b.classList.toggle('active', b.dataset.view === 'both'));
+      drumModule.classList.remove('hidden');
+      keysModule.classList.remove('hidden');
+      signalDivider.classList.remove('hidden');
+    }
+  });
+});
+
+// ============================================================
+// WELCOME SPLASH - dismiss on tap, resume audio
+// ============================================================
+const welcomeEl = document.getElementById('welcome');
+const welcomeEnterBtn = document.getElementById('welcomeEnter');
+
+function dismissWelcome() {
+  welcomeEl.classList.add('dismissed');
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+welcomeEnterBtn.addEventListener('click', dismissWelcome);
+
+// ============================================================
 // Resume audio context on first interaction (browser policy)
 // ============================================================
 function resumeAudio() {
