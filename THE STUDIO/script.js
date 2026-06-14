@@ -138,7 +138,7 @@ const DRUM_LABELS = [
   'RIDE', 'SFX 1', 'SFX 2', 'SUB'
 ];
 
-const PAD_KEYS = ['1','2','3','4','Q','W','E','R','A','S','D','F','Z','X','C','V'];
+const PAD_KEYS = ['1','2','3','4','5','6','7','8','Q','W','E','R','T','Y','U','I'];
 
 const DRUM_MIDI_BASE = 36;
 
@@ -614,41 +614,94 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-// SEQUENCER - 16 step pattern grid
+// SEQUENCER - 16 step pattern grid, 4 bars per pad (64 steps total)
 // ============================================================
 
-let pattern = Array.from({ length: 16 }, () => Array(16).fill(false));
+const BARS = 4;
+const STEPS_PER_BAR = 16;
+
+// pattern[padIndex][bar][step] -> boolean
+let pattern = Array.from({ length: 16 }, () =>
+  Array.from({ length: BARS }, () => Array(STEPS_PER_BAR).fill(false))
+);
+
 let currentStepRowFocus = 0;
+let currentBar = 0;
 
 const seqStepsEl = document.getElementById('seqSteps');
 const seqSteps = [];
 
-for (let i = 0; i < 16; i++) {
+for (let i = 0; i < STEPS_PER_BAR; i++) {
   const step = document.createElement('div');
   step.className = 'seq-step';
   step.dataset.step = i;
+
+  // Beat markers: number steps 1, 5, 9, 13 (1-indexed) and add hash class every 4
+  if (i % 4 === 0) {
+    step.classList.add('seq-beat');
+    const num = document.createElement('span');
+    num.className = 'seq-step-num';
+    num.textContent = (i + 1);
+    step.appendChild(num);
+  }
+
   seqStepsEl.appendChild(step);
   seqSteps.push(step);
 
   step.addEventListener('click', () => {
-    pattern[currentStepRowFocus][i] = !pattern[currentStepRowFocus][i];
+    pattern[currentStepRowFocus][currentBar][i] = !pattern[currentStepRowFocus][currentBar][i];
     step.classList.toggle('on');
   });
 }
 
-// Double-click a pad to focus its row in the step strip
+// Click a pad to select it as the active sequencer row (visual highlight)
 pads.forEach((pad, i) => {
-  pad.addEventListener('dblclick', () => {
+  pad.addEventListener('click', () => {
     currentStepRowFocus = i;
+    refreshActiveRowDisplay();
     refreshStepStrip();
   });
 });
 
+function refreshActiveRowDisplay() {
+  pads.forEach((pad, i) => {
+    pad.classList.toggle('seq-focused', i === currentStepRowFocus);
+  });
+  const nameEl = document.getElementById('activeRowName');
+  if (nameEl) nameEl.textContent = DRUM_LABELS[currentStepRowFocus];
+}
+
 function refreshStepStrip() {
   seqSteps.forEach((step, i) => {
-    step.classList.toggle('on', pattern[currentStepRowFocus][i]);
+    step.classList.toggle('on', pattern[currentStepRowFocus][currentBar][i]);
   });
 }
+
+// --- Bar paging (1/2/3/4 buttons) ---
+const barBtns = document.querySelectorAll('.bar-btn');
+barBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentBar = parseInt(btn.dataset.bar);
+    barBtns.forEach(b => b.classList.toggle('active', b === btn));
+    refreshStepStrip();
+  });
+});
+
+// --- Copy bar (copy current bar's pattern for ALL pads into another bar) ---
+document.getElementById('copyBarBtn').addEventListener('click', () => {
+  const target = prompt('Copy bar ' + (currentBar + 1) + ' into which bar? (1-4)');
+  if (!target) return;
+  const targetBar = parseInt(target) - 1;
+  if (isNaN(targetBar) || targetBar < 0 || targetBar >= BARS) {
+    alert('Enter a number 1-4');
+    return;
+  }
+  if (targetBar === currentBar) return;
+  for (let p = 0; p < 16; p++) {
+    pattern[p][targetBar] = pattern[p][currentBar].slice();
+  }
+  refreshStepStrip();
+});
 
 // --- Transport: Play / Pause / Stop ---
 let isPlaying = false;
@@ -724,6 +777,9 @@ function stopSequencer() {
   transportPauseBtn.classList.remove('active');
   clearInterval(schedulerTimer);
   currentStep = 0;
+  currentBar = 0;
+  barBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.bar) === 0));
+  refreshStepStrip();
   seqSteps.forEach(s => s.classList.remove('playhead'));
 }
 
@@ -732,18 +788,26 @@ function schedulerTick() {
   while (nextStepTime < audioCtx.currentTime + 0.1) {
     playStep(currentStep, nextStepTime);
     nextStepTime += stepDuration;
-    currentStep = (currentStep + 1) % 16;
+    currentStep = (currentStep + 1) % (BARS * STEPS_PER_BAR);
   }
 }
 
-function playStep(step, time) {
+function playStep(globalStep, time) {
+  const bar = Math.floor(globalStep / STEPS_PER_BAR);
+  const step = globalStep % STEPS_PER_BAR;
   const delay = Math.max(0, (time - audioCtx.currentTime) * 1000);
   setTimeout(() => {
+    // Auto-page the step strip to follow playback
+    if (bar !== currentBar) {
+      currentBar = bar;
+      barBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.bar) === currentBar));
+      refreshStepStrip();
+    }
     seqSteps.forEach(s => s.classList.remove('playhead'));
     seqSteps[step].classList.add('playhead');
 
     for (let padIndex = 0; padIndex < 16; padIndex++) {
-      if (pattern[padIndex][step]) {
+      if (pattern[padIndex][bar][step]) {
         triggerPad(padIndex, 0.9);
       }
     }
@@ -752,7 +816,9 @@ function playStep(step, time) {
 
 // --- Clear / Save / Load pattern ---
 document.getElementById('clearPatternBtn').addEventListener('click', () => {
-  pattern = Array.from({ length: 16 }, () => Array(16).fill(false));
+  pattern = Array.from({ length: 16 }, () =>
+    Array.from({ length: BARS }, () => Array(STEPS_PER_BAR).fill(false))
+  );
   refreshStepStrip();
 });
 
@@ -806,11 +872,15 @@ const KEYBOARD_KEY_COUNT = 61;  // C2 to C7
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const BLACK_KEY_OFFSETS = [1, 3, 6, 8, 10];
 
-// Synth key mapping - no overlap with drum pad keys (1-4, Q-R, A-F, Z-V)
-// White keys: H J K L ; '   Black keys: Y U I O P
+// Synth key mapping - no overlap with drum pad keys (1-8, Q-I)
+// Bottom row ZXCVBNM = white keys C D E F G A B (octave 0)
+// Top row ASDFGHJKL = white+black keys continuing chromatically into octave 1
+// Full chromatic coverage across both rows, offsets relative to C
 const COMPUTER_KEY_MAP = {
-  'h': 0, 'y': 1, 'j': 2, 'u': 3, 'k': 4, 'l': 5, 'i': 6,
-  ';': 7, 'o': 8, "'": 9, 'p': 10
+  // Octave 0 (bottom row, white keys C-B)
+  'z': 0, 'x': 2, 'c': 4, 'v': 5, 'b': 7, 'n': 9, 'm': 11,
+  // Octave 1 (top row, continues chromatically including sharps)
+  'a': 12, 's': 14, 'd': 16, 'f': 17, 'g': 19, 'h': 21, 'j': 23, 'k': 24, 'l': 26
 };
 
 let octaveShift = 0;

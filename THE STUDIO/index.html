@@ -72,6 +72,22 @@
         </div>
 
         <div class="seq-controls">
+          <div class="seq-toprow">
+            <div class="active-row-display">
+              <span class="active-row-label">EDITING</span>
+              <span class="active-row-name" id="activeRowName">KICK</span>
+            </div>
+            <div class="bar-controls">
+              <span class="bar-label">BAR</span>
+              <div class="bar-btn-group">
+                <button class="bar-btn active" data-bar="0">1</button>
+                <button class="bar-btn" data-bar="1">2</button>
+                <button class="bar-btn" data-bar="2">3</button>
+                <button class="bar-btn" data-bar="3">4</button>
+              </div>
+              <button id="copyBarBtn" class="ghost-btn small">COPY BAR</button>
+            </div>
+          </div>
           <div class="seq-steps" id="seqSteps">
             <!-- 16 step indicators injected by JS -->
           </div>
@@ -145,7 +161,7 @@
           </div>
         </div>
 
-        <div class="keys-hint">Synth keys: H J K L ; ' (white) + Y U I O P (black) — drum pads use 1-4, Q-R, A-F, Z-V — click/MIDI also work</div>
+        <div class="keys-hint">Synth keys: Z X C V B N M (low octave) + A S D F G H J K L (high octave, chromatic) — drum pads use 1-8, Q-I — click/tap or MIDI also work</div>
       </section>
 
     </main>
