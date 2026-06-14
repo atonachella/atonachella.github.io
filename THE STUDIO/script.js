@@ -1114,6 +1114,62 @@ const SYNTH_PRESETS = {
     filterQ: 3,
     gainLevel: 0.5,
     fastDecay: true
+  },
+  supersaw: {
+    name: 'Supersaw',
+    oscType: 'sawtooth',
+    detune: 0.018,          // wide unison spread across osc/osc2
+    extraPartial: true,      // 3rd sawtooth-ish voice for thickness
+    partialRatio: 1.012,     // near-unison ratio, not inharmonic (overridden below)
+    filterType: 'lowpass',
+    filterFreq: 9000,
+    filterQ: 1.5,
+    gainLevel: 0.4
+  },
+  acid: {
+    name: 'Acid Bass',
+    oscType: 'square',
+    detune: 0.004,
+    filterType: 'lowpass',
+    filterFreq: 700,
+    filterQ: 9,              // high resonance, classic 303 squelch
+    gainLevel: 0.6,
+    octaveOffset: -1,
+    fastDecay: true
+  },
+  ep: {
+    name: 'Warm EP',
+    oscType: 'sine',
+    detune: 0.006,
+    extraPartial: true,
+    partialRatio: 2.01,      // near-octave partial, bell/EP shimmer
+    filterType: 'lowpass',
+    filterFreq: 3500,
+    filterQ: 0.6,
+    gainLevel: 0.45,
+    slowAttack: false
+  },
+  growl: {
+    name: 'Growl Bass',
+    oscType: 'sawtooth',
+    detune: 0.05,           // hard detune for growl beating
+    filterType: 'lowpass',
+    filterFreq: 450,
+    filterQ: 4,
+    gainLevel: 0.65,
+    octaveOffset: -1
+  },
+  glasspluck: {
+    name: 'Glass Pluck',
+    oscType: 'triangle',
+    detune: 0.01,
+    extraPartial: true,
+    partialRatio: 3.0,       // bright high partial, glassy/marimba character
+    filterType: 'highpass',
+    filterFreq: 300,
+    filterQ: 1,
+    gainLevel: 0.45,
+    fastDecay: true
   }
 };
 
@@ -1212,10 +1268,12 @@ function noteOn(midiNote, velocity = 0.9) {
   osc2.type = preset.oscType;
   osc2.frequency.value = freq * (1 + preset.detune);
 
-  // Tone-shaping filter
+  // Tone-shaping filter — base frequency shifted by the CUTOFF knob (-1 to 1)
+  const cutoffKnob = parseFloat(document.getElementById('cutoffKnob').value);
+  const cutoffMultiplier = Math.pow(4, cutoffKnob); // -1 -> /4, 0 -> x1, +1 -> x4
   const filter = audioCtx.createBiquadFilter();
   filter.type = preset.filterType;
-  filter.frequency.value = preset.filterFreq;
+  filter.frequency.value = Math.max(20, Math.min(20000, preset.filterFreq * cutoffMultiplier));
   filter.Q.value = preset.filterQ;
 
   const gain = audioCtx.createGain();
@@ -1228,12 +1286,13 @@ function noteOn(midiNote, velocity = 0.9) {
   osc.connect(filter);
   osc2.connect(filter);
 
-  // Optional inharmonic high partial for bell-type presets
+  // Optional extra partial — bell-style inharmonic overtone OR a 3rd unison voice for supersaw-type presets
   let osc3 = null;
   if (preset.extraPartial) {
     osc3 = audioCtx.createOscillator();
-    osc3.type = 'sine';
-    osc3.frequency.value = freq * 2.76; // inharmonic ratio for bell-like overtone
+    osc3.type = preset.partialOscType || (preset.oscType === 'sawtooth' ? 'sawtooth' : 'sine');
+    const ratio = preset.partialRatio || 2.76;
+    osc3.frequency.value = freq * ratio;
     const partialGain = audioCtx.createGain();
     partialGain.gain.setValueAtTime(0, audioCtx.currentTime);
     partialGain.gain.linearRampToValueAtTime(
