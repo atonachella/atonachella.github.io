@@ -1052,17 +1052,15 @@ const KEYBOARD_KEY_COUNT = 61;  // C2 to C7
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const BLACK_KEY_OFFSETS = [1, 3, 6, 8, 10];
 
-// Synth key mapping - no overlap with drum pad keys (1-8, Q-I)
-// Bottom row ZXCVBNM = white keys C D E F G A B (octave 0, offsets 0,2,4,5,7,9,11)
-// Top row ASDFGH J = white keys continuing into octave 1 (C D E F G A B, offsets 12,14,16,17,19,21,23)
-// K and L = black keys C#1 and D#1 (offsets 13, 15) for actual sharps/flats access
+// Synth key mapping - 2x8 layout to mirror the drum pad grid, touch + keyboard friendly
+// Bottom row Z X C V B N M , = 8 white keys, one full octave C through C (next octave)
+// Top row    S   F G   J L   = 5 black keys (C# D# F# G# A#), positioned above their gaps
+// A D H K are intentionally unused (no black key exists between E-F or B-C)
 const COMPUTER_KEY_MAP = {
-  // Octave 0 (bottom row, white keys C-B)
-  'z': 0, 'x': 2, 'c': 4, 'v': 5, 'b': 7, 'n': 9, 'm': 11,
-  // Octave 1 (top row, white keys C-B)
-  'a': 12, 's': 14, 'd': 16, 'f': 17, 'g': 19, 'h': 21, 'j': 23,
-  // Black keys (sharps) for octave 1
-  'k': 13, 'l': 15
+  // White keys (bottom row): C D E F G A B C
+  'z': 0, 'x': 2, 'c': 4, 'v': 5, 'b': 7, 'n': 9, 'm': 11, ',': 12,
+  // Black keys (top row): C# D# F# G# A#
+  's': 1, 'f': 3, 'g': 6, 'j': 8, 'l': 10
 };
 
 let octaveShift = 0;
