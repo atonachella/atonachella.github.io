@@ -741,6 +741,11 @@ window.addEventListener('keydown', (e) => {
   const key = e.key.toUpperCase();
   const idx = PAD_KEYS.indexOf(key);
   if (idx !== -1) {
+    // Prevent browser default (e.g. <select> jumping to an option matching this letter)
+    if (document.activeElement && (document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'INPUT')) {
+      document.activeElement.blur();
+    }
+    e.preventDefault();
     triggerPad(idx, 1.0);
   }
 });
@@ -1432,6 +1437,11 @@ window.addEventListener('keydown', (e) => {
   if (heldComputerKeys.has(key)) return;
 
   if (COMPUTER_KEY_MAP.hasOwnProperty(key)) {
+    // Prevent browser default (e.g. <select> jumping to an option matching this letter)
+    if (document.activeElement && (document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'INPUT')) {
+      document.activeElement.blur();
+    }
+    e.preventDefault();
     heldComputerKeys.add(key);
     const baseMidi = 60 + (octaveShift * 12); // C4 reference
     const midiNote = baseMidi + COMPUTER_KEY_MAP[key];
