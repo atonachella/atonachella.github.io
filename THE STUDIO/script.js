@@ -1,12 +1,12 @@
 // ============================================================
 // STUDIO // DUAL WORKHORSE
-// Shared Web Audio synth engine + 16-pad drum machine + 61-key synth
+// Shared Web Audio synth engine + TAL16 drum machine + SOPH61 keyboard
 // MIDI output ready for Ableton Live routing
 // ============================================================
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// Master chain: everything -> masterGain -> meter analyser -> destination
+// Master chain: everything -> masterGain -> analyser -> destination
 const masterGain = audioCtx.createGain();
 masterGain.gain.value = 0.7;
 
@@ -43,7 +43,7 @@ reverbWet.connect(masterGain);
 reverbDry.connect(masterGain);
 
 // ============================================================
-// METER (visual feedback off the master bus)
+// METER
 // ============================================================
 const meterFill = document.getElementById('meterFill');
 const meterData = new Uint8Array(analyser.frequencyBinCount);
@@ -59,7 +59,7 @@ function updateMeter() {
 updateMeter();
 
 // ============================================================
-// SIGNAL LINE PULSE (visual link between the two modules)
+// SIGNAL LINE PULSE
 // ============================================================
 const signalLine = document.getElementById('signalLine');
 let pulseTimeout = null;
@@ -77,7 +77,7 @@ document.getElementById('masterVol').addEventListener('input', (e) => {
 });
 
 // ============================================================
-// MIDI OUTPUT (Web MIDI API) - for Ableton Live routing
+// MIDI OUTPUT (Web MIDI API)
 // ============================================================
 let midiOutputs = [];
 let activeMidiOutput = null;
@@ -125,13 +125,10 @@ function sendMidiNote(note, velocity, channel = 0, on = true) {
   if (!activeMidiOutput) return;
   const status = (on ? 0x90 : 0x80) | (channel & 0x0f);
   activeMidiOutput.send([status, note, Math.round(velocity * 127)]);
-  if (on) {
-    pulseSignalLine();
-  }
 }
 
 // ============================================================
-// DRUM MACHINE - 16 pads, sample-free synthesized kits
+// TAL16 DRUM MACHINE - 16 pads, 4x4 grid, synthesized kits
 // ============================================================
 
 const DRUM_LABELS = [
@@ -143,10 +140,8 @@ const DRUM_LABELS = [
 
 const PAD_KEYS = ['1','2','3','4','Q','W','E','R','A','S','D','F','Z','X','C','V'];
 
-// MIDI note numbers for drum pads (GM-ish drum map starting at 36)
 const DRUM_MIDI_BASE = 36;
 
-// Kit definitions: each pad maps to a synth voice generator
 const KITS = {
   analog: {
     name: 'Analog',
@@ -215,8 +210,7 @@ const KITS = {
 
 let currentKit = 'analog';
 
-// --- Synth voice generators (all sample-free) ---
-
+// --- Synth voice generators ---
 function synthKick(freq, duration, type) {
   const t = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
@@ -302,7 +296,7 @@ function synthSweep(fromFreq, toFreq, duration) {
   osc.stop(t + duration);
 }
 
-// --- Build pad grid ---
+// --- Build pad grid (4x4) ---
 const padGrid = document.getElementById('padGrid');
 const pads = [];
 
@@ -327,17 +321,15 @@ function triggerPad(index, velocity = 1.0) {
   pads[index].classList.add('triggered');
   setTimeout(() => pads[index].classList.remove('triggered'), 100);
   pulseSignalLine();
-  // MIDI out: drum notes on channel 10 (index 9)
   sendMidiNote(DRUM_MIDI_BASE + index, velocity, 9, true);
   setTimeout(() => sendMidiNote(DRUM_MIDI_BASE + index, velocity, 9, false), 60);
 }
 
-// Kit selector
 document.getElementById('kitSelect').addEventListener('change', (e) => {
   currentKit = e.target.value;
 });
 
-// Computer keyboard -> pads
+// Computer keyboard -> pads (1234 QWER ASDF ZXCV)
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
   const key = e.key.toUpperCase();
@@ -348,14 +340,11 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-// SEQUENCER - 16 step pattern grid (per-pad row not needed for
-// the basic scaffold; this is a single-row 16-step pattern that
-// triggers the currently selected pad row pattern set)
+// SEQUENCER - 16 step pattern grid
 // ============================================================
 
-// Pattern data: 16 pads x 16 steps
 let pattern = Array.from({ length: 16 }, () => Array(16).fill(false));
-let currentStepRowFocus = 0; // which pad's row is shown in the step strip
+let currentStepRowFocus = 0;
 
 const seqStepsEl = document.getElementById('seqSteps');
 const seqSteps = [];
@@ -373,7 +362,7 @@ for (let i = 0; i < 16; i++) {
   });
 }
 
-// Clicking a pad focuses its row in the step strip (basic scaffold UX)
+// Double-click a pad to focus its row in the step strip
 pads.forEach((pad, i) => {
   pad.addEventListener('dblclick', () => {
     currentStepRowFocus = i;
@@ -387,44 +376,85 @@ function refreshStepStrip() {
   });
 }
 
-// --- Transport / sequencer playback ---
+// --- Transport: Play / Pause / Stop ---
 let isPlaying = false;
+let isPaused = false;
 let currentStep = 0;
 let nextStepTime = 0;
 let schedulerTimer = null;
 
-const transportBtn = document.getElementById('transportBtn');
-const bpmInput = document.getElementById('bpmInput');
+const transportPlayBtn = document.getElementById('playBtn');
+const transportPauseBtn = document.getElementById('pauseBtn');
+const transportStopBtn = document.getElementById('stopBtn');
+const bpmValue = document.getElementById('bpmValue');
+let bpm = 96;
 
-transportBtn.addEventListener('click', () => {
-  if (isPlaying) {
-    stopSequencer();
-  } else {
-    startSequencer();
+document.getElementById('bpmUp').addEventListener('click', () => {
+  bpm = Math.min(240, bpm + 1);
+  bpmValue.textContent = bpm;
+});
+document.getElementById('bpmDown').addEventListener('click', () => {
+  bpm = Math.max(40, bpm - 1);
+  bpmValue.textContent = bpm;
+});
+
+transportPlayBtn.addEventListener('click', () => {
+  if (!isPlaying) {
+    if (isPaused) {
+      resumeSequencer();
+    } else {
+      startSequencer();
+    }
   }
+});
+
+transportPauseBtn.addEventListener('click', () => {
+  if (isPlaying) pauseSequencer();
+});
+
+transportStopBtn.addEventListener('click', () => {
+  stopSequencer();
 });
 
 function startSequencer() {
   isPlaying = true;
-  transportBtn.classList.add('active');
-  transportBtn.querySelector('.transport-text').textContent = 'STOP';
+  isPaused = false;
+  transportPlayBtn.classList.add('active');
+  transportPauseBtn.classList.remove('active');
   currentStep = 0;
+  nextStepTime = audioCtx.currentTime;
+  schedulerTimer = setInterval(schedulerTick, 25);
+}
+
+function pauseSequencer() {
+  isPlaying = false;
+  isPaused = true;
+  transportPlayBtn.classList.remove('active');
+  transportPauseBtn.classList.add('active');
+  clearInterval(schedulerTimer);
+}
+
+function resumeSequencer() {
+  isPlaying = true;
+  isPaused = false;
+  transportPlayBtn.classList.add('active');
+  transportPauseBtn.classList.remove('active');
   nextStepTime = audioCtx.currentTime;
   schedulerTimer = setInterval(schedulerTick, 25);
 }
 
 function stopSequencer() {
   isPlaying = false;
-  transportBtn.classList.remove('active');
-  transportBtn.querySelector('.transport-text').textContent = 'RUN';
+  isPaused = false;
+  transportPlayBtn.classList.remove('active');
+  transportPauseBtn.classList.remove('active');
   clearInterval(schedulerTimer);
+  currentStep = 0;
   seqSteps.forEach(s => s.classList.remove('playhead'));
 }
 
 function schedulerTick() {
-  const bpm = parseFloat(bpmInput.value) || 96;
-  const stepDuration = (60 / bpm) / 4; // 16th notes
-
+  const stepDuration = (60 / bpm) / 4;
   while (nextStepTime < audioCtx.currentTime + 0.1) {
     playStep(currentStep, nextStepTime);
     nextStepTime += stepDuration;
@@ -433,13 +463,11 @@ function schedulerTick() {
 }
 
 function playStep(step, time) {
-  // Visual playhead (offset to actual time via small timeout)
   const delay = Math.max(0, (time - audioCtx.currentTime) * 1000);
   setTimeout(() => {
     seqSteps.forEach(s => s.classList.remove('playhead'));
     seqSteps[step].classList.add('playhead');
 
-    // Trigger all pads with this step active
     for (let padIndex = 0; padIndex < 16; padIndex++) {
       if (pattern[padIndex][step]) {
         triggerPad(padIndex, 0.9);
@@ -460,7 +488,7 @@ document.getElementById('savePatternBtn').addEventListener('click', () => {
   const name = prompt('Pattern name:');
   if (!name) return;
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  saved[name] = { pattern, kit: currentKit, bpm: bpmInput.value };
+  saved[name] = { pattern, kit: currentKit, bpm: bpm };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
   refreshPatternList();
 });
@@ -487,80 +515,44 @@ loadPatternSelect.addEventListener('change', (e) => {
   pattern = data.pattern;
   currentKit = data.kit || 'analog';
   document.getElementById('kitSelect').value = currentKit;
-  bpmInput.value = data.bpm || 96;
+  bpm = data.bpm || 96;
+  bpmValue.textContent = bpm;
   refreshStepStrip();
 });
 
 refreshPatternList();
 
 // ============================================================
-// KEYBOARD - 61 keys, browser-native polyphonic synth
+// SOPH61 KEYBOARD - 61 keys, browser-native polyphonic synth
 // ============================================================
 
-// 61 keys = C1 to C6 (5 octaves + 1 note), MIDI notes 24-85... 
-// we'll generate starting from MIDI note 36 (C2) for 61 keys -> C2 to C7
 const KEYBOARD_START_MIDI = 36; // C2
-const KEYBOARD_KEY_COUNT = 61;
+const KEYBOARD_KEY_COUNT = 61;  // C2 to C7
 
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const BLACK_KEY_OFFSETS = [1, 3, 6, 8, 10]; // semitone offsets within octave that are black keys
+const BLACK_KEY_OFFSETS = [1, 3, 6, 8, 10];
 
-// Computer key mapping (one octave, shifts with octave control)
+// Synth key mapping - no overlap with drum pad keys (1-4, Q-R, A-F, Z-V)
+// White keys: H J K L ; '   Black keys: Y U I O P
 const COMPUTER_KEY_MAP = {
-  'a': 0, 'w': 1, 's': 2, 'e': 3, 'd': 4, 'f': 5, 't': 6,
-  'g': 7, 'y': 8, 'h': 9, 'u': 10, 'j': 11, 'k': 12,
-  'o': 13, 'l': 14, 'p': 15, ';': 16
+  'h': 0, 'y': 1, 'j': 2, 'u': 3, 'k': 4, 'l': 5, 'i': 6,
+  ';': 7, 'o': 8, "'": 9, 'p': 10
 };
 
-let octaveShift = 0; // shifts base octave for computer-key input
-const activeOscillators = {}; // midiNote -> {osc, gain}
+let octaveShift = 0;
+const activeOscillators = {};
 
 const keyboardEl = document.getElementById('keyboard');
-const keyEls = {}; // midiNote -> element
+const keyEls = {};
 
-// Build 61-key layout
-let whiteKeyIndex = 0;
 const WHITE_KEY_WIDTH = 30;
 
-for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-  const midiNote = KEYBOARD_START_MIDI + i;
-  const noteInOctave = midiNote % 12;
-  const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
-  const noteName = NOTE_NAMES[noteInOctave];
-  const octave = Math.floor(midiNote / 12) - 1;
-
-  const keyEl = document.createElement('div');
-  keyEl.dataset.midi = midiNote;
-  keyEl.innerHTML = `<span class="key-label">${noteName}${octave}</span>`;
-
-  if (isBlack) {
-    keyEl.className = 'key black';
-    // position black key over the gap before the next white key
-    keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH - 9) + 'px';
-    keyboardEl.appendChild(keyEl);
-  } else {
-    keyEl.className = 'key white';
-    keyboardEl.appendChild(keyEl);
-    whiteKeyIndex++;
-  }
-
-  keyEls[midiNote] = keyEl;
-
-  // Mouse interaction
-  keyEl.addEventListener('mousedown', () => noteOn(midiNote, 0.9));
-  keyEl.addEventListener('mouseup', () => noteOff(midiNote));
-  keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
-}
-
-keyboardEl.style.width = (whiteKeyIndex * WHITE_KEY_WIDTH) + 'px';
-
-// --- Synth voice for keyboard ---
 function midiToFreq(midiNote) {
   return 440 * Math.pow(2, (midiNote - 69) / 12);
 }
 
 function noteOn(midiNote, velocity = 0.9) {
-  if (activeOscillators[midiNote]) return; // already sounding
+  if (activeOscillators[midiNote]) return;
 
   const freq = midiToFreq(midiNote);
   const wave = document.getElementById('waveSelect').value;
@@ -570,19 +562,17 @@ function noteOn(midiNote, velocity = 0.9) {
   osc.type = wave;
   osc.frequency.value = freq;
 
-  // Slight detuned second oscillator for richness
   const osc2 = audioCtx.createOscillator();
   osc2.type = wave;
   osc2.frequency.value = freq * 1.005;
 
   const gain = audioCtx.createGain();
   gain.gain.setValueAtTime(0, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(velocity * 0.5, audioCtx.currentTime + attack);
+  gain.gain.linearRampToValueAtTime(Math.max(velocity, 0.0001) * 0.5, audioCtx.currentTime + Math.max(attack, 0.001));
 
   osc.connect(gain);
   osc2.connect(gain);
 
-  // Split to dry/reverb buses
   gain.connect(reverbDry);
   gain.connect(reverbNode);
 
@@ -591,13 +581,10 @@ function noteOn(midiNote, velocity = 0.9) {
 
   activeOscillators[midiNote] = { osc, osc2, gain };
 
-  // Visual
   const keyEl = keyEls[midiNote];
   if (keyEl) keyEl.classList.add('active');
 
   pulseSignalLine();
-
-  // MIDI out: keyboard on channel 1 (index 0)
   sendMidiNote(midiNote, velocity, 0, true);
 }
 
@@ -609,8 +596,8 @@ function noteOff(midiNote) {
   const t = audioCtx.currentTime;
 
   voice.gain.gain.cancelScheduledValues(t);
-  voice.gain.gain.setValueAtTime(voice.gain.gain.value, t);
-  voice.gain.gain.exponentialRampToValueAtTime(0.0001, t + release);
+  voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), t);
+  voice.gain.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(release, 0.02));
 
   voice.osc.stop(t + release + 0.05);
   voice.osc2.stop(t + release + 0.05);
@@ -623,27 +610,74 @@ function noteOff(midiNote) {
   sendMidiNote(midiNote, 0, 0, false);
 }
 
-// Reverb wet amount control
+// Build / rebuild the 61-key layout (called on init and octave shift)
+function buildKeyboard() {
+  // Release any currently sounding notes
+  Object.keys(activeOscillators).forEach(note => noteOff(parseInt(note)));
+
+  keyboardEl.innerHTML = '';
+  for (const k in keyEls) delete keyEls[k];
+
+  let whiteKeyIndex = 0;
+  const startMidi = KEYBOARD_START_MIDI + (octaveShift * 12);
+
+  for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+    const midiNote = startMidi + i;
+    const noteInOctave = ((midiNote % 12) + 12) % 12;
+    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
+    const noteName = NOTE_NAMES[noteInOctave];
+    const octaveNum = Math.floor(midiNote / 12) - 1;
+
+    const keyEl = document.createElement('div');
+    keyEl.dataset.midi = midiNote;
+    keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
+
+    if (isBlack) {
+      keyEl.className = 'key black';
+      keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH - 9) + 'px';
+      keyboardEl.appendChild(keyEl);
+    } else {
+      keyEl.className = 'key white';
+      keyboardEl.appendChild(keyEl);
+      whiteKeyIndex++;
+    }
+
+    keyEls[midiNote] = keyEl;
+
+    keyEl.addEventListener('mousedown', () => noteOn(midiNote, 0.9));
+    keyEl.addEventListener('mouseup', () => noteOff(midiNote));
+    keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
+  }
+
+  keyboardEl.style.width = (whiteKeyIndex * WHITE_KEY_WIDTH) + 'px';
+}
+
+buildKeyboard();
+
+// Reverb wet amount
 document.getElementById('reverbKnob').addEventListener('input', (e) => {
   reverbWet.gain.value = parseFloat(e.target.value);
 });
 
-// Octave shift controls
+// Octave shift
 const octDisplay = document.getElementById('octDisplay');
+
 document.getElementById('octUp').addEventListener('click', () => {
   if (octaveShift < 2) {
     octaveShift++;
     octDisplay.textContent = 4 + octaveShift;
+    buildKeyboard();
   }
 });
 document.getElementById('octDown').addEventListener('click', () => {
   if (octaveShift > -2) {
     octaveShift--;
     octDisplay.textContent = 4 + octaveShift;
+    buildKeyboard();
   }
 });
 
-// Computer keyboard -> synth notes
+// Computer keyboard -> synth notes (H J K L ; ' / Y U I O P)
 const heldComputerKeys = new Set();
 
 window.addEventListener('keydown', (e) => {
@@ -652,8 +686,8 @@ window.addEventListener('keydown', (e) => {
 
   if (COMPUTER_KEY_MAP.hasOwnProperty(key)) {
     heldComputerKeys.add(key);
-    const baseOctaveMidi = 60 + (octaveShift * 12); // C4 = 60 as reference
-    const midiNote = baseOctaveMidi + COMPUTER_KEY_MAP[key];
+    const baseMidi = 60 + (octaveShift * 12); // C4 reference
+    const midiNote = baseMidi + COMPUTER_KEY_MAP[key];
     noteOn(midiNote, 0.9);
   }
 });
@@ -662,10 +696,40 @@ window.addEventListener('keyup', (e) => {
   const key = e.key.toLowerCase();
   if (COMPUTER_KEY_MAP.hasOwnProperty(key)) {
     heldComputerKeys.delete(key);
-    const baseOctaveMidi = 60 + (octaveShift * 12);
-    const midiNote = baseOctaveMidi + COMPUTER_KEY_MAP[key];
+    const baseMidi = 60 + (octaveShift * 12);
+    const midiNote = baseMidi + COMPUTER_KEY_MAP[key];
     noteOff(midiNote);
   }
+});
+
+// ============================================================
+// VIEW TOGGLE - Drums / Keys / Both
+// ============================================================
+const drumModule = document.getElementById('drumModule');
+const keysModule = document.getElementById('keysModule');
+const signalDivider = document.getElementById('signalDivider');
+const toggleBtns = document.querySelectorAll('.toggle-btn');
+
+toggleBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    toggleBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const view = btn.dataset.view;
+    if (view === 'drums') {
+      drumModule.classList.remove('hidden');
+      keysModule.classList.add('hidden');
+      signalDivider.classList.add('hidden');
+    } else if (view === 'keys') {
+      drumModule.classList.add('hidden');
+      keysModule.classList.remove('hidden');
+      signalDivider.classList.add('hidden');
+    } else {
+      drumModule.classList.remove('hidden');
+      keysModule.classList.remove('hidden');
+      signalDivider.classList.remove('hidden');
+    }
+  });
 });
 
 // ============================================================

@@ -29,12 +29,20 @@
         <select id="midiOutSelect" class="midi-select">
           <option value="">No MIDI outputs found</option>
         </select>
+
+        <div class="view-toggle" id="viewToggle">
+          <button class="toggle-btn active" data-view="both">BOTH</button>
+          <button class="toggle-btn" data-view="drums">TAL16</button>
+          <button class="toggle-btn" data-view="keys">SOPH61</button>
+        </div>
+
         <div class="status-item bpm-group">
           <span class="status-label">BPM</span>
           <button id="bpmDown" class="bpm-step-btn">−</button>
           <span id="bpmValue" class="bpm-display">96</span>
           <button id="bpmUp" class="bpm-step-btn">+</button>
         </div>
+
         <div class="transport-group">
           <button id="playBtn" class="transport-btn play-btn" title="Play">
             <span class="transport-icon">▶</span>
@@ -83,7 +91,7 @@
         </div>
       </section>
 
-      <!-- SIGNAL DIVIDER (horizontal now) -->
+      <!-- SIGNAL DIVIDER -->
       <div class="signal-divider" id="signalDivider">
         <div class="signal-line" id="signalLine"></div>
       </div>
@@ -133,7 +141,7 @@
           </div>
         </div>
 
-        <div class="keys-hint">Use computer keys A–L / W,E,T,Y,U,O,P for quick play, or click/MIDI</div>
+        <div class="keys-hint">Synth keys: H J K L ; ' (white) + Y U I O P (black) — drum pads use 1-4, Q-R, A-F, Z-V — click/MIDI also work</div>
       </section>
 
     </main>
