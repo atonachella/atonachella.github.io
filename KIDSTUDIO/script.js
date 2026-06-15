@@ -826,6 +826,7 @@ loopBtns.forEach(btn => {
     if (currentBar >= loopLength) currentBar = 0;
     refreshBarPages();
     refreshStepStrip();
+    if (typeof refreshBassStrip === 'function') refreshBassStrip();
   });
 });
 
@@ -846,6 +847,7 @@ function refreshBarPages() {
       currentBar = b;
       refreshBarPages();
       refreshStepStrip();
+      if (typeof refreshBassStrip === 'function') refreshBassStrip();
     });
     barPageWrap.appendChild(btn);
   }
@@ -863,6 +865,149 @@ document.getElementById('copyBarBtn').addEventListener('click', () => {
   refreshBarPages();
   refreshStepStrip();
 });
+
+// ============================================================
+// BASSLINE SEQUENCER (SOPH61) - monophonic, shares drum transport/bars
+// bassPattern[bar][step] = midiNote (number) or null
+// ============================================================
+let bassPattern = Array.from({ length: BARS }, () => Array(STEPS_PER_BAR).fill(null));
+let bassArmedStep = null; // which step index is waiting for a note assignment
+
+const bassStepsEl = document.getElementById('bassSteps');
+const bassSteps = [];
+const BASS_NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+function midiToShortName(midi) {
+  const n = ((midi % 12) + 12) % 12;
+  const oct = Math.floor(midi / 12) - 1;
+  return BASS_NOTE_NAMES[n] + oct;
+}
+
+for (let i = 0; i < STEPS_PER_BAR; i++) {
+  const step = document.createElement('div');
+  step.className = 'bass-step';
+  step.dataset.step = i;
+  if (i % 4 === 0) step.classList.add('bass-beat');
+  step.innerHTML = '<span class="bass-step-note"></span>';
+  bassStepsEl.appendChild(step);
+  bassSteps.push(step);
+
+  step.addEventListener('click', () => {
+    const existing = bassPattern[currentBar][i];
+    if (existing !== null) {
+      // Tap a filled step to clear it
+      bassPattern[currentBar][i] = null;
+      bassArmedStep = null;
+      refreshBassStrip();
+    } else if (bassArmedStep === i) {
+      // Tap the armed step again to disarm
+      bassArmedStep = null;
+      refreshBassStrip();
+    } else {
+      // Arm this step, waiting for a key tap
+      bassArmedStep = i;
+      refreshBassStrip();
+    }
+  });
+}
+
+function refreshBassStrip() {
+  bassSteps.forEach((step, i) => {
+    const note = bassPattern[currentBar][i];
+    const noteSpan = step.querySelector('.bass-step-note');
+    step.classList.toggle('on', note !== null);
+    step.classList.toggle('armed', bassArmedStep === i);
+    noteSpan.textContent = note !== null ? midiToShortName(note) : '';
+  });
+  const hint = document.getElementById('bassSeqHint');
+  if (hint) {
+    hint.textContent = bassArmedStep !== null
+      ? `Step ${bassArmedStep + 1} armed — tap a key to set its note`
+      : 'Tap a step, then tap a key to set its note';
+  }
+}
+
+// Called from noteOn when a key is pressed while a bass step is armed
+function assignBassNote(midiNote) {
+  if (bassArmedStep === null) return false;
+  bassPattern[currentBar][bassArmedStep] = midiNote;
+  bassArmedStep = null;
+  refreshBassStrip();
+  return true;
+}
+
+document.getElementById('bassClearBtn').addEventListener('click', () => {
+  bassPattern = Array.from({ length: BARS }, () => Array(STEPS_PER_BAR).fill(null));
+  bassArmedStep = null;
+  refreshBassStrip();
+});
+
+// ============================================================
+// DEMO BEAT - a starter pattern so kids can see how it works
+// ============================================================
+//
+// HOW PATTERNS ARE STORED (this is the whole "backend"):
+//   pattern[padIndex][bar][step]   -> true/false  (is this drum hit on?)
+//   bassPattern[bar][step]         -> a MIDI note number, or null (no note)
+//
+// There is NO file. A "beat" is just which cells in these arrays are filled.
+// Loading the demo = setting the right cells. That's identical to a kid
+// tapping those steps by hand, except code does it instantly.
+//
+// Pad indices we use: KICK=0, SNARE=1, CLOSED HAT(CH)=4
+// Steps are 0-15. In a 16-step bar, the "beats" land on 0, 4, 8, 12.
+
+function loadDemoBeat() {
+  // Start from a clean slate so the demo always looks the same
+  pattern = Array.from({ length: 16 }, () =>
+    Array.from({ length: BARS }, () => Array(STEPS_PER_BAR).fill(false))
+  );
+  bassPattern = Array.from({ length: BARS }, () => Array(STEPS_PER_BAR).fill(null));
+
+  const KICK = 0, SNARE = 1, HAT = 4;
+  const BAR = 0; // demo lives in bar 1
+
+  // --- DRUMS: a basic boom-bap pattern ---
+  // Kick: the "boom ... b-boom" feel
+  [0, 6, 10].forEach(step => { pattern[KICK][BAR][step] = true; });
+  // Snare: backbeat on counts 2 and 4 (steps 4 and 12)
+  [4, 12].forEach(step => { pattern[SNARE][BAR][step] = true; });
+  // Closed hat: steady eighth notes (every other step)
+  [0, 2, 4, 6, 8, 10, 12, 14].forEach(step => { pattern[HAT][BAR][step] = true; });
+
+  // --- BASS: simple root-note line that follows the kick ---
+  // MIDI 36 = C2 (a low, fat bass note). 43 = G2.
+  bassPattern[BAR][0] = 36;  // C with the first kick
+  bassPattern[BAR][6] = 36;  // C with the second kick
+  bassPattern[BAR][8] = 43;  // G in the middle for movement
+  bassPattern[BAR][10] = 36; // back to C
+
+  // Reset view to bar 1, single-bar loop, focus the kick row, and redraw everything
+  loopLength = 1;
+  loopBtns.forEach(b => b.classList.toggle('active', b.dataset.bars === '1'));
+  currentBar = 0;
+  currentStepRowFocus = KICK;
+  refreshBarPages();
+  refreshActiveRowDisplay();
+  refreshStepStrip();
+  refreshBassStrip();
+}
+
+const demoBtn = document.getElementById('demoBeatBtn');
+if (demoBtn) demoBtn.addEventListener('click', loadDemoBeat);
+
+// Play a bass note for one step duration (uses current synth preset)
+function playBassStep(midiNote, time) {
+  const delay = Math.max(0, (time - audioCtx.currentTime) * 1000);
+  const stepMs = ((60 / bpm) / 4) * 1000;
+  setTimeout(() => {
+    noteOn(midiNote, 0.85);
+    // Release just before the next step so notes don't pile up (monophonic feel)
+    setTimeout(() => noteOff(midiNote), Math.max(60, stepMs * 0.9));
+  }, delay);
+}
+
+refreshBassStrip();
 
 // --- Transport: Play / Pause / Stop ---
 let isPlaying = false;
@@ -960,7 +1105,9 @@ function stopSequencer() {
   currentBar = 0;
   refreshBarPages();
   refreshStepStrip();
+  refreshBassStrip();
   seqSteps.forEach(s => s.classList.remove('playhead'));
+  bassSteps.forEach(s => s.classList.remove('playhead'));
 }
 
 function schedulerTick() {
@@ -976,15 +1123,25 @@ function playStep(globalStep, time) {
   const bar = Math.floor(globalStep / STEPS_PER_BAR) % loopLength;
   const step = globalStep % STEPS_PER_BAR;
   const delay = Math.max(0, (time - audioCtx.currentTime) * 1000);
+
+  // Schedule bass note for this step (in sync, before the UI delay)
+  const bassNote = bassPattern[bar][step];
+  if (bassNote !== null) {
+    playBassStep(bassNote, time);
+  }
+
   setTimeout(() => {
     // Auto-page the step strip to follow playback
     if (bar !== currentBar) {
       currentBar = bar;
       refreshBarPages();
       refreshStepStrip();
+      refreshBassStrip();
     }
     seqSteps.forEach(s => s.classList.remove('playhead'));
     seqSteps[step].classList.add('playhead');
+    bassSteps.forEach(s => s.classList.remove('playhead'));
+    bassSteps[step].classList.add('playhead');
 
     for (let padIndex = 0; padIndex < 16; padIndex++) {
       if (pattern[padIndex][bar][step]) {
@@ -1409,7 +1566,11 @@ function buildKeyboard() {
 
     keyEls[midiNote] = keyEl;
 
-    keyEl.addEventListener('mousedown', () => noteOn(midiNote, 0.9));
+    keyEl.addEventListener('mousedown', () => {
+      // If a bass step is armed, assign this note to it (still sounds the note)
+      if (typeof assignBassNote === 'function') assignBassNote(midiNote);
+      noteOn(midiNote, 0.9);
+    });
     keyEl.addEventListener('mouseup', () => noteOff(midiNote));
     keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
   }
@@ -1463,6 +1624,7 @@ window.addEventListener('keydown', (e) => {
     heldComputerKeys.add(key);
     const baseMidi = 60 + (octaveShift * 12); // C4 reference
     const midiNote = baseMidi + COMPUTER_KEY_MAP[key];
+    if (typeof assignBassNote === 'function') assignBassNote(midiNote);
     noteOn(midiNote, 0.9);
   }
 });

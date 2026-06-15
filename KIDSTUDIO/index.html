@@ -137,6 +137,7 @@
   <option value="lofi">Lo-Fi</option>
   <option value="industrial">Industrial</option>
 </select>
+            <button id="demoBeatBtn" class="ghost-btn demo-btn">DEMO BEAT</button>
             <button id="clearPatternBtn" class="ghost-btn">CLEAR</button>
             <button id="savePatternBtn" class="ghost-btn">SAVE</button>
             <select id="loadPatternSelect" class="kit-select">
@@ -208,6 +209,18 @@
         <div class="keyboard-wrap">
           <div class="keyboard" id="keyboard">
             <!-- 61 keys injected by JS -->
+          </div>
+        </div>
+
+        <!-- BASSLINE SEQUENCER -->
+        <div class="bass-seq" id="bassSeq">
+          <div class="bass-seq-top">
+            <span class="bass-seq-title">BASSLINE</span>
+            <span class="bass-seq-hint" id="bassSeqHint">Tap a step, then tap a key to set its note</span>
+            <button id="bassClearBtn" class="ghost-btn small">CLEAR</button>
+          </div>
+          <div class="bass-steps" id="bassSteps">
+            <!-- 16 bass steps injected by JS -->
           </div>
         </div>
 
