@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Studio // Dual Workhorse</title>
+<title>Soph & Tal — Music Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- BACK TO PORTAL (no password, open access) -->
+  <a href="index.html" class="home-link">SOPH&amp;TAL PORTAL</a>
 
   <!-- WELCOME SPLASH -->
   <div class="welcome" id="welcome">
@@ -90,7 +93,7 @@
       </div>
     </header>
 
-    <!-- MAIN: STACKED MODULES -->
+    <!-- MAIN MODULES -->
     <main class="modules">
 
       <!-- DRUM MACHINE MODULE -->
@@ -104,9 +107,7 @@
           <span class="module-tag">DRUM MACHINE</span>
         </div>
 
-        <div class="pad-grid" id="padGrid">
-          <!-- 16 pads injected by JS -->
-        </div>
+        <div class="pad-grid" id="padGrid"></div>
 
         <div class="seq-controls">
           <div class="seq-toprow">
@@ -125,18 +126,16 @@
               <button id="copyBarBtn" class="ghost-btn small">COPY</button>
             </div>
           </div>
-          <div class="seq-steps" id="seqSteps">
-            <!-- 16 step indicators injected by JS -->
-          </div>
+          <div class="seq-steps" id="seqSteps"></div>
           <div class="kit-controls">
             <label class="kit-label">KIT</label>
             <select id="kitSelect" class="kit-select">
-  <option value="analog">Analog</option>
-  <option value="trap808">808 / Trap</option>
-  <option value="acoustic">Acoustic</option>
-  <option value="lofi">Lo-Fi</option>
-  <option value="industrial">Industrial</option>
-</select>
+              <option value="analog">Analog</option>
+              <option value="trap808">808 / Trap</option>
+              <option value="acoustic">Acoustic</option>
+              <option value="lofi">Lo-Fi</option>
+              <option value="industrial">Industrial</option>
+            </select>
             <button id="demoBeatBtn" class="ghost-btn demo-btn">DEMO BEAT</button>
             <button id="clearPatternBtn" class="ghost-btn">CLEAR</button>
             <button id="savePatternBtn" class="ghost-btn">SAVE</button>
@@ -165,21 +164,21 @@
 
         <div class="synth-controls">
           <div class="control-group">
-  <label>PRESET</label>
-  <select id="presetSelect" class="kit-select">
-    <option value="classic">Classic</option>
-    <option value="bass">Bass</option>
-    <option value="lead">Lead</option>
-    <option value="bell">Bell</option>
-    <option value="drone">Drone/Pad</option>
-    <option value="pluck">Pluck</option>
-    <option value="supersaw">Supersaw</option>
-    <option value="acid">Acid Bass</option>
-    <option value="ep">Warm EP</option>
-    <option value="growl">Growl Bass</option>
-    <option value="glasspluck">Glass Pluck</option>
-  </select>
-</div>
+            <label>PRESET</label>
+            <select id="presetSelect" class="kit-select">
+              <option value="classic">Classic</option>
+              <option value="bass">Bass</option>
+              <option value="lead">Lead</option>
+              <option value="bell">Bell</option>
+              <option value="drone">Drone/Pad</option>
+              <option value="pluck">Pluck</option>
+              <option value="supersaw">Supersaw</option>
+              <option value="acid">Acid Bass</option>
+              <option value="ep">Warm EP</option>
+              <option value="growl">Growl Bass</option>
+              <option value="glasspluck">Glass Pluck</option>
+            </select>
+          </div>
           <div class="control-group">
             <label>ATTACK</label>
             <input type="range" id="attackKnob" min="0" max="1" step="0.01" value="0.02">
@@ -207,9 +206,7 @@
         </div>
 
         <div class="keyboard-wrap">
-          <div class="keyboard" id="keyboard">
-            <!-- 61 keys injected by JS -->
-          </div>
+          <div class="keyboard" id="keyboard"></div>
         </div>
 
         <!-- BASSLINE SEQUENCER -->
@@ -219,9 +216,7 @@
             <span class="bass-seq-hint" id="bassSeqHint">Tap a step, then tap a key to set its note</span>
             <button id="bassClearBtn" class="ghost-btn small">CLEAR</button>
           </div>
-          <div class="bass-steps" id="bassSteps">
-            <!-- 16 bass steps injected by JS -->
-          </div>
+          <div class="bass-steps" id="bassSteps"></div>
         </div>
 
         <div class="wheel-row">
@@ -310,12 +305,18 @@
         <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
       </div>
       <div class="master-item">
-        <span class="footer-note">Web Audio synth engine — no samples — MIDI route-ready for Ableton Live</span>
+        <span class="footer-note">Web Audio synth engine — MIDI route-ready for Ableton Live</span>
       </div>
     </footer>
 
   </div>
 
-<script src="script.js"></script>
+  <script>
+    // Welcome splash dismiss
+    document.getElementById('welcomeEnter').addEventListener('click', function() {
+      document.getElementById('welcome').classList.add('hidden');
+    });
+  </script>
+  <script src="script.js"></script>
 </body>
 </html>

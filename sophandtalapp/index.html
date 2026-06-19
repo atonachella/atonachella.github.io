@@ -17,7 +17,6 @@
             background: #050a14;
         }
 
-        /* ── SPLIT BACKGROUND ── */
         #bg-canvas {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -28,10 +27,9 @@
             position: fixed; top: 0; height: 100%;
             z-index: 1; pointer-events: none;
         }
-        .split-left { left: 0; width: 50%; background: linear-gradient(180deg, #020d1a 0%, #041526 100%); clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); }
+        .split-left  { left: 0;  width: 50%; background: linear-gradient(180deg, #020d1a 0%, #041526 100%); clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); }
         .split-right { right: 0; width: 50%; background: linear-gradient(180deg, #0e0015 0%, #1a0028 100%); clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); }
 
-        /* ── SIDE LABELS ── */
         .side-label {
             position: fixed; top: 50%; transform: translateY(-50%);
             z-index: 2; pointer-events: none;
@@ -39,7 +37,7 @@
             font-size: 0.65rem; letter-spacing: 0.3em;
             writing-mode: vertical-rl;
         }
-        .side-label.ocean { left: 18px; color: rgba(0, 210, 211, 0.25); }
+        .side-label.ocean   { left: 18px;  color: rgba(0, 210, 211, 0.25); }
         .side-label.digital { right: 18px; color: rgba(255, 51, 102, 0.25); transform: translateY(-50%) rotate(180deg); }
 
         /* ── PORTAL CARD ── */
@@ -48,10 +46,12 @@
             background: rgba(8, 16, 32, 0.82);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            padding: 44px 40px;
+            padding: 44px 40px 36px;
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 32px 64px rgba(0,0,0,0.6), 0 0 60px rgba(0,210,211,0.04), 0 0 60px rgba(255,51,102,0.04);
+            box-shadow: 0 32px 64px rgba(0,0,0,0.6),
+                        0 0 60px rgba(0,210,211,0.04),
+                        0 0 60px rgba(255,51,102,0.04);
             text-align: center;
             width: 92%; max-width: 440px;
         }
@@ -64,6 +64,15 @@
             pointer-events: none;
         }
 
+        /* glowing top edge on card */
+        .portal-card::after {
+            content: '';
+            position: absolute; top: 0; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,210,211,0.6), rgba(255,51,102,0.6), transparent);
+            border-radius: 24px 24px 0 0;
+        }
+
         .portal-title {
             font-family: 'Orbitron', monospace;
             font-size: 1.4rem; font-weight: 700;
@@ -71,10 +80,15 @@
             color: #ffffff; line-height: 1.4;
             margin-bottom: 32px;
         }
-        .portal-title span.soph { color: #00d2d3; }
+        .portal-title span.soph { color: #00d2d3; text-shadow: 0 0 12px rgba(0,210,211,0.5); }
         .portal-title span.amp  { color: rgba(255,255,255,0.35); }
-        .portal-title span.tal  { color: #ff3366; }
-        .portal-title .sub { display: block; font-size: 0.65rem; font-family: 'Rajdhani', sans-serif; letter-spacing: 0.25em; color: rgba(255,255,255,0.35); margin-top: 6px; font-weight: 400; }
+        .portal-title span.tal  { color: #ff3366; text-shadow: 0 0 12px rgba(255,51,102,0.5); }
+        .portal-title .sub {
+            display: block; font-size: 0.65rem;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.25em; color: rgba(255,255,255,0.35);
+            margin-top: 6px; font-weight: 400;
+        }
 
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-label {
@@ -96,29 +110,107 @@
             background: rgba(255,255,255,0.07);
             box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
         }
+
         .portal-button {
             width: 100%; padding: 15px;
             font-size: 1rem; font-weight: 700; font-family: 'Rajdhani', sans-serif;
             letter-spacing: 0.12em; text-transform: uppercase;
-            color: #050a14; background: linear-gradient(135deg, #00d2d3 0%, #ff3366 100%);
+            color: #050a14;
+            background: linear-gradient(135deg, #00d2d3 0%, #ff3366 100%);
             border: none; border-radius: 12px; cursor: pointer;
             transition: all 0.25s ease; margin-top: 8px;
             box-shadow: 0 4px 24px rgba(0,210,211,0.15);
         }
-        .portal-button:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,210,211,0.25); filter: brightness(1.1); }
+        .portal-button:hover  { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,210,211,0.3); filter: brightness(1.1); }
         .portal-button:active { transform: translateY(0); }
 
-        .error-message { color: #ff6b6b; font-size: 0.85rem; font-weight: 600; margin-top: 16px; min-height: 20px; }
+        .error-message {
+            color: #ff6b6b; font-size: 0.85rem; font-weight: 600;
+            margin-top: 16px; min-height: 20px;
+        }
+
+        /* ── DIVIDER ── */
+        .card-divider {
+            margin: 24px 0 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        }
+
+        /* ── STUDIO BYPASS LINK ── */
+        .studio-bypass {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 18px;
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 245, 255, 0.12);
+            background: rgba(0, 245, 255, 0.03);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .studio-bypass::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(0,245,255,0.06), rgba(180,79,255,0.06));
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .studio-bypass:hover {
+            border-color: rgba(0, 245, 255, 0.35);
+            background: rgba(0, 245, 255, 0.06);
+            box-shadow: 0 0 20px rgba(0,245,255,0.1), inset 0 0 20px rgba(0,245,255,0.04);
+            transform: translateY(-1px);
+        }
+
+        .studio-bypass:hover::before { opacity: 1; }
+
+        .studio-pulse {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #00f5ff;
+            box-shadow: 0 0 8px rgba(0,245,255,0.9);
+            flex-shrink: 0;
+            animation: studioLed 2s ease-in-out infinite;
+        }
+
+        @keyframes studioLed {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50%       { opacity: 1;   transform: scale(1.5); box-shadow: 0 0 14px rgba(0,245,255,1); }
+        }
+
+        .studio-bypass-emoji {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .studio-bypass-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            color: rgba(0, 220, 255, 0.5);
+            transition: color 0.25s ease;
+        }
+
+        .studio-bypass:hover .studio-bypass-text {
+            color: rgba(0, 245, 255, 0.9);
+            text-shadow: 0 0 10px rgba(0,245,255,0.4);
+        }
 
         /* ── EASTER EGG TRIGGERS ── */
         .egg-trigger {
             position: fixed; bottom: 28px; z-index: 20;
             font-size: 1rem; opacity: 0.08; cursor: pointer;
-            transition: opacity 0.3s; user-select: none;
-            padding: 10px;
+            transition: opacity 0.3s; user-select: none; padding: 10px;
         }
         .egg-trigger:hover { opacity: 0.25; }
-        .egg-trigger.ocean-egg { left: 28px; }
+        .egg-trigger.ocean-egg   { left: 28px; }
         .egg-trigger.digital-egg { right: 28px; }
 
         /* ── EASTER EGG POPUP ── */
@@ -133,14 +225,18 @@
             padding: 36px 40px; text-align: center; max-width: 360px;
             border: 1px solid;
         }
-        .egg-box.ocean { border-color: rgba(0,210,211,0.4); box-shadow: 0 0 40px rgba(0,210,211,0.15); }
+        .egg-box.ocean   { border-color: rgba(0,210,211,0.4);  box-shadow: 0 0 40px rgba(0,210,211,0.15); }
         .egg-box.digital { border-color: rgba(255,51,102,0.4); box-shadow: 0 0 40px rgba(255,51,102,0.15); }
-        .egg-icon { font-size: 3rem; margin-bottom: 12px; }
+        .egg-icon  { font-size: 3rem; margin-bottom: 12px; }
         .egg-title { font-family: 'Orbitron', monospace; font-size: 1rem; letter-spacing: 0.08em; margin-bottom: 10px; }
-        .egg-box.ocean .egg-title { color: #00d2d3; }
+        .egg-box.ocean   .egg-title { color: #00d2d3; }
         .egg-box.digital .egg-title { color: #ff3366; }
-        .egg-msg { color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
-        .egg-close { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 24px; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; letter-spacing: 0.1em; }
+        .egg-msg   { color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
+        .egg-close {
+            background: transparent; border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; padding: 8px 24px; border-radius: 8px; cursor: pointer;
+            font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; letter-spacing: 0.1em;
+        }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
@@ -154,8 +250,8 @@
     <span class="side-label ocean">S · O · P · H · I · A</span>
     <span class="side-label digital">N · A · T · A · L · I · A</span>
 
-    <!-- Easter egg triggers (subtle, hidden in corners) -->
-    <div class="egg-trigger ocean-egg" id="egg1" title="">🌊</div>
+    <!-- Easter egg triggers -->
+    <div class="egg-trigger ocean-egg"   id="egg1" title="">🌊</div>
     <div class="egg-trigger digital-egg" id="egg2" title="">🎪</div>
 
     <div class="portal-card">
@@ -180,6 +276,15 @@
 
         <button id="signInBtn" class="portal-button">Enter ›</button>
         <div id="errorBox" class="error-message"></div>
+
+        <div class="card-divider"></div>
+
+        <!-- STUDIO BYPASS — open access, no password -->
+        <a href="studio.html" class="studio-bypass">
+            <span class="studio-pulse"></span>
+            <span class="studio-bypass-emoji">🎹</span>
+            <span class="studio-bypass-text">MUSIC STUDIO — OPEN ACCESS</span>
+        </a>
     </div>
 
     <!-- Easter Egg Popups -->
@@ -201,25 +306,24 @@
     </div>
 
     <script>
-        // ── LOGIN LOGIC ──
+        // ── LOGIN ──
         document.getElementById('signInBtn').addEventListener('click', verifyAndLogin);
-        document.getElementById('childCode').addEventListener('keypress', e => { if(e.key === 'Enter') verifyAndLogin(); });
+        document.getElementById('childCode').addEventListener('keypress', e => { if (e.key === 'Enter') verifyAndLogin(); });
 
         function verifyAndLogin() {
             const user = document.getElementById('childSelect').value;
             const code = document.getElementById('childCode').value.trim().toLowerCase();
             const err  = document.getElementById('errorBox');
             err.textContent = '';
-            if(!user) { err.textContent = 'Please select a user profile.'; return; }
-            if(user === 'sophia')  { code === 'ocean10' ? (window.location.href = 'marine.html')  : (err.textContent = 'Invalid access code for Sophia.'); }
-            if(user === 'natalia') { code === 'magic7'  ? (window.location.href = 'playful.html') : (err.textContent = 'Invalid access code for Natalia.'); }
+            if (!user) { err.textContent = 'Please select a user profile.'; return; }
+            if (user === 'sophia')  { code === 'ocean10' ? (window.location.href = 'marine.html')  : (err.textContent = 'Invalid access code for Sophia.'); }
+            if (user === 'natalia') { code === 'magic7'  ? (window.location.href = 'playful.html') : (err.textContent = 'Invalid access code for Natalia.'); }
         }
 
-        // ── EASTER EGG LOGIC ──
-        // Click each icon 5 times to unlock
+        // ── EASTER EGGS ──
         let clicks1 = 0, clicks2 = 0;
-        document.getElementById('egg1').addEventListener('click', () => { if(++clicks1 >= 5) { document.getElementById('popup1').classList.add('show'); clicks1=0; } });
-        document.getElementById('egg2').addEventListener('click', () => { if(++clicks2 >= 5) { document.getElementById('popup2').classList.add('show'); clicks2=0; } });
+        document.getElementById('egg1').addEventListener('click', () => { if (++clicks1 >= 5) { document.getElementById('popup1').classList.add('show'); clicks1 = 0; } });
+        document.getElementById('egg2').addEventListener('click', () => { if (++clicks2 >= 5) { document.getElementById('popup2').classList.add('show'); clicks2 = 0; } });
 
         // ── BACKGROUND CANVAS ──
         const canvas = document.getElementById('bg-canvas');
@@ -228,56 +332,55 @@
         let H = canvas.height = window.innerHeight;
         window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
 
-        // Left side: ocean bubbles. Right side: digital sparkles.
         const particles = [];
 
         function Particle(side) {
-            this.side = side; // 'ocean' | 'digital'
-            this.reset = function() {
-                if(side === 'ocean') {
-                    this.x = Math.random() * W * 0.48;
-                    this.y = H + 20;
-                    this.vy = -(0.3 + Math.random() * 0.8);
-                    this.vx = (Math.random() - 0.5) * 0.3;
-                    this.r  = 1.5 + Math.random() * 4;
+            this.side = side;
+            this.reset = function () {
+                if (side === 'ocean') {
+                    this.x     = Math.random() * W * 0.48;
+                    this.y     = H + 20;
+                    this.vy    = -(0.3 + Math.random() * 0.8);
+                    this.vx    = (Math.random() - 0.5) * 0.3;
+                    this.r     = 1.5 + Math.random() * 4;
                     this.alpha = 0.05 + Math.random() * 0.25;
-                    this.color = `rgba(${Math.floor(Math.random()*50)}, ${Math.floor(180+Math.random()*75)}, ${Math.floor(200+Math.random()*55)}, `;
+                    this.color = `rgba(${Math.floor(Math.random() * 50)}, ${Math.floor(180 + Math.random() * 75)}, ${Math.floor(200 + Math.random() * 55)}, `;
                 } else {
-                    this.x = W * 0.52 + Math.random() * W * 0.48;
-                    this.y = -10;
-                    this.vy = 0.4 + Math.random() * 1;
-                    this.vx = (Math.random() - 0.5) * 0.4;
-                    this.r  = 1 + Math.random() * 2.5;
+                    this.x     = W * 0.52 + Math.random() * W * 0.48;
+                    this.y     = -10;
+                    this.vy    = 0.4 + Math.random() * 1;
+                    this.vx    = (Math.random() - 0.5) * 0.4;
+                    this.r     = 1 + Math.random() * 2.5;
                     this.alpha = 0.05 + Math.random() * 0.3;
-                    this.rot = Math.random() * Math.PI;
-                    this.color = `rgba(${Math.floor(200+Math.random()*55)}, ${Math.floor(Math.random()*60)}, ${Math.floor(100+Math.random()*80)}, `;
+                    this.rot   = Math.random() * Math.PI;
+                    this.color = `rgba(${Math.floor(200 + Math.random() * 55)}, ${Math.floor(Math.random() * 60)}, ${Math.floor(100 + Math.random() * 80)}, `;
                 }
             };
             this.reset();
         }
 
-        for(let i = 0; i < 60; i++) particles.push(new Particle('ocean'));
-        for(let i = 0; i < 60; i++) particles.push(new Particle('digital'));
+        for (let i = 0; i < 60; i++) particles.push(new Particle('ocean'));
+        for (let i = 0; i < 60; i++) particles.push(new Particle('digital'));
 
         function animate() {
             ctx.clearRect(0, 0, W, H);
             particles.forEach(p => {
                 p.x += p.vx; p.y += p.vy;
-                if(p.side === 'ocean') {
+                if (p.side === 'ocean') {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                     ctx.strokeStyle = p.color + p.alpha + ')';
                     ctx.lineWidth = 1;
                     ctx.stroke();
-                    if(p.y < -20) p.reset();
+                    if (p.y < -20) p.reset();
                 } else {
                     ctx.save();
                     ctx.translate(p.x, p.y);
                     ctx.rotate(p.rot + p.y * 0.01);
                     ctx.fillStyle = p.color + p.alpha + ')';
-                    ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+                    ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 2);
                     ctx.restore();
-                    if(p.y > H + 20) p.reset();
+                    if (p.y > H + 20) p.reset();
                 }
             });
             requestAnimationFrame(animate);
