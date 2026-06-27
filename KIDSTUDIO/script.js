@@ -224,13 +224,14 @@ const midiOutSelect = document.getElementById('midiOutSelect');
 if (navigator.requestMIDIAccess) {
   navigator.requestMIDIAccess().then(midiAccess => {
     function refreshOutputs() {
+      const previousName = activeMidiOutput ? activeMidiOutput.name : null;
       midiOutputs = Array.from(midiAccess.outputs.values());
-      midiOutSelect.innerHTML = '';
+      midiOutSelect.innerHTML = '<option value="">-- OFF --</option>';
       if (midiOutputs.length === 0) {
-        midiOutSelect.innerHTML = '<option value="">No MIDI outputs found</option>';
         midiDot.classList.remove('connected');
         midiValue.textContent = 'NONE';
         activeMidiOutput = null;
+        masterGain.gain.value = parseFloat(document.getElementById('masterVol').value);
         return;
       }
       midiOutputs.forEach((output, i) => {
@@ -239,22 +240,43 @@ if (navigator.requestMIDIAccess) {
         opt.textContent = output.name;
         midiOutSelect.appendChild(opt);
       });
-      activeMidiOutput = midiOutputs[0];
-      midiDot.classList.add('connected');
-      midiValue.textContent = 'READY';
+      if (previousName) {
+        const idx = midiOutputs.findIndex(o => o.name === previousName);
+        if (idx !== -1) {
+          midiOutSelect.value = idx;
+          activeMidiOutput = midiOutputs[idx];
+        } else {
+          activeMidiOutput = null;
+          midiOutSelect.value = '';
+        }
+      } else {
+        activeMidiOutput = null;
+        midiOutSelect.value = '';
+        midiDot.classList.remove('connected');
+        midiValue.textContent = 'SEARCHING...';
+      }
     }
     refreshOutputs();
     midiAccess.onstatechange = refreshOutputs;
 
     midiOutSelect.addEventListener('change', (e) => {
-      activeMidiOutput = midiOutputs[parseInt(e.target.value)] || null;
-      // Auto-mute internal engine when MIDI output is active (Option A)
-      if (activeMidiOutput) {
-        masterGain.gain.value = 0;
-        midiValue.textContent = 'LIVE';
-      } else {
+      const val = e.target.value;
+      if (val === '') {
+        activeMidiOutput = null;
+        midiDot.classList.remove('connected');
+        midiValue.textContent = 'OFF';
         masterGain.gain.value = parseFloat(document.getElementById('masterVol').value);
-        midiValue.textContent = 'READY';
+      } else {
+        activeMidiOutput = midiOutputs[parseInt(val)] || null;
+        if (activeMidiOutput) {
+          activeMidiOutput.open().then(() => {
+            midiDot.classList.add('connected');
+            midiValue.textContent = 'LIVE';
+            masterGain.gain.value = 0;
+          }).catch(() => {
+            midiValue.textContent = 'ERR';
+          });
+        }
       }
     });
   }).catch(() => {
@@ -293,6 +315,7 @@ const DRUM_LABELS = [
 ];
 
 const PAD_KEYS = ['1','2','3','4','5','6','7','8','Q','W','E','R','T','Y','U','I'];
+// Note: PAD_KEYS intentionally avoids Z,X,C,V,B,N,M,S,F,G,J,L which are reserved for SOPH61 keyboard
 
 const DRUM_MIDI_BASE = 36;
 
