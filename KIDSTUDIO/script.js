@@ -235,6 +235,7 @@ keyboardFixStyle.textContent = `
   .keyboard { position: relative; display: block; }
   .key.white { position: relative; display: inline-block; margin: 0 1px; }
   .key.black { position: absolute; top: 0; margin: 0; z-index: 2; }
+  .welcome.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 `;
 document.head.appendChild(keyboardFixStyle);
 
@@ -1330,11 +1331,11 @@ const COMPUTER_KEY_MAP = {
 
 // octaveShift: 0=C2, 1=C3, 2=C4, 3=C5, 4=C6
 // Active octave root midi note
+let octaveShift = 0;
+
 function getActiveOctaveRoot() {
   return KEYBOARD_START_MIDI + (octaveShift * 12);
 }
-
-let octaveShift = 0;
 const activeOscillators = {};
 
 const keyboardEl = document.getElementById('keyboard');
@@ -1892,6 +1893,7 @@ const welcomeEnterBtn = document.getElementById('welcomeEnter');
 
 function dismissWelcome() {
   welcomeEl.classList.add('dismissed');
+  welcomeEl.classList.add('hidden');
   if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 welcomeEnterBtn.addEventListener('click', dismissWelcome);
