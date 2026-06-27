@@ -1347,7 +1347,7 @@ const BLACK_KEY_W     = 16;
 const BLACK_KEY_H     = 80;
 
 // Black key horizontal positions as fraction of white-key-slot from octave C
-const BLACK_KEY_SLOT_OFFSET = { 1: 0.67, 3: 1.67, 6: 3.67, 8: 4.67, 10: 5.67 };
+const BLACK_KEY_SLOT_OFFSET = { 1: 0.5, 3: 1.5, 6: 3.5, 8: 4.5, 10: 5.5 };
 
 function midiToFreq(midiNote) {
   return 440 * Math.pow(2, (midiNote - 69) / 12);
@@ -1663,69 +1663,111 @@ function buildKeyboard() {
   for (const k in keyEls) delete keyEls[k];
 
   const activeRoot = getActiveOctaveRoot();
-  const activeMax  = activeRoot + 11; // top of active octave
+  const activeMax  = activeRoot + 11;
 
-  let whiteSlot = 0;
-  const octaveStartSlot = {};
-  const blackKeyData = [];
+  // Piano geometry — all inline, no CSS layout dependency
+  const WW = 28;   // white key width px
+  const WH = 130;  // white key height px
+  const BW = 16;   // black key width px
+  const BH = 80;   // black key height px
 
-  // Pass 1 — white keys, laid out inline left to right
+  // Count total white keys and track where each octave's C starts (in px)
+  // First pass: assign pixel X to every white key
+  const whiteNotes = []; // { midiNote, x }
+  let x = 0;
+
   for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-    const midiNote    = KEYBOARD_START_MIDI + i;
+    const midiNote = KEYBOARD_START_MIDI + i;
     const noteInOctave = ((midiNote % 12) + 12) % 12;
-    const isBlack     = BLACK_KEY_OFFSETS.includes(noteInOctave);
-    const octaveNum   = Math.floor(midiNote / 12) - 1;
-    const isActive    = midiNote >= activeRoot && midiNote <= activeMax;
-
-    if (noteInOctave === 0) octaveStartSlot[octaveNum] = whiteSlot;
-
+    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
     if (!isBlack) {
-      const noteName  = NOTE_NAMES[noteInOctave];
-      const keyOffset = midiNote - activeRoot;
-      const keyLetter = isActive && KEY_LABEL_MAP[keyOffset] ? KEY_LABEL_MAP[keyOffset] : '';
-
-      const keyEl = document.createElement('div');
-      keyEl.dataset.midi = midiNote;
-      keyEl.className = 'key white' + (isActive ? ' active-octave' : '');
-      keyEl.innerHTML = isActive
-        ? `<span class="key-label"><span class="key-letter">${keyLetter}</span><span class="key-note">${noteName}${octaveNum}</span></span>`
-        : `<span class="key-label inactive-label">${noteName}${octaveNum}</span>`;
-
-      keyboardEl.appendChild(keyEl);
-      keyEls[midiNote] = keyEl;
-
-      keyEl.addEventListener('mousedown',  (e) => { e.preventDefault(); if (typeof assignBassNote === 'function') assignBassNote(midiNote); noteOn(midiNote, 0.9); });
-      keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
-      keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
-      keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
-      keyEl.addEventListener('touchend',   (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
-
-      whiteSlot++;
-    } else {
-      blackKeyData.push({ midiNote, noteInOctave, octaveNum, isActive });
+      whiteNotes.push({ midiNote, x });
+      x += WW;
     }
   }
 
-  keyboardEl.style.width  = (whiteSlot * WHITE_KEY_SLOT) + 'px';
-  keyboardEl.style.height = '130px';
+  const totalWidth = x;
+  keyboardEl.style.position = 'relative';
+  keyboardEl.style.width    = totalWidth + 'px';
+  keyboardEl.style.height   = WH + 'px';
+  keyboardEl.style.display  = 'block';
 
-  // Pass 2 — black keys, placed absolutely
-  blackKeyData.forEach(({ midiNote, noteInOctave, octaveNum, isActive }) => {
-    const slotOffset = BLACK_KEY_SLOT_OFFSET[noteInOctave];
-    if (slotOffset === undefined) return;
+  // Build a lookup: midiNote -> x position for white keys
+  const whiteX = {};
+  whiteNotes.forEach(({ midiNote, x }) => whiteX[midiNote] = x);
 
-    const octStart  = octaveStartSlot[octaveNum] ?? 0;
-    const leftPx    = Math.round((octStart + slotOffset) * WHITE_KEY_SLOT - BLACK_KEY_W / 2);
+  // Render white keys first
+  whiteNotes.forEach(({ midiNote, x }) => {
+    const noteInOctave = ((midiNote % 12) + 12) % 12;
+    const octaveNum    = Math.floor(midiNote / 12) - 1;
+    const noteName     = NOTE_NAMES[noteInOctave];
+    const isActive     = midiNote >= activeRoot && midiNote <= activeMax;
+    const keyOffset    = midiNote - activeRoot;
+    const keyLetter    = isActive && KEY_LABEL_MAP[keyOffset] ? KEY_LABEL_MAP[keyOffset] : '';
+
+    const keyEl = document.createElement('div');
+    keyEl.dataset.midi = midiNote;
+    keyEl.className = 'key white' + (isActive ? ' active-octave' : '');
+    keyEl.style.cssText = `
+      position: absolute;
+      left: ${x}px;
+      top: 0;
+      width: ${WW - 1}px;
+      height: ${WH}px;
+      margin: 0;
+      z-index: 1;
+      box-sizing: border-box;
+    `;
+    keyEl.innerHTML = isActive
+      ? `<span class="key-label"><span class="key-letter">${keyLetter}</span><span class="key-note">${noteName}${octaveNum}</span></span>`
+      : `<span class="key-label inactive-label">${noteName}${octaveNum}</span>`;
+
+    keyboardEl.appendChild(keyEl);
+    keyEls[midiNote] = keyEl;
+
+    keyEl.addEventListener('mousedown',  (e) => { e.preventDefault(); if (typeof assignBassNote === 'function') assignBassNote(midiNote); noteOn(midiNote, 0.9); });
+    keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
+    keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
+    keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
+    keyEl.addEventListener('touchend',   (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
+  });
+
+  // Render black keys on top — positioned between their two neighboring white keys
+  for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+    const midiNote = KEYBOARD_START_MIDI + i;
+    const noteInOctave = ((midiNote % 12) + 12) % 12;
+    if (!BLACK_KEY_OFFSETS.includes(noteInOctave)) continue;
+
+    // Black key sits between midiNote-1 (white below) and midiNote+1 (white above)
+    const leftWhiteMidi  = midiNote - 1;
+    const rightWhiteMidi = midiNote + 1;
+    const leftX  = whiteX[leftWhiteMidi];
+    const rightX = whiteX[rightWhiteMidi];
+    if (leftX === undefined || rightX === undefined) continue;
+
+    // Center the black key between the two white keys
+    const centerX = (leftX + WW + rightX) / 2;
+    const bx = Math.round(centerX - BW / 2);
+
+    const octaveNum = Math.floor(midiNote / 12) - 1;
     const noteName  = NOTE_NAMES[noteInOctave];
+    const isActive  = midiNote >= activeRoot && midiNote <= activeMax;
     const keyOffset = midiNote - activeRoot;
     const keyLetter = isActive && KEY_LABEL_MAP[keyOffset] ? KEY_LABEL_MAP[keyOffset] : '';
 
     const keyEl = document.createElement('div');
     keyEl.dataset.midi = midiNote;
     keyEl.className = 'key black' + (isActive ? ' active-octave' : '');
-    keyEl.style.left   = leftPx + 'px';
-    keyEl.style.width  = BLACK_KEY_W + 'px';
-    keyEl.style.height = BLACK_KEY_H + 'px';
+    keyEl.style.cssText = `
+      position: absolute;
+      left: ${bx}px;
+      top: 0;
+      width: ${BW}px;
+      height: ${BH}px;
+      margin: 0;
+      z-index: 2;
+      box-sizing: border-box;
+    `;
     keyEl.innerHTML = isActive
       ? `<span class="key-label"><span class="key-letter black-letter">${keyLetter}</span><span class="key-note">${noteName}${octaveNum}</span></span>`
       : '';
@@ -1738,21 +1780,21 @@ function buildKeyboard() {
     keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
     keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
     keyEl.addEventListener('touchend',   (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
-  });
+  }
 
-  // Inject active octave highlight styles if not already present
+  // Active octave styles
   if (!document.getElementById('activeOctaveStyle')) {
     const s = document.createElement('style');
     s.id = 'activeOctaveStyle';
     s.textContent = `
       .key.white.active-octave {
-        background: linear-gradient(180deg, #c8eeff 0%, #e8f8ff 60%, #ffffff 100%);
-        border-top: 2px solid rgba(0,245,255,0.90);
-        box-shadow: 0 0 10px rgba(0,245,255,0.35), inset 0 -4px 8px rgba(0,180,220,0.15);
+        background: linear-gradient(180deg, #c8eeff 0%, #e8f8ff 60%, #ffffff 100%) !important;
+        border-top: 2px solid rgba(0,245,255,0.90) !important;
+        box-shadow: 0 0 10px rgba(0,245,255,0.35), inset 0 -4px 8px rgba(0,180,220,0.15) !important;
       }
       .key.black.active-octave {
-        border-top: 2px solid rgba(255,45,120,0.90);
-        box-shadow: 0 0 10px rgba(255,45,120,0.45), 2px 5px 10px rgba(0,0,0,0.65);
+        border-top: 2px solid rgba(255,45,120,0.90) !important;
+        box-shadow: 0 0 10px rgba(255,45,120,0.45), 2px 5px 10px rgba(0,0,0,0.65) !important;
       }
       .key-label { display:flex; flex-direction:column; align-items:center; position:absolute; bottom:5px; left:50%; transform:translateX(-50%); pointer-events:none; gap:1px; }
       .key-letter { font-family:'Orbitron',monospace; font-size:7px; font-weight:700; color:rgba(0,200,255,0.85); line-height:1; }
