@@ -205,80 +205,128 @@ document.getElementById('detuneKnob').addEventListener('input', (e) => {
 // MASTER VOLUME
 // ============================================================
 document.getElementById('masterVol').addEventListener('input', (e) => {
-  // Only apply volume if not in MIDI output mode
-  if (!activeMidiOutput) {
+  const anyActive = activeMidiOutputKeys || activeMidiOutputDrums;
+  if (!anyActive) {
     masterGain.gain.value = parseFloat(e.target.value);
   }
 });
 
 // ============================================================
 // MIDI OUTPUT (Web MIDI API)
+// Keys → activeMidiOutputKeys (channel 0 = MIDI ch 1)
+// Drums → activeMidiOutputDrums (channel 9 = MIDI ch 10)
+// Both can point to the same port (loopMIDI) or different ones
 // ============================================================
 let midiOutputs = [];
-let activeMidiOutput = null;
+let activeMidiOutputKeys  = null;
+let activeMidiOutputDrums = null;
 
-const midiDot = document.getElementById('midiDot');
+// Keys → activeMidiOutputKeys (channel 0 = MIDI ch 1)
+// Drums → activeMidiOutputDrums (channel 9 = MIDI ch 10)
+
+const midiDot   = document.getElementById('midiDot');
 const midiValue = document.getElementById('midiValue');
 const midiOutSelect = document.getElementById('midiOutSelect');
+
+// Inject drum output select next to keys select
+const midiDrumSelect = document.createElement('select');
+midiDrumSelect.id = 'midiDrumSelect';
+midiDrumSelect.className = 'midi-select';
+midiOutSelect.parentNode.insertBefore(midiDrumSelect, midiOutSelect.nextSibling);
+
+// Label the two selects
+midiOutSelect.title   = 'KEYS MIDI OUT (ch 1)';
+midiDrumSelect.title  = 'DRUMS MIDI OUT (ch 10)';
+
+function populateSelect(selectEl, outputs, previousName) {
+  selectEl.innerHTML = '<option value="">-- OFF --</option>';
+  outputs.forEach((output, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = output.name;
+    selectEl.appendChild(opt);
+  });
+  if (previousName) {
+    const idx = outputs.findIndex(o => o.name === previousName);
+    selectEl.value = idx !== -1 ? idx : '';
+  } else {
+    selectEl.value = '';
+  }
+}
+
+function checkMuteState() {
+  // Mute internal audio if either output is active
+  const anyActive = activeMidiOutputKeys || activeMidiOutputDrums;
+  if (anyActive) {
+    masterGain.gain.value = 0;
+    midiDot.classList.add('connected');
+    midiValue.textContent = 'LIVE';
+  } else {
+    masterGain.gain.value = parseFloat(document.getElementById('masterVol').value);
+    midiDot.classList.remove('connected');
+    midiValue.textContent = 'OFF';
+  }
+}
 
 if (navigator.requestMIDIAccess) {
   navigator.requestMIDIAccess().then(midiAccess => {
     function refreshOutputs() {
-      const previousName = activeMidiOutput ? activeMidiOutput.name : null;
+      const prevKeys  = activeMidiOutputKeys  ? activeMidiOutputKeys.name  : null;
+      const prevDrums = activeMidiOutputDrums ? activeMidiOutputDrums.name : null;
       midiOutputs = Array.from(midiAccess.outputs.values());
-      midiOutSelect.innerHTML = '<option value="">-- OFF --</option>';
+
       if (midiOutputs.length === 0) {
-        midiDot.classList.remove('connected');
-        midiValue.textContent = 'NONE';
-        activeMidiOutput = null;
-        masterGain.gain.value = parseFloat(document.getElementById('masterVol').value);
+        midiOutSelect.innerHTML   = '<option value="">No MIDI outputs found</option>';
+        midiDrumSelect.innerHTML  = '<option value="">No MIDI outputs found</option>';
+        activeMidiOutputKeys  = null;
+        activeMidiOutputDrums = null;
+        checkMuteState();
         return;
       }
-      midiOutputs.forEach((output, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = output.name;
-        midiOutSelect.appendChild(opt);
-      });
-      if (previousName) {
-        const idx = midiOutputs.findIndex(o => o.name === previousName);
-        if (idx !== -1) {
-          midiOutSelect.value = idx;
-          activeMidiOutput = midiOutputs[idx];
-        } else {
-          activeMidiOutput = null;
-          midiOutSelect.value = '';
-        }
-      } else {
-        activeMidiOutput = null;
-        midiOutSelect.value = '';
-        midiDot.classList.remove('connected');
+
+      populateSelect(midiOutSelect,  midiOutputs, prevKeys);
+      populateSelect(midiDrumSelect, midiOutputs, prevDrums);
+
+      // Restore active outputs if they still exist
+      if (prevKeys) {
+        const idx = midiOutputs.findIndex(o => o.name === prevKeys);
+        activeMidiOutputKeys = idx !== -1 ? midiOutputs[idx] : null;
+      }
+      if (prevDrums) {
+        const idx = midiOutputs.findIndex(o => o.name === prevDrums);
+        activeMidiOutputDrums = idx !== -1 ? midiOutputs[idx] : null;
+      }
+
+      if (!prevKeys && !prevDrums) {
         midiValue.textContent = 'SEARCHING...';
       }
     }
+
     refreshOutputs();
     midiAccess.onstatechange = refreshOutputs;
 
     midiOutSelect.addEventListener('change', (e) => {
       const val = e.target.value;
       if (val === '') {
-        activeMidiOutput = null;
-        midiDot.classList.remove('connected');
-        midiValue.textContent = 'OFF';
-        masterGain.gain.value = parseFloat(document.getElementById('masterVol').value);
+        activeMidiOutputKeys = null;
       } else {
-        activeMidiOutput = midiOutputs[parseInt(val)] || null;
-        if (activeMidiOutput) {
-          activeMidiOutput.open().then(() => {
-            midiDot.classList.add('connected');
-            midiValue.textContent = 'LIVE';
-            masterGain.gain.value = 0;
-          }).catch(() => {
-            midiValue.textContent = 'ERR';
-          });
-        }
+        activeMidiOutputKeys = midiOutputs[parseInt(val)] || null;
+        if (activeMidiOutputKeys) activeMidiOutputKeys.open().catch(() => {});
       }
+      checkMuteState();
     });
+
+    midiDrumSelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (val === '') {
+        activeMidiOutputDrums = null;
+      } else {
+        activeMidiOutputDrums = midiOutputs[parseInt(val)] || null;
+        if (activeMidiOutputDrums) activeMidiOutputDrums.open().catch(() => {});
+      }
+      checkMuteState();
+    });
+
   }).catch(() => {
     midiValue.textContent = 'DENIED';
   });
@@ -287,19 +335,19 @@ if (navigator.requestMIDIAccess) {
 }
 
 function sendMidiNote(note, velocity, channel = 0, on = true) {
-  if (!activeMidiOutput) return;
+  // Route drums (ch 9) to drum output, everything else to keys output
+  const out = (channel === 9) ? activeMidiOutputDrums : activeMidiOutputKeys;
+  if (!out) return;
   const status = (on ? 0x90 : 0x80) | (channel & 0x0f);
   const msg = [status, note, Math.round(velocity * 127)];
   try {
-    if (activeMidiOutput.state === 'closed') {
-      activeMidiOutput.open().then(() => {
-        activeMidiOutput.send(msg);
-      });
+    if (out.state === 'closed') {
+      out.open().then(() => out.send(msg));
     } else {
-      activeMidiOutput.send(msg);
+      out.send(msg);
     }
   } catch (e) {
-    try { activeMidiOutput.open(); } catch (_) {}
+    try { out.open(); } catch (_) {}
   }
 }
 
@@ -1537,45 +1585,113 @@ function noteOff(midiNote) {
 }
 
 // Build / rebuild the 61-key layout
+// Black key left-offset as fraction of WHITE_KEY_WIDTH from the LEFT edge of the preceding white key.
+// These are the standard piano positions: C#=0.6, D#=1.6, F#=3.6, G#=4.6, A#=5.6 (per octave)
+// Mapped by noteInOctave: 1=C#, 3=D#, 6=F#, 8=G#, 10=A#
+const BLACK_KEY_LEFT_OFFSET = { 1: 0.6, 3: 1.6, 6: 3.6, 8: 4.6, 10: 5.6 };
+const BLACK_KEY_WIDTH = Math.round(WHITE_KEY_WIDTH * 0.58);
+
 function buildKeyboard() {
   Object.keys(activeOscillators).forEach(note => noteOff(parseInt(note)));
   keyboardEl.innerHTML = '';
   for (const k in keyEls) delete keyEls[k];
 
-  let whiteKeyIndex = 0;
   const startMidi = KEYBOARD_START_MIDI + (octaveShift * 12);
 
+  // Two-pass render: white keys first so black keys render on top
+  const whiteKeyEls = [];
+  let whiteKeyIndex = 0;
+
+  // Pass 1: white keys — laid out in a simple row
   for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
     const midiNote = startMidi + i;
     const noteInOctave = ((midiNote % 12) + 12) % 12;
     const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
+    if (isBlack) continue;
+
     const noteName = NOTE_NAMES[noteInOctave];
     const octaveNum = Math.floor(midiNote / 12) - 1;
 
     const keyEl = document.createElement('div');
     keyEl.dataset.midi = midiNote;
     keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
-    keyEl.className = isBlack ? 'key black' : 'key white';
-
-    if (isBlack) {
-      keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH - 8) + 'px';
-      keyboardEl.appendChild(keyEl);
-    } else {
-      keyboardEl.appendChild(keyEl);
-      whiteKeyIndex++;
-    }
-
+    keyEl.className = 'key white';
+    keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH) + 'px';
+    keyboardEl.appendChild(keyEl);
     keyEls[midiNote] = keyEl;
+    whiteKeyEls.push({ el: keyEl, index: whiteKeyIndex, midiNote });
 
-    keyEl.addEventListener('mousedown', () => {
+    keyEl.addEventListener('mousedown', (e) => {
+      e.preventDefault();
       if (typeof assignBassNote === 'function') assignBassNote(midiNote);
       noteOn(midiNote, 0.9);
     });
     keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
     keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
+    keyEl.addEventListener('touchstart',  (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
+    keyEl.addEventListener('touchend',    (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
+
+    whiteKeyIndex++;
   }
 
   keyboardEl.style.width = (whiteKeyIndex * WHITE_KEY_WIDTH) + 'px';
+
+  // Pass 2: black keys — positioned using octave-aware offsets
+  // Track which white key index each octave starts at
+  let wIdx = 0;
+  const octaveWhiteStart = {}; // octaveNum -> first white key index in that octave
+  for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+    const midiNote = startMidi + i;
+    const noteInOctave = ((midiNote % 12) + 12) % 12;
+    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
+    const octaveNum = Math.floor(midiNote / 12) - 1;
+    if (!isBlack) {
+      if (noteInOctave === 0) octaveWhiteStart[octaveNum] = wIdx; // C = start of octave
+      wIdx++;
+    }
+  }
+
+  // Re-scan for black keys and place them
+  wIdx = 0;
+  const octaveCounts = {}; // track white key count per octave start
+  // Simpler approach: walk all notes, track running white index per octave
+  let runningWhite = 0;
+  const noteWhiteIndex = {}; // midiNote -> white key index of C that starts its octave
+
+  for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
+    const midiNote = startMidi + i;
+    const noteInOctave = ((midiNote % 12) + 12) % 12;
+    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
+    const octaveNum = Math.floor(midiNote / 12) - 1;
+
+    if (noteInOctave === 0) octaveWhiteStart[octaveNum] = runningWhite;
+    if (!isBlack) runningWhite++;
+
+    if (isBlack && BLACK_KEY_LEFT_OFFSET[noteInOctave] !== undefined) {
+      const noteName = NOTE_NAMES[noteInOctave];
+      const octStart = octaveWhiteStart[octaveNum] ?? 0;
+      const leftPx = (octStart + BLACK_KEY_LEFT_OFFSET[noteInOctave]) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
+
+      const keyEl = document.createElement('div');
+      keyEl.dataset.midi = midiNote;
+      keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
+      keyEl.className = 'key black';
+      keyEl.style.left   = leftPx + 'px';
+      keyEl.style.width  = BLACK_KEY_WIDTH + 'px';
+      keyboardEl.appendChild(keyEl);
+      keyEls[midiNote] = keyEl;
+
+      keyEl.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (typeof assignBassNote === 'function') assignBassNote(midiNote);
+        noteOn(midiNote, 0.9);
+      });
+      keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
+      keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
+      keyEl.addEventListener('touchstart',  (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
+      keyEl.addEventListener('touchend',    (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
+    }
+  }
 }
 
 buildKeyboard();
