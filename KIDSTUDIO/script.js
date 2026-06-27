@@ -1649,10 +1649,7 @@ function noteOff(midiNote) {
 // Standard piano: C#between C&D, D#between D&E, F#between F&G, G#between G&A, A#between A&B
 // noteInOctave: 1=C#, 3=D#, 6=F#, 8=G#, 10=A#
 // Values are white-key-slot offsets from start of octave C
-const BLACK_KEY_SLOT_OFFSET = { 1: 0.67, 3: 1.67, 6: 3.67, 8: 4.67, 10: 5.67 };
-const WHITE_KEY_SLOT = WHITE_KEY_WIDTH + 2; // 27px key + 2px margins (1px each side)
-const BLACK_KEY_W = 16;
-const BLACK_KEY_H = 80; // matches CSS
+// Constants defined above: BLACK_KEY_SLOT_OFFSET, WHITE_KEY_SLOT, BLACK_KEY_W, BLACK_KEY_H
 
 // Reverse lookup: MIDI offset from octave root -> keyboard letter
 const KEY_LABEL_MAP = {
