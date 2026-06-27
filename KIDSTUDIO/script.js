@@ -205,7 +205,10 @@ document.getElementById('detuneKnob').addEventListener('input', (e) => {
 // MASTER VOLUME
 // ============================================================
 document.getElementById('masterVol').addEventListener('input', (e) => {
-  masterGain.gain.value = parseFloat(e.target.value);
+  // Only apply volume if not in MIDI output mode
+  if (!activeMidiOutput) {
+    masterGain.gain.value = parseFloat(e.target.value);
+  }
 });
 
 // ============================================================
@@ -245,6 +248,14 @@ if (navigator.requestMIDIAccess) {
 
     midiOutSelect.addEventListener('change', (e) => {
       activeMidiOutput = midiOutputs[parseInt(e.target.value)] || null;
+      // Auto-mute internal engine when MIDI output is active (Option A)
+      if (activeMidiOutput) {
+        masterGain.gain.value = 0;
+        midiValue.textContent = 'LIVE';
+      } else {
+        masterGain.gain.value = parseFloat(document.getElementById('masterVol').value);
+        midiValue.textContent = 'READY';
+      }
     });
   }).catch(() => {
     midiValue.textContent = 'DENIED';
@@ -256,7 +267,18 @@ if (navigator.requestMIDIAccess) {
 function sendMidiNote(note, velocity, channel = 0, on = true) {
   if (!activeMidiOutput) return;
   const status = (on ? 0x90 : 0x80) | (channel & 0x0f);
-  activeMidiOutput.send([status, note, Math.round(velocity * 127)]);
+  const msg = [status, note, Math.round(velocity * 127)];
+  try {
+    if (activeMidiOutput.state === 'closed') {
+      activeMidiOutput.open().then(() => {
+        activeMidiOutput.send(msg);
+      });
+    } else {
+      activeMidiOutput.send(msg);
+    }
+  } catch (e) {
+    try { activeMidiOutput.open(); } catch (_) {}
+  }
 }
 
 // ============================================================
