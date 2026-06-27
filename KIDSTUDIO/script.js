@@ -1301,16 +1301,38 @@ refreshPatternList();
 // SOPH61 KEYBOARD - 61 keys, browser-native polyphonic synth
 // ============================================================
 
-const KEYBOARD_START_MIDI = 36; // C2
-const KEYBOARD_KEY_COUNT = 61;  // C2 to C7
+const KEYBOARD_START_MIDI = 36; // C2 — always the left edge of the keyboard
+const KEYBOARD_KEY_COUNT = 61;  // C2 to C7, 5 full octaves
 
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const BLACK_KEY_OFFSETS = [1, 3, 6, 8, 10];
 
+// Computer key map: offsets from root of active octave
+// White keys: Z=C, X=D, C=E, V=F, B=G, N=A, M=B
+// Black keys (only where sharps exist): S=C#, D=D#, G=F#, H=G#, J=A#
+// Dead keys (no sharp between those notes): A, F, K, L
 const COMPUTER_KEY_MAP = {
-  'z': 0, 'x': 2, 'c': 4, 'v': 5, 'b': 7, 'n': 9, 'm': 11, ',': 12,
-  's': 1, 'f': 3, 'g': 6, 'j': 8, 'l': 10
+  'z': 0,  // C
+  's': 1,  // C#
+  'x': 2,  // D
+  'd': 3,  // D#
+  'c': 4,  // E
+  // F is dead — no black key between E and F
+  'v': 5,  // F
+  'g': 6,  // F#
+  'b': 7,  // G
+  'h': 8,  // G#
+  'n': 9,  // A
+  'j': 10, // A#
+  'm': 11, // B
+  // K is dead — no black key between B and C
 };
+
+// octaveShift: 0=C2, 1=C3, 2=C4, 3=C5, 4=C6
+// Active octave root midi note
+function getActiveOctaveRoot() {
+  return KEYBOARD_START_MIDI + (octaveShift * 12);
+}
 
 let octaveShift = 0;
 const activeOscillators = {};
@@ -1319,6 +1341,12 @@ const keyboardEl = document.getElementById('keyboard');
 const keyEls = {};
 
 const WHITE_KEY_WIDTH = 27;
+const WHITE_KEY_SLOT  = WHITE_KEY_WIDTH + 2; // 27px + 1px margin each side
+const BLACK_KEY_W     = 16;
+const BLACK_KEY_H     = 80;
+
+// Black key horizontal positions as fraction of white-key-slot from octave C
+const BLACK_KEY_SLOT_OFFSET = { 1: 0.67, 3: 1.67, 6: 3.67, 8: 4.67, 10: 5.67 };
 
 function midiToFreq(midiNote) {
   return 440 * Math.pow(2, (midiNote - 69) / 12);
@@ -1625,35 +1653,46 @@ const WHITE_KEY_SLOT = WHITE_KEY_WIDTH + 2; // 27px key + 2px margins (1px each 
 const BLACK_KEY_W = 16;
 const BLACK_KEY_H = 80; // matches CSS
 
+// Reverse lookup: MIDI offset from octave root -> keyboard letter
+const KEY_LABEL_MAP = {
+  0: 'Z', 1: 'S', 2: 'X', 3: 'D', 4: 'C',
+  5: 'V', 6: 'G', 7: 'B', 8: 'H', 9: 'N', 10: 'J', 11: 'M'
+};
+
 function buildKeyboard() {
   Object.keys(activeOscillators).forEach(note => noteOff(parseInt(note)));
   keyboardEl.innerHTML = '';
   for (const k in keyEls) delete keyEls[k];
 
-  const startMidi = KEYBOARD_START_MIDI + (octaveShift * 12);
+  const activeRoot = getActiveOctaveRoot();
+  const activeMax  = activeRoot + 11; // top of active octave
 
-  // Track white key slot index and octave start slot for black key positioning
   let whiteSlot = 0;
-  const octaveStartSlot = {}; // octaveNum -> white slot index where that octave's C lands
+  const octaveStartSlot = {};
+  const blackKeyData = [];
 
-  // Single pass — render white keys inline, collect octave start slots
-  // Then overlay black keys absolutely
-  const blackKeyData = []; // { midiNote, noteInOctave, octaveNum }
-
+  // Pass 1 — white keys, laid out inline left to right
   for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-    const midiNote = startMidi + i;
+    const midiNote    = KEYBOARD_START_MIDI + i;
     const noteInOctave = ((midiNote % 12) + 12) % 12;
-    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
-    const octaveNum = Math.floor(midiNote / 12) - 1;
+    const isBlack     = BLACK_KEY_OFFSETS.includes(noteInOctave);
+    const octaveNum   = Math.floor(midiNote / 12) - 1;
+    const isActive    = midiNote >= activeRoot && midiNote <= activeMax;
 
     if (noteInOctave === 0) octaveStartSlot[octaveNum] = whiteSlot;
 
     if (!isBlack) {
-      const noteName = NOTE_NAMES[noteInOctave];
+      const noteName  = NOTE_NAMES[noteInOctave];
+      const keyOffset = midiNote - activeRoot;
+      const keyLetter = isActive && KEY_LABEL_MAP[keyOffset] ? KEY_LABEL_MAP[keyOffset] : '';
+
       const keyEl = document.createElement('div');
       keyEl.dataset.midi = midiNote;
-      keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
-      keyEl.className = 'key white';
+      keyEl.className = 'key white' + (isActive ? ' active-octave' : '');
+      keyEl.innerHTML = isActive
+        ? `<span class="key-label"><span class="key-letter">${keyLetter}</span><span class="key-note">${noteName}${octaveNum}</span></span>`
+        : `<span class="key-label inactive-label">${noteName}${octaveNum}</span>`;
+
       keyboardEl.appendChild(keyEl);
       keyEls[midiNote] = keyEl;
 
@@ -1665,30 +1704,34 @@ function buildKeyboard() {
 
       whiteSlot++;
     } else {
-      blackKeyData.push({ midiNote, noteInOctave, octaveNum });
+      blackKeyData.push({ midiNote, noteInOctave, octaveNum, isActive });
     }
   }
 
-  // Set container width based on white keys
-  keyboardEl.style.width = (whiteSlot * WHITE_KEY_SLOT) + 'px';
-  keyboardEl.style.height = '130px'; // match CSS white key height
+  keyboardEl.style.width  = (whiteSlot * WHITE_KEY_SLOT) + 'px';
+  keyboardEl.style.height = '130px';
 
-  // Now place black keys absolutely
-  blackKeyData.forEach(({ midiNote, noteInOctave, octaveNum }) => {
+  // Pass 2 — black keys, placed absolutely
+  blackKeyData.forEach(({ midiNote, noteInOctave, octaveNum, isActive }) => {
     const slotOffset = BLACK_KEY_SLOT_OFFSET[noteInOctave];
     if (slotOffset === undefined) return;
 
-    const octStart = octaveStartSlot[octaveNum] ?? 0;
-    const leftPx = Math.round((octStart + slotOffset) * WHITE_KEY_SLOT - BLACK_KEY_W / 2);
+    const octStart  = octaveStartSlot[octaveNum] ?? 0;
+    const leftPx    = Math.round((octStart + slotOffset) * WHITE_KEY_SLOT - BLACK_KEY_W / 2);
+    const noteName  = NOTE_NAMES[noteInOctave];
+    const keyOffset = midiNote - activeRoot;
+    const keyLetter = isActive && KEY_LABEL_MAP[keyOffset] ? KEY_LABEL_MAP[keyOffset] : '';
 
-    const noteName = NOTE_NAMES[noteInOctave];
     const keyEl = document.createElement('div');
     keyEl.dataset.midi = midiNote;
-    keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
-    keyEl.className = 'key black';
+    keyEl.className = 'key black' + (isActive ? ' active-octave' : '');
     keyEl.style.left   = leftPx + 'px';
     keyEl.style.width  = BLACK_KEY_W + 'px';
     keyEl.style.height = BLACK_KEY_H + 'px';
+    keyEl.innerHTML = isActive
+      ? `<span class="key-label"><span class="key-letter black-letter">${keyLetter}</span><span class="key-note">${noteName}${octaveNum}</span></span>`
+      : '';
+
     keyboardEl.appendChild(keyEl);
     keyEls[midiNote] = keyEl;
 
@@ -1698,6 +1741,29 @@ function buildKeyboard() {
     keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
     keyEl.addEventListener('touchend',   (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
   });
+
+  // Inject active octave highlight styles if not already present
+  if (!document.getElementById('activeOctaveStyle')) {
+    const s = document.createElement('style');
+    s.id = 'activeOctaveStyle';
+    s.textContent = `
+      .key.white.active-octave {
+        background: linear-gradient(180deg, #c8eeff 0%, #e8f8ff 60%, #ffffff 100%);
+        border-top: 2px solid rgba(0,245,255,0.90);
+        box-shadow: 0 0 10px rgba(0,245,255,0.35), inset 0 -4px 8px rgba(0,180,220,0.15);
+      }
+      .key.black.active-octave {
+        border-top: 2px solid rgba(255,45,120,0.90);
+        box-shadow: 0 0 10px rgba(255,45,120,0.45), 2px 5px 10px rgba(0,0,0,0.65);
+      }
+      .key-label { display:flex; flex-direction:column; align-items:center; position:absolute; bottom:5px; left:50%; transform:translateX(-50%); pointer-events:none; gap:1px; }
+      .key-letter { font-family:'Orbitron',monospace; font-size:7px; font-weight:700; color:rgba(0,200,255,0.85); line-height:1; }
+      .black-letter { color:rgba(255,45,120,0.90); }
+      .key-note { font-family:'Share Tech Mono',monospace; font-size:6px; color:rgba(0,220,255,0.50); line-height:1; white-space:nowrap; }
+      .inactive-label { font-family:'Share Tech Mono',monospace; font-size:6px; color:rgba(0,220,255,0.15); white-space:nowrap; }
+    `;
+    document.head.appendChild(s);
+  }
 }
 
 buildKeyboard();
@@ -1711,12 +1777,21 @@ document.getElementById('presetSelect').addEventListener('change', (e) => {
 });
 
 const octDisplay = document.getElementById('octDisplay');
+octDisplay.textContent = 'C' + (Math.floor(getActiveOctaveRoot() / 12) - 1);
 
 document.getElementById('octUp').addEventListener('click', () => {
-  if (octaveShift < 2) { octaveShift++; octDisplay.textContent = 4 + octaveShift; buildKeyboard(); }
+  if (octaveShift < 4) {
+    octaveShift++;
+    octDisplay.textContent = 'C' + (Math.floor(getActiveOctaveRoot() / 12) - 1);
+    buildKeyboard();
+  }
 });
 document.getElementById('octDown').addEventListener('click', () => {
-  if (octaveShift > -2) { octaveShift--; octDisplay.textContent = 4 + octaveShift; buildKeyboard(); }
+  if (octaveShift > 0) {
+    octaveShift--;
+    octDisplay.textContent = 'C' + (Math.floor(getActiveOctaveRoot() / 12) - 1);
+    buildKeyboard();
+  }
 });
 
 const heldComputerKeys = new Set();
@@ -1731,8 +1806,7 @@ window.addEventListener('keydown', (e) => {
     }
     e.preventDefault();
     heldComputerKeys.add(key);
-    const baseMidi = 60 + (octaveShift * 12);
-    const midiNote = baseMidi + COMPUTER_KEY_MAP[key];
+    const midiNote = getActiveOctaveRoot() + COMPUTER_KEY_MAP[key];
     if (typeof assignBassNote === 'function') assignBassNote(midiNote);
     noteOn(midiNote, 0.9);
   }
@@ -1742,8 +1816,7 @@ window.addEventListener('keyup', (e) => {
   const key = e.key.toLowerCase();
   if (COMPUTER_KEY_MAP.hasOwnProperty(key)) {
     heldComputerKeys.delete(key);
-    const baseMidi = 60 + (octaveShift * 12);
-    const midiNote = baseMidi + COMPUTER_KEY_MAP[key];
+    const midiNote = getActiveOctaveRoot() + COMPUTER_KEY_MAP[key];
     noteOff(midiNote);
   }
 });
@@ -1831,3 +1904,36 @@ function resumeAudio() {
 }
 document.body.addEventListener('mousedown', resumeAudio, { once: true });
 document.body.addEventListener('keydown',   resumeAudio, { once: true });
+
+// ============================================================
+// UPDATE KEY LEGEND to reflect actual key mapping
+// ============================================================
+const keyLegendEl = document.getElementById('keyLegend');
+if (keyLegendEl) {
+  keyLegendEl.innerHTML = `
+    <span class="legend-title">KEYBOARD MAP — active octave shown on keys · use OCTAVE to shift</span>
+    <div class="legend-rows">
+      <div class="legend-row">
+        <span class="legend-group-label">WHITE</span>
+        <span class="legend-chip"><b>Z</b> C</span>
+        <span class="legend-chip"><b>X</b> D</span>
+        <span class="legend-chip"><b>C</b> E</span>
+        <span class="legend-chip"><b>V</b> F</span>
+        <span class="legend-chip"><b>B</b> G</span>
+        <span class="legend-chip"><b>N</b> A</span>
+        <span class="legend-chip"><b>M</b> B</span>
+      </div>
+      <div class="legend-row">
+        <span class="legend-group-label">BLACK</span>
+        <span class="legend-chip black"><b>S</b> C#</span>
+        <span class="legend-chip black"><b>D</b> D#</span>
+        <span class="legend-chip" style="opacity:0.25">F ×</span>
+        <span class="legend-chip black"><b>G</b> F#</span>
+        <span class="legend-chip black"><b>H</b> G#</span>
+        <span class="legend-chip black"><b>J</b> A#</span>
+        <span class="legend-chip" style="opacity:0.25">K ×</span>
+      </div>
+    </div>
+    <span class="legend-note">Drums: 1–8, Q–I &nbsp;·&nbsp; Dead keys (no sharp): F, K &nbsp;·&nbsp; OCTAVE shifts the highlighted zone</span>
+  `;
+}
