@@ -1978,3 +1978,50 @@ if (keyLegendEl) {
     <span class="legend-note">Drums: 1–8, Q–I &nbsp;·&nbsp; Dead keys (no sharp): F, K &nbsp;·&nbsp; OCTAVE shifts the highlighted zone</span>
   `;
 }
+
+// ============================================================
+// MIDI INPUT — visual feedback from Ableton playback
+// ============================================================
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess().then(midiAccess => {
+    function connectInputs() {
+      midiAccess.inputs.forEach(input => {
+        input.onmidimessage = (msg) => {
+          const [status, note, velocity] = msg.data;
+          const cmd     = status & 0xf0;
+          const channel = status & 0x0f;
+
+          // Note on
+          if (cmd === 0x90 && velocity > 0) {
+            if (channel === 0) {
+              // Keys — channel 1
+              const keyEl = keyEls[note];
+              if (keyEl) keyEl.classList.add('active');
+            } else if (channel === 1) {
+              // Drums — channel 2
+              const padIndex = note - DRUM_MIDI_BASE;
+              if (padIndex >= 0 && padIndex < pads.length) {
+                pads[padIndex].classList.add('triggered');
+              }
+            }
+          }
+
+          // Note off
+          if (cmd === 0x80 || (cmd === 0x90 && velocity === 0)) {
+            if (channel === 0) {
+              const keyEl = keyEls[note];
+              if (keyEl) keyEl.classList.remove('active');
+            } else if (channel === 1) {
+              const padIndex = note - DRUM_MIDI_BASE;
+              if (padIndex >= 0 && padIndex < pads.length) {
+                pads[padIndex].classList.remove('triggered');
+              }
+            }
+          }
+        };
+      });
+    }
+    connectInputs();
+    midiAccess.onstatechange = connectInputs;
+  });
+}
