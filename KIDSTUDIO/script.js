@@ -228,15 +228,46 @@ const midiDot   = document.getElementById('midiDot');
 const midiValue = document.getElementById('midiValue');
 const midiOutSelect = document.getElementById('midiOutSelect');
 
-// Inject drum output select next to keys select
+// ── INJECT KEYBOARD CSS FIX ──
+// Overrides the black key margin hack in style.css with proper absolute positioning
+const keyboardFixStyle = document.createElement('style');
+keyboardFixStyle.textContent = `
+  .keyboard { position: relative; display: block; }
+  .key.white { position: relative; display: inline-block; margin: 0 1px; }
+  .key.black { position: absolute; top: 0; margin: 0; z-index: 2; }
+`;
+document.head.appendChild(keyboardFixStyle);
+
+// Inject labeled wrappers for both MIDI selects
+const keysSelectWrap = document.createElement('div');
+keysSelectWrap.className = 'midi-select-wrap';
+const keysLbl = document.createElement('span');
+keysLbl.className = 'midi-select-label';
+keysLbl.textContent = 'KEYS';
+midiOutSelect.parentNode.insertBefore(keysSelectWrap, midiOutSelect);
+keysSelectWrap.appendChild(keysLbl);
+keysSelectWrap.appendChild(midiOutSelect);
+
 const midiDrumSelect = document.createElement('select');
 midiDrumSelect.id = 'midiDrumSelect';
 midiDrumSelect.className = 'midi-select';
-midiOutSelect.parentNode.insertBefore(midiDrumSelect, midiOutSelect.nextSibling);
 
-// Label the two selects
-midiOutSelect.title   = 'KEYS MIDI OUT (ch 1)';
-midiDrumSelect.title  = 'DRUMS MIDI OUT (ch 10)';
+const drumsSelectWrap = document.createElement('div');
+drumsSelectWrap.className = 'midi-select-wrap';
+const drumsLbl = document.createElement('span');
+drumsLbl.className = 'midi-select-label';
+drumsLbl.textContent = 'DRUMS';
+drumsSelectWrap.appendChild(drumsLbl);
+drumsSelectWrap.appendChild(midiDrumSelect);
+keysSelectWrap.parentNode.insertBefore(drumsSelectWrap, keysSelectWrap.nextSibling);
+
+// Label styles
+const midiLabelStyle = document.createElement('style');
+midiLabelStyle.textContent = `
+  .midi-select-wrap { display:inline-flex; flex-direction:column; align-items:center; gap:2px; }
+  .midi-select-label { font-family:'Orbitron',sans-serif; font-size:9px; letter-spacing:.1em; opacity:.8; color:#00f5ff; }
+`;
+document.head.appendChild(midiLabelStyle);
 
 function populateSelect(selectEl, outputs, previousName) {
   selectEl.innerHTML = '<option value="">-- OFF --</option>';
@@ -817,8 +848,8 @@ function triggerPad(index, velocity = 1.0) {
   pads[index].classList.add('triggered');
   setTimeout(() => pads[index].classList.remove('triggered'), 100);
   pulseSignalLine();
-  sendMidiNote(DRUM_MIDI_BASE + index, velocity, 9, true);
-  setTimeout(() => sendMidiNote(DRUM_MIDI_BASE + index, velocity, 9, false), 60);
+  sendMidiNote(DRUM_MIDI_BASE + index, velocity, 1, true);
+  setTimeout(() => sendMidiNote(DRUM_MIDI_BASE + index, velocity, 1, false), 60);
 }
 
 document.getElementById('kitSelect').addEventListener('change', (e) => {
@@ -1585,11 +1616,14 @@ function noteOff(midiNote) {
 }
 
 // Build / rebuild the 61-key layout
-// Black key left-offset as fraction of WHITE_KEY_WIDTH from the LEFT edge of the preceding white key.
-// These are the standard piano positions: C#=0.6, D#=1.6, F#=3.6, G#=4.6, A#=5.6 (per octave)
-// Mapped by noteInOctave: 1=C#, 3=D#, 6=F#, 8=G#, 10=A#
-const BLACK_KEY_LEFT_OFFSET = { 1: 0.6, 3: 1.6, 6: 3.6, 8: 4.6, 10: 5.6 };
-const BLACK_KEY_WIDTH = Math.round(WHITE_KEY_WIDTH * 0.58);
+// Black key proportional positions per note in octave (fraction of white key slot width)
+// Standard piano: C#between C&D, D#between D&E, F#between F&G, G#between G&A, A#between A&B
+// noteInOctave: 1=C#, 3=D#, 6=F#, 8=G#, 10=A#
+// Values are white-key-slot offsets from start of octave C
+const BLACK_KEY_SLOT_OFFSET = { 1: 0.67, 3: 1.67, 6: 3.67, 8: 4.67, 10: 5.67 };
+const WHITE_KEY_SLOT = WHITE_KEY_WIDTH + 2; // 27px key + 2px margins (1px each side)
+const BLACK_KEY_W = 16;
+const BLACK_KEY_H = 80; // matches CSS
 
 function buildKeyboard() {
   Object.keys(activeOscillators).forEach(note => noteOff(parseInt(note)));
@@ -1598,100 +1632,72 @@ function buildKeyboard() {
 
   const startMidi = KEYBOARD_START_MIDI + (octaveShift * 12);
 
-  // Two-pass render: white keys first so black keys render on top
-  const whiteKeyEls = [];
-  let whiteKeyIndex = 0;
+  // Track white key slot index and octave start slot for black key positioning
+  let whiteSlot = 0;
+  const octaveStartSlot = {}; // octaveNum -> white slot index where that octave's C lands
 
-  // Pass 1: white keys — laid out in a simple row
-  for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-    const midiNote = startMidi + i;
-    const noteInOctave = ((midiNote % 12) + 12) % 12;
-    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
-    if (isBlack) continue;
+  // Single pass — render white keys inline, collect octave start slots
+  // Then overlay black keys absolutely
+  const blackKeyData = []; // { midiNote, noteInOctave, octaveNum }
 
-    const noteName = NOTE_NAMES[noteInOctave];
-    const octaveNum = Math.floor(midiNote / 12) - 1;
-
-    const keyEl = document.createElement('div');
-    keyEl.dataset.midi = midiNote;
-    keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
-    keyEl.className = 'key white';
-    keyEl.style.left = (whiteKeyIndex * WHITE_KEY_WIDTH) + 'px';
-    keyboardEl.appendChild(keyEl);
-    keyEls[midiNote] = keyEl;
-    whiteKeyEls.push({ el: keyEl, index: whiteKeyIndex, midiNote });
-
-    keyEl.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      if (typeof assignBassNote === 'function') assignBassNote(midiNote);
-      noteOn(midiNote, 0.9);
-    });
-    keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
-    keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
-    keyEl.addEventListener('touchstart',  (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
-    keyEl.addEventListener('touchend',    (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
-
-    whiteKeyIndex++;
-  }
-
-  keyboardEl.style.width = (whiteKeyIndex * WHITE_KEY_WIDTH) + 'px';
-
-  // Pass 2: black keys — positioned using octave-aware offsets
-  // Track which white key index each octave starts at
-  let wIdx = 0;
-  const octaveWhiteStart = {}; // octaveNum -> first white key index in that octave
   for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
     const midiNote = startMidi + i;
     const noteInOctave = ((midiNote % 12) + 12) % 12;
     const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
     const octaveNum = Math.floor(midiNote / 12) - 1;
+
+    if (noteInOctave === 0) octaveStartSlot[octaveNum] = whiteSlot;
+
     if (!isBlack) {
-      if (noteInOctave === 0) octaveWhiteStart[octaveNum] = wIdx; // C = start of octave
-      wIdx++;
-    }
-  }
-
-  // Re-scan for black keys and place them
-  wIdx = 0;
-  const octaveCounts = {}; // track white key count per octave start
-  // Simpler approach: walk all notes, track running white index per octave
-  let runningWhite = 0;
-  const noteWhiteIndex = {}; // midiNote -> white key index of C that starts its octave
-
-  for (let i = 0; i < KEYBOARD_KEY_COUNT; i++) {
-    const midiNote = startMidi + i;
-    const noteInOctave = ((midiNote % 12) + 12) % 12;
-    const isBlack = BLACK_KEY_OFFSETS.includes(noteInOctave);
-    const octaveNum = Math.floor(midiNote / 12) - 1;
-
-    if (noteInOctave === 0) octaveWhiteStart[octaveNum] = runningWhite;
-    if (!isBlack) runningWhite++;
-
-    if (isBlack && BLACK_KEY_LEFT_OFFSET[noteInOctave] !== undefined) {
       const noteName = NOTE_NAMES[noteInOctave];
-      const octStart = octaveWhiteStart[octaveNum] ?? 0;
-      const leftPx = (octStart + BLACK_KEY_LEFT_OFFSET[noteInOctave]) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2;
-
       const keyEl = document.createElement('div');
       keyEl.dataset.midi = midiNote;
       keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
-      keyEl.className = 'key black';
-      keyEl.style.left   = leftPx + 'px';
-      keyEl.style.width  = BLACK_KEY_WIDTH + 'px';
+      keyEl.className = 'key white';
       keyboardEl.appendChild(keyEl);
       keyEls[midiNote] = keyEl;
 
-      keyEl.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        if (typeof assignBassNote === 'function') assignBassNote(midiNote);
-        noteOn(midiNote, 0.9);
-      });
+      keyEl.addEventListener('mousedown',  (e) => { e.preventDefault(); if (typeof assignBassNote === 'function') assignBassNote(midiNote); noteOn(midiNote, 0.9); });
       keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
       keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
-      keyEl.addEventListener('touchstart',  (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
-      keyEl.addEventListener('touchend',    (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
+      keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
+      keyEl.addEventListener('touchend',   (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
+
+      whiteSlot++;
+    } else {
+      blackKeyData.push({ midiNote, noteInOctave, octaveNum });
     }
   }
+
+  // Set container width based on white keys
+  keyboardEl.style.width = (whiteSlot * WHITE_KEY_SLOT) + 'px';
+  keyboardEl.style.height = '130px'; // match CSS white key height
+
+  // Now place black keys absolutely
+  blackKeyData.forEach(({ midiNote, noteInOctave, octaveNum }) => {
+    const slotOffset = BLACK_KEY_SLOT_OFFSET[noteInOctave];
+    if (slotOffset === undefined) return;
+
+    const octStart = octaveStartSlot[octaveNum] ?? 0;
+    const leftPx = Math.round((octStart + slotOffset) * WHITE_KEY_SLOT - BLACK_KEY_W / 2);
+
+    const noteName = NOTE_NAMES[noteInOctave];
+    const keyEl = document.createElement('div');
+    keyEl.dataset.midi = midiNote;
+    keyEl.innerHTML = `<span class="key-label">${noteName}${octaveNum}</span>`;
+    keyEl.className = 'key black';
+    keyEl.style.left   = leftPx + 'px';
+    keyEl.style.width  = BLACK_KEY_W + 'px';
+    keyEl.style.height = BLACK_KEY_H + 'px';
+    keyboardEl.appendChild(keyEl);
+    keyEls[midiNote] = keyEl;
+
+    keyEl.addEventListener('mousedown',  (e) => { e.preventDefault(); if (typeof assignBassNote === 'function') assignBassNote(midiNote); noteOn(midiNote, 0.9); });
+    keyEl.addEventListener('mouseup',    () => noteOff(midiNote));
+    keyEl.addEventListener('mouseleave', () => noteOff(midiNote));
+    keyEl.addEventListener('touchstart', (e) => { e.preventDefault(); noteOn(midiNote, 0.9); }, { passive: false });
+    keyEl.addEventListener('touchend',   (e) => { e.preventDefault(); noteOff(midiNote); },    { passive: false });
+  });
 }
 
 buildKeyboard();
