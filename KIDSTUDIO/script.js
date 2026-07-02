@@ -175,7 +175,7 @@ const scopeData = new Uint8Array(scopeAnalyser.fftSize);
 chorusOutput.connect(scopeAnalyser);
 
 const spanAnalyser = audioCtx.createAnalyser();
-spanAnalyser.fftSize = 128;
+spanAnalyser.fftSize = 256;
 spanAnalyser.smoothingTimeConstant = 0.75;
 const spanData = new Uint8Array(spanAnalyser.frequencyBinCount);
 chorusOutput.connect(spanAnalyser);
