@@ -180,14 +180,15 @@ spanAnalyser.smoothingTimeConstant = 0.75;
 const spanData = new Uint8Array(spanAnalyser.frequencyBinCount);
 chorusOutput.connect(spanAnalyser);
 
-function setupHiDPICanvas(canvas) {
+function setupHiDPICanvas(canvas, fallbackW, fallbackH) {
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  const w = rect.width || canvas.clientWidth || 120;
-  const h = rect.height || canvas.clientHeight || 74;
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
+  const w = rect.width  || canvas.clientWidth  || fallbackW;
+  const h = rect.height || canvas.clientHeight || fallbackH;
+  canvas.width = Math.max(1, Math.round(w * dpr));
+  canvas.height = Math.max(1, Math.round(h * dpr));
   const ctx = canvas.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(dpr, dpr);
   return { ctx, w, h };
 }
@@ -197,7 +198,7 @@ const scopeCanvas = document.getElementById('scopeCanvas');
 let scopeCtx2d, scopeW, scopeH, scopeGrad;
 
 function initScope() {
-  const setup = setupHiDPICanvas(scopeCanvas);
+  const setup = setupHiDPICanvas(scopeCanvas, 140, 90);
   scopeCtx2d = setup.ctx;
   scopeW = setup.w;
   scopeH = setup.h;
@@ -208,6 +209,9 @@ function initScope() {
 }
 initScope();
 window.addEventListener('resize', initScope);
+if (window.ResizeObserver) {
+  new ResizeObserver(initScope).observe(scopeCanvas);
+}
 
 function drawScope() {
   requestAnimationFrame(drawScope);
@@ -246,7 +250,7 @@ const spanCanvas = document.getElementById('spanCanvas');
 let spanCtx2d, spanW, spanH, spanGrad;
 
 function initSpan() {
-  const setup = setupHiDPICanvas(spanCanvas);
+  const setup = setupHiDPICanvas(spanCanvas, 200, 26);
   spanCtx2d = setup.ctx;
   spanW = setup.w;
   spanH = setup.h;
@@ -257,6 +261,9 @@ function initSpan() {
 }
 initSpan();
 window.addEventListener('resize', initSpan);
+if (window.ResizeObserver) {
+  new ResizeObserver(initSpan).observe(spanCanvas);
+}
 
 function drawSpan() {
   requestAnimationFrame(drawSpan);
