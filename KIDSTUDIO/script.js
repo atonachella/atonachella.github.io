@@ -164,6 +164,118 @@ function updateMeter() {
 updateMeter();
 
 // ============================================================
+// SCOPE + SPAN VISUALIZERS
+// Tapped from chorusOutput — BEFORE masterGain — so they keep
+// showing real signal activity even when MIDI routing to Ableton
+// zeroes masterGain for local monitoring.
+// ============================================================
+const scopeAnalyser = audioCtx.createAnalyser();
+scopeAnalyser.fftSize = 1024;
+const scopeData = new Uint8Array(scopeAnalyser.fftSize);
+chorusOutput.connect(scopeAnalyser);
+
+const spanAnalyser = audioCtx.createAnalyser();
+spanAnalyser.fftSize = 128;
+spanAnalyser.smoothingTimeConstant = 0.75;
+const spanData = new Uint8Array(spanAnalyser.frequencyBinCount);
+chorusOutput.connect(spanAnalyser);
+
+function setupHiDPICanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width || canvas.clientWidth || 120;
+  const h = rect.height || canvas.clientHeight || 74;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w, h };
+}
+
+// ---- SOPH61 oscilloscope (Korg-minilogue-style waveform, theme-colored) ----
+const scopeCanvas = document.getElementById('scopeCanvas');
+let scopeCtx2d, scopeW, scopeH, scopeGrad;
+
+function initScope() {
+  const setup = setupHiDPICanvas(scopeCanvas);
+  scopeCtx2d = setup.ctx;
+  scopeW = setup.w;
+  scopeH = setup.h;
+  scopeGrad = scopeCtx2d.createLinearGradient(0, 0, scopeW, 0);
+  scopeGrad.addColorStop(0,   '#00f5ff');
+  scopeGrad.addColorStop(0.5, '#b44fff');
+  scopeGrad.addColorStop(1,   '#ff2d78');
+}
+initScope();
+window.addEventListener('resize', initScope);
+
+function drawScope() {
+  requestAnimationFrame(drawScope);
+  if (!scopeCtx2d) return;
+  scopeAnalyser.getByteTimeDomainData(scopeData);
+  scopeCtx2d.clearRect(0, 0, scopeW, scopeH);
+
+  // faint center reference line
+  scopeCtx2d.strokeStyle = 'rgba(0, 245, 255, 0.14)';
+  scopeCtx2d.lineWidth = 1;
+  scopeCtx2d.beginPath();
+  scopeCtx2d.moveTo(0, scopeH / 2);
+  scopeCtx2d.lineTo(scopeW, scopeH / 2);
+  scopeCtx2d.stroke();
+
+  scopeCtx2d.lineWidth = 1.8;
+  scopeCtx2d.strokeStyle = scopeGrad;
+  scopeCtx2d.shadowColor = '#ff2d78';
+  scopeCtx2d.shadowBlur = 6;
+  scopeCtx2d.beginPath();
+  const sliceW = scopeW / scopeData.length;
+  let x = 0;
+  for (let i = 0; i < scopeData.length; i++) {
+    const v = scopeData[i] / 128 - 1;
+    const y = scopeH / 2 + v * (scopeH / 2 - 4);
+    if (i === 0) scopeCtx2d.moveTo(x, y); else scopeCtx2d.lineTo(x, y);
+    x += sliceW;
+  }
+  scopeCtx2d.stroke();
+  scopeCtx2d.shadowBlur = 0;
+}
+drawScope();
+
+// ---- Master out SPAN (frequency spectrum bars) ----
+const spanCanvas = document.getElementById('spanCanvas');
+let spanCtx2d, spanW, spanH, spanGrad;
+
+function initSpan() {
+  const setup = setupHiDPICanvas(spanCanvas);
+  spanCtx2d = setup.ctx;
+  spanW = setup.w;
+  spanH = setup.h;
+  spanGrad = spanCtx2d.createLinearGradient(0, spanH, 0, 0);
+  spanGrad.addColorStop(0,   '#00f5ff');
+  spanGrad.addColorStop(0.55,'#b44fff');
+  spanGrad.addColorStop(1,   '#ff2d78');
+}
+initSpan();
+window.addEventListener('resize', initSpan);
+
+function drawSpan() {
+  requestAnimationFrame(drawSpan);
+  if (!spanCtx2d) return;
+  spanAnalyser.getByteFrequencyData(spanData);
+  spanCtx2d.clearRect(0, 0, spanW, spanH);
+  const barCount = spanData.length;
+  const gap = 1;
+  const barWidth = (spanW / barCount) - gap;
+  spanCtx2d.fillStyle = spanGrad;
+  for (let i = 0; i < barCount; i++) {
+    const v = spanData[i] / 255;
+    const barH = Math.max(1, v * spanH);
+    spanCtx2d.fillRect(i * (barWidth + gap), spanH - barH, barWidth, barH);
+  }
+}
+drawSpan();
+
+// ============================================================
 // SIGNAL LINE PULSE
 // ============================================================
 const signalLine = document.getElementById('signalLine');
@@ -849,8 +961,22 @@ function triggerPad(index, velocity = 1.0) {
   pads[index].classList.add('triggered');
   setTimeout(() => pads[index].classList.remove('triggered'), 100);
   pulseSignalLine();
+  if (index === 0) triggerKickTremor();
   sendMidiNote(DRUM_MIDI_BASE + index, velocity, 1, true);
   setTimeout(() => sendMidiNote(DRUM_MIDI_BASE + index, velocity, 1, false), 60);
+}
+
+// ── KICK TREMOR — visual thump on the drum module, kick hits only ──
+const drumModuleEl = document.getElementById('drumModule');
+let kickTremorTimeout = null;
+function triggerKickTremor() {
+  if (!drumModuleEl) return;
+  drumModuleEl.classList.remove('kick-hit');
+  // force reflow so the animation restarts on rapid-fire kicks
+  void drumModuleEl.offsetWidth;
+  drumModuleEl.classList.add('kick-hit');
+  clearTimeout(kickTremorTimeout);
+  kickTremorTimeout = setTimeout(() => drumModuleEl.classList.remove('kick-hit'), 220);
 }
 
 document.getElementById('kitSelect').addEventListener('change', (e) => {
