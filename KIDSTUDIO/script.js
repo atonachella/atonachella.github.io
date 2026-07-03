@@ -150,35 +150,23 @@ reverbDry.connect(masterFXInput);
 // ============================================================
 // METER
 // ============================================================
-const meterFill = document.getElementById('meterFill');
-const meterData = new Uint8Array(analyser.frequencyBinCount);
-
-function updateMeter() {
-  analyser.getByteFrequencyData(meterData);
-  let sum = 0;
-  for (let i = 0; i < meterData.length; i++) sum += meterData[i];
-  const avg = sum / meterData.length;
-  meterFill.style.width = Math.min(100, (avg / 90) * 100) + '%';
-  requestAnimationFrame(updateMeter);
-}
-updateMeter();
-
 // ============================================================
-// SCOPE + SPAN VISUALIZERS
-// Tapped from chorusOutput — BEFORE masterGain — so they keep
-// showing real signal activity even when MIDI routing to Ableton
-// zeroes masterGain for local monitoring.
+// SCOPE + SPECTRA VISUALIZERS
+// SCOPE is tapped from reverbDry — fed exclusively by SOPH61's
+// noteOn(), so it shows keyboard signal only, never TAL16 drums.
+// SPECTRA stays on chorusOutput (the shared master bus) since it's
+// meant to reflect the full mix, both instruments combined.
 // ============================================================
 const scopeAnalyser = audioCtx.createAnalyser();
 scopeAnalyser.fftSize = 1024;
 const scopeData = new Uint8Array(scopeAnalyser.fftSize);
-chorusOutput.connect(scopeAnalyser);
+reverbDry.connect(scopeAnalyser);
 
-const spanAnalyser = audioCtx.createAnalyser();
-spanAnalyser.fftSize = 256;
-spanAnalyser.smoothingTimeConstant = 0.75;
-const spanData = new Uint8Array(spanAnalyser.frequencyBinCount);
-chorusOutput.connect(spanAnalyser);
+const spectraAnalyser = audioCtx.createAnalyser();
+spectraAnalyser.fftSize = 256;
+spectraAnalyser.smoothingTimeConstant = 0.75;
+const spectraData = new Uint8Array(spectraAnalyser.frequencyBinCount);
+chorusOutput.connect(spectraAnalyser);
 
 function setupHiDPICanvas(canvas, fallbackW, fallbackH) {
   const dpr = window.devicePixelRatio || 1;
@@ -245,42 +233,42 @@ function drawScope() {
 }
 drawScope();
 
-// ---- Master out SPAN (frequency spectrum bars) ----
-const spanCanvas = document.getElementById('spanCanvas');
-let spanCtx2d, spanW, spanH, spanGrad;
+// ---- Master out SPECTRA (frequency spectrum bars) ----
+const spectraCanvas = document.getElementById('spectraCanvas');
+let spectraCtx2d, spectraW, spectraH, spectraGrad;
 
-function initSpan() {
-  const setup = setupHiDPICanvas(spanCanvas, 200, 26);
-  spanCtx2d = setup.ctx;
-  spanW = setup.w;
-  spanH = setup.h;
-  spanGrad = spanCtx2d.createLinearGradient(0, spanH, 0, 0);
-  spanGrad.addColorStop(0,   '#00f5ff');
-  spanGrad.addColorStop(0.55,'#b44fff');
-  spanGrad.addColorStop(1,   '#ff2d78');
+function initSpectra() {
+  const setup = setupHiDPICanvas(spectraCanvas, 560, 84);
+  spectraCtx2d = setup.ctx;
+  spectraW = setup.w;
+  spectraH = setup.h;
+  spectraGrad = spectraCtx2d.createLinearGradient(0, spectraH, 0, 0);
+  spectraGrad.addColorStop(0,   '#00f5ff');
+  spectraGrad.addColorStop(0.55,'#b44fff');
+  spectraGrad.addColorStop(1,   '#ff2d78');
 }
-initSpan();
-window.addEventListener('resize', initSpan);
+initSpectra();
+window.addEventListener('resize', initSpectra);
 if (window.ResizeObserver) {
-  new ResizeObserver(initSpan).observe(spanCanvas);
+  new ResizeObserver(initSpectra).observe(spectraCanvas);
 }
 
-function drawSpan() {
-  requestAnimationFrame(drawSpan);
-  if (!spanCtx2d) return;
-  spanAnalyser.getByteFrequencyData(spanData);
-  spanCtx2d.clearRect(0, 0, spanW, spanH);
-  const barCount = spanData.length;
+function drawSpectra() {
+  requestAnimationFrame(drawSpectra);
+  if (!spectraCtx2d) return;
+  spectraAnalyser.getByteFrequencyData(spectraData);
+  spectraCtx2d.clearRect(0, 0, spectraW, spectraH);
+  const barCount = spectraData.length;
   const gap = 1;
-  const barWidth = (spanW / barCount) - gap;
-  spanCtx2d.fillStyle = spanGrad;
+  const barWidth = (spectraW / barCount) - gap;
+  spectraCtx2d.fillStyle = spectraGrad;
   for (let i = 0; i < barCount; i++) {
-    const v = spanData[i] / 255;
-    const barH = Math.max(1, v * spanH);
-    spanCtx2d.fillRect(i * (barWidth + gap), spanH - barH, barWidth, barH);
+    const v = spectraData[i] / 255;
+    const barH = Math.max(1, v * spectraH);
+    spectraCtx2d.fillRect(i * (barWidth + gap), spectraH - barH, barWidth, barH);
   }
 }
-drawSpan();
+drawSpectra();
 
 // ============================================================
 // SIGNAL LINE PULSE
@@ -969,6 +957,7 @@ function triggerPad(index, velocity = 1.0) {
   setTimeout(() => pads[index].classList.remove('triggered'), 100);
   pulseSignalLine();
   if (index === 0) triggerKickTremor();
+  if (index === 15) triggerSubSlap();
   sendMidiNote(DRUM_MIDI_BASE + index, velocity, 1, true);
   setTimeout(() => sendMidiNote(DRUM_MIDI_BASE + index, velocity, 1, false), 60);
 }
@@ -984,6 +973,17 @@ function triggerKickTremor() {
   drumModuleEl.classList.add('kick-hit');
   clearTimeout(kickTremorTimeout);
   kickTremorTimeout = setTimeout(() => drumModuleEl.classList.remove('kick-hit'), 220);
+}
+
+// ── SUB SLAP — slower, heavier push on the drum module, SUB pad only ──
+let subSlapTimeout = null;
+function triggerSubSlap() {
+  if (!drumModuleEl) return;
+  drumModuleEl.classList.remove('sub-slap');
+  void drumModuleEl.offsetWidth;
+  drumModuleEl.classList.add('sub-slap');
+  clearTimeout(subSlapTimeout);
+  subSlapTimeout = setTimeout(() => drumModuleEl.classList.remove('sub-slap'), 380);
 }
 
 document.getElementById('kitSelect').addEventListener('change', (e) => {
