@@ -1310,6 +1310,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 /* Vertical wheels */
 input[type="range"][orient="vertical"] {
   -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
   writing-mode: vertical-lr;
   direction: rtl;
   width: 4px;
