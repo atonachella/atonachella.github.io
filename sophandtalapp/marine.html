@@ -1,571 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sophia's Ocean Realm</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        :root {
-            --void:       #030d18;
-            --panel:      rgba(4,22,44,0.85);
-            --cyan:       #00d2d3;
-            --bio-green:  #00ff88;
-            --depth:      #0a3d62;
-            --border:     rgba(0,210,211,0.25);
-            --text:       #cfe8f0;
-            --dim:        rgba(0,210,211,0.45);
-        }
-        *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sophia — Ocean Realm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --bg:#05070f; --panel-hi:rgba(16,24,44,0.9); --panel:rgba(10,16,30,0.82);
+  --line:rgba(255,255,255,0.08); --line-hi:rgba(255,255,255,0.16);
+  --ink:#eaf6ff; --dim:rgba(234,246,255,0.45); --faint:rgba(234,246,255,0.22);
+  --soph:#00e5e0; --soph-deep:#008d97; --ok:#2fffa8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  min-height:100vh; color:var(--ink); font-family:'Rajdhani',sans-serif;
+  background:radial-gradient(1200px 700px at 25% -10%, rgba(0,229,224,0.08), transparent 60%),
+             radial-gradient(1000px 700px at 80% 110%, rgba(0,229,224,0.05), transparent 60%), var(--bg);
+  padding:30px 16px 70px; position:relative; overflow-x:hidden;
+}
+#three-bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 3px);mix-blend-mode:overlay;}
 
-        body {
-            background: var(--void); color: var(--text);
-            font-family: 'Share Tech Mono', monospace;
-            min-height: 100vh; overflow-x: hidden;
-            position: relative;
-        }
+.console{position:relative;z-index:5;max-width:820px;margin:0 auto;
+  background:linear-gradient(180deg,var(--panel-hi),var(--panel));
+  border:1px solid var(--line-hi);border-radius:22px;padding:26px 26px 22px;
+  box-shadow:0 40px 90px rgba(0,0,0,0.6),0 0 60px rgba(0,229,224,0.05),inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
+.console::before,.console::after{content:'';position:absolute;width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#4a5570,#10151f);box-shadow:inset 0 0 2px rgba(0,0,0,0.8);top:12px;}
+.console::before{left:12px;} .console::after{right:12px;}
 
-        /* ── 3D PARTICLE BACKGROUND ── */
-        #three-bg {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            z-index: 0; pointer-events: none;
-        }
+.head{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding-bottom:18px;margin-bottom:24px;border-bottom:1px solid var(--line);}
+.brand{display:flex;align-items:center;gap:12px;}
+.pwr{width:9px;height:9px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 10px var(--ok),0 0 20px rgba(47,255,168,0.5);animation:pwr 2.4s ease-in-out infinite;flex-shrink:0;}
+@keyframes pwr{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:1;transform:scale(1.25);}}
+.wordmark{font-family:'Orbitron',monospace;line-height:1.05;}
+.wordmark .lg{display:block;font-weight:900;font-size:1.4rem;letter-spacing:0.04em;
+  color:var(--soph);text-shadow:0 0 16px rgba(0,229,224,0.45);}
+.wordmark .sm{display:block;font-weight:600;font-size:0.6rem;letter-spacing:0.28em;color:var(--dim);margin-top:4px;}
+.readout{font-family:'Orbitron',monospace;font-size:0.5rem;letter-spacing:0.16em;color:var(--dim);text-align:right;line-height:1.9;white-space:nowrap;}
+.readout .live{color:var(--ok);}
 
-        /* ── SCANLINE OVERLAY ── */
-        body::after {
-            content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-        }
+.panel{position:relative;overflow:hidden;background:rgba(255,255,255,0.02);
+  border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:22px;}
+.panel::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--soph),transparent);opacity:.5;}
+.p-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.p-eyebrow .led{width:8px;height:8px;border-radius:50%;background:var(--soph);box-shadow:0 0 10px var(--soph);animation:blink 3s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:.4;}50%{opacity:1;}}
+.p-eyebrow .txt{font-family:'Orbitron',monospace;font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--soph);}
+.p-eyebrow::after{content:'';flex:1;height:1px;background:var(--line);}
 
-        /* ── LAYOUT ── */
-        .main-wrap { position:relative; z-index:2; max-width:860px; margin:0 auto; padding:24px 20px 60px; }
+/* trivia */
+.tri-prog{font-family:'Orbitron',monospace;font-size:0.58rem;letter-spacing:0.12em;color:var(--dim);margin-bottom:12px;}
+.tri-q{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.05rem;color:#fff;line-height:1.5;margin-bottom:16px;min-height:46px;}
+.tri-opts{display:flex;flex-direction:column;gap:10px;}
+.tri-btn{background:rgba(0,229,224,0.04);border:1px solid var(--line);color:var(--ink);
+  padding:12px 16px;border-radius:10px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.95rem;
+  cursor:pointer;text-align:left;transition:all .18s;}
+.tri-btn:hover{background:rgba(0,229,224,0.1);border-color:var(--soph);}
+.tri-btn.correct{background:rgba(47,255,168,0.14);border-color:var(--ok);color:var(--ok);}
+.tri-btn.wrong{background:rgba(255,90,90,0.1);border-color:#ff5a5a;color:#ff5a5a;pointer-events:none;}
+.tri-res{margin-top:14px;font-weight:700;font-size:0.9rem;min-height:22px;letter-spacing:0.02em;}
+.tri-res.ok{color:var(--ok);} .tri-res.err{color:#ff5a5a;}
+.tri-next{margin-top:14px;background:transparent;border:1px solid var(--soph);color:var(--soph);
+  padding:8px 20px;border-radius:9px;cursor:pointer;font-family:'Orbitron',monospace;font-size:0.58rem;letter-spacing:0.12em;display:none;}
+.tri-next:hover{background:rgba(0,229,224,0.1);}
 
-        /* ── HEADER ── */
-        .site-header {
-            text-align: center; padding: 32px 20px 28px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 32px; position:relative;
-        }
-        .site-header::before {
-            content:'DEPTH: 3,810m | PRESSURE: 381 ATM | STATUS: ACTIVE';
-            display:block; font-size:0.6rem; letter-spacing:0.2em;
-            color: var(--dim); margin-bottom:16px;
-        }
-        .site-title {
-            font-family:'Orbitron', monospace; font-size: clamp(1.4rem,5vw,2.4rem);
-            font-weight:900; letter-spacing:0.06em;
-            background: linear-gradient(90deg, #00d2d3, #00ff88, #74b9ff);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-        }
-        .site-sub { font-size:0.7rem; letter-spacing:0.3em; color:var(--dim); margin-top:8px; }
+/* color lab */
+.hint{text-align:center;font-size:0.82rem;color:var(--dim);margin-bottom:14px;letter-spacing:0.03em;min-height:18px;}
+.palette{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.swatch{width:40px;height:40px;border-radius:10px;cursor:pointer;border:2px solid rgba(255,255,255,0.14);
+  display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:0.6rem;font-weight:700;color:#00141f;
+  transition:transform .15s,box-shadow .15s,border-color .15s;user-select:none;}
+.swatch:hover{transform:scale(1.1);}
+.swatch.active{border-color:#fff;transform:scale(1.18);box-shadow:0 0 16px rgba(255,255,255,0.35);}
+.svg-wrap{display:flex;justify-content:center;}
+svg.coloring-book{max-width:600px;width:100%;cursor:crosshair;}
+svg.coloring-book .zone{stroke:#0b1a24;stroke-width:1.5;transition:filter .15s;}
+svg.coloring-book .zone:hover{filter:brightness(1.35);stroke:var(--soph);}
+svg.coloring-book .zone.filled{stroke:#08131c;}
+.zone-label{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;fill:rgba(210,232,242,0.85);pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
+.bar{height:4px;background:rgba(0,229,224,0.1);border-radius:4px;overflow:hidden;margin:16px auto 0;max-width:600px;}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--soph),var(--ok));transition:width .3s ease;}
+.done{text-align:center;font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--ok);margin-top:14px;min-height:20px;letter-spacing:0.1em;}
+.reset{display:block;margin:16px auto 0;background:transparent;border:1px solid var(--line-hi);color:var(--dim);
+  padding:8px 24px;border-radius:9px;font-family:'Orbitron',monospace;font-size:0.58rem;letter-spacing:0.14em;cursor:pointer;}
+.reset:hover{border-color:var(--soph);color:var(--soph);}
 
-        /* ── PANEL SECTIONS ── */
-        .panel {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 16px; padding: 28px;
-            margin-bottom: 28px;
-            backdrop-filter: blur(12px);
-            position:relative; overflow:hidden;
-        }
-        .panel::before {
-            content:''; position:absolute; top:0; left:0; right:0; height:1px;
-            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-        }
-        .panel-title {
-            font-family:'Orbitron', monospace; font-size:0.8rem;
-            letter-spacing:0.2em; text-transform:uppercase;
-            color: var(--cyan); margin-bottom:20px;
-            display:flex; align-items:center; gap:10px;
-        }
-        .panel-title::after { content:''; flex:1; height:1px; background: var(--border); }
+/* video */
+.yt-wrap{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid var(--line-hi);}
+.yt-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
 
-        /* ── YOUTUBE EMBED ── */
-        .yt-wrap {
-            position:relative; padding-top:56.25%; border-radius:10px; overflow:hidden;
-            border: 1px solid var(--border);
-        }
-        .yt-wrap iframe { position:absolute; inset:0; width:100%; height:100%; }
+/* return */
+.return{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;text-decoration:none;
+  padding:14px 16px;border-radius:12px;border:1px solid rgba(0,229,224,0.14);background:rgba(0,229,224,0.03);
+  transition:all .22s;position:relative;overflow:hidden;}
+.return:hover{border-color:rgba(0,229,224,0.4);background:rgba(0,229,224,0.07);box-shadow:0 0 22px rgba(0,229,224,0.1);transform:translateY(-1px);}
+.return .rled{width:6px;height:6px;border-radius:50%;background:var(--soph);box-shadow:0 0 8px var(--soph);animation:pwr 2s ease-in-out infinite;}
+.return .rtxt{font-family:'Orbitron',monospace;font-size:0.6rem;letter-spacing:0.16em;color:rgba(0,229,224,0.75);}
+.return:hover .rtxt{color:var(--soph);}
 
-        /* ── TRIVIA ── */
-        .trivia-question {
-            font-family:'Orbitron', monospace; font-size:0.95rem; line-height:1.6;
-            color:#ffffff; margin-bottom:20px; min-height:48px;
-        }
-        .trivia-options { display:flex; flex-direction:column; gap:10px; }
-        .trivia-btn {
-            background: rgba(0,210,211,0.05); border: 1px solid var(--border);
-            color: var(--text); padding: 12px 18px; border-radius:10px;
-            font-family:'Share Tech Mono', monospace; font-size:0.9rem;
-            cursor:pointer; text-align:left; transition:all 0.2s;
-        }
-        .trivia-btn:hover { background: rgba(0,210,211,0.12); border-color: var(--cyan); }
-        .trivia-btn.correct { background: rgba(0,255,136,0.15); border-color: var(--bio-green); color: var(--bio-green); }
-        .trivia-btn.wrong   { background: rgba(255,71,87,0.1); border-color: #ff4757; color: #ff4757; pointer-events:none; }
-        .trivia-result { margin-top:14px; font-size:0.85rem; min-height:24px; letter-spacing:0.05em; }
-        .trivia-result.ok  { color: var(--bio-green); }
-        .trivia-result.err { color: #ff4757; }
-        .trivia-progress { font-size:0.65rem; letter-spacing:0.15em; color:var(--dim); margin-bottom:12px; }
-        .trivia-next { margin-top:14px; background:transparent; border:1px solid var(--cyan); color:var(--cyan); padding:8px 20px; border-radius:8px; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.65rem; letter-spacing:0.15em; display:none; }
-        .trivia-next:hover { background:rgba(0,210,211,0.1); }
+/* ambient + egg */
+.sound{position:fixed;bottom:22px;right:20px;z-index:50;background:rgba(10,16,30,0.9);border:1px solid var(--line-hi);
+  color:var(--dim);padding:9px 15px;border-radius:30px;cursor:pointer;font-family:'Orbitron',monospace;font-size:0.52rem;letter-spacing:0.1em;backdrop-filter:blur(10px);transition:all .2s;}
+.sound:hover{border-color:var(--soph);color:var(--soph);}
+.sound.on{border-color:var(--ok);color:var(--ok);}
+#crab{position:fixed;bottom:20px;left:20px;z-index:50;font-size:0.9rem;opacity:0.06;cursor:pointer;transition:opacity .3s;padding:10px;}
+#crab:hover{opacity:0.2;}
+.pop{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.86);}
+.pop.show{display:flex;animation:pin .35s ease;}
+@keyframes pin{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+.pop-card{background:var(--panel-hi);border:1px solid rgba(0,229,224,0.45);border-radius:18px;padding:34px 30px;text-align:center;max-width:340px;width:90%;box-shadow:0 0 44px rgba(0,229,224,0.16);}
+.pop-ico{font-size:2.6rem;margin-bottom:10px;}
+.pop-t{font-family:'Orbitron',monospace;font-size:0.85rem;color:var(--soph);letter-spacing:0.08em;margin-bottom:10px;}
+.pop-m{color:var(--dim);font-size:0.95rem;line-height:1.55;margin-bottom:20px;}
+.pop-x{background:transparent;border:1px solid var(--line-hi);color:var(--ink);padding:8px 24px;border-radius:9px;cursor:pointer;font-family:'Orbitron',monospace;font-size:0.56rem;letter-spacing:0.1em;}
+.pop-x:hover{border-color:var(--soph);}
 
-        /* ── SVG COLORING BOOK ── */
-        .color-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
-        .color-swatch {
-            width:38px; height:38px; border-radius:50%; cursor:pointer;
-            border:2px solid rgba(255,255,255,0.15);
-            display:flex; align-items:center; justify-content:center;
-            font-family:'Orbitron',monospace; font-size:0.6rem; color:#fff;
-            font-weight:700; transition:all 0.2s; user-select:none;
-        }
-        .color-swatch.active { border-color:#fff; transform:scale(1.2); box-shadow:0 0 12px rgba(255,255,255,0.4); }
-        .color-hint { text-align:center; font-size:0.65rem; color:var(--dim); margin-bottom:12px; letter-spacing:0.1em; }
-        .svg-container { display:flex; justify-content:center; }
-        svg.coloring-book { max-width:480px; width:100%; cursor:crosshair; }
-        svg.coloring-book .zone { stroke:#1a3a5a; stroke-width:1.5; transition:filter 0.2s; }
-        svg.coloring-book .zone:hover { filter:brightness(1.3); stroke:#00d2d3; }
-        svg.coloring-book .zone.filled { stroke:#0a2040; }
-        .zone-label { font-family:'Share Tech Mono'; font-size:9px; fill:rgba(200,220,240,0.7); pointer-events:none; text-anchor:middle; dominant-baseline:middle; }
-        .color-complete { text-align:center; font-family:'Orbitron',monospace; font-size:0.8rem; color:var(--bio-green); margin-top:14px; min-height:20px; letter-spacing:0.12em; }
-
-        /* ── SOUND TOGGLE ── */
-        .sound-btn {
-            position:fixed; bottom:24px; right:24px; z-index:50;
-            background:rgba(4,22,44,0.9); border:1px solid var(--border);
-            color:var(--dim); padding:10px 16px; border-radius:30px; cursor:pointer;
-            font-family:'Orbitron',monospace; font-size:0.6rem; letter-spacing:0.12em;
-            backdrop-filter:blur(10px); transition:all 0.2s;
-        }
-        .sound-btn:hover { border-color:var(--cyan); color:var(--cyan); }
-        .sound-btn.on { border-color:var(--bio-green); color:var(--bio-green); }
-
-        /* ── RETURN BTN ── */
-        .return-btn {
-            display:block; margin:32px auto 0;
-            background:transparent; border:1px solid var(--border);
-            color:var(--dim); padding:12px 32px; border-radius:10px;
-            font-family:'Orbitron',monospace; font-size:0.65rem; letter-spacing:0.2em;
-            cursor:pointer; transition:all 0.2s;
-        }
-        .return-btn:hover { border-color:var(--cyan); color:var(--cyan); }
-
-        /* ── EASTER EGG CRAB ── */
-        #hidden-crab {
-            position:fixed; bottom:60px; right:18px; z-index:50;
-            font-size:0.8rem; opacity:0.07; cursor:pointer;
-            transition:opacity 0.3s; padding:8px;
-        }
-        #hidden-crab:hover { opacity:0.2; }
-
-        /* ── EGG POPUP ── */
-        .egg-popup { position:fixed; inset:0; z-index:200; display:none; justify-content:center; align-items:center; background:rgba(0,0,0,0.88); }
-        .egg-popup.show { display:flex; animation:fadeIn 0.4s ease; }
-        .egg-box { background:rgba(4,22,44,0.98); border:1px solid var(--cyan); border-radius:16px; padding:36px; text-align:center; max-width:340px; box-shadow:0 0 60px rgba(0,210,211,0.2); }
-        .egg-icon { font-size:3rem; margin-bottom:12px; }
-        .egg-title { font-family:'Orbitron',monospace; font-size:0.9rem; color:var(--cyan); letter-spacing:0.12em; margin-bottom:10px; }
-        .egg-msg { color:rgba(255,255,255,0.7); font-size:0.9rem; line-height:1.6; margin-bottom:20px; }
-        .egg-close { background:transparent; border:1px solid var(--border); color:var(--dim); padding:8px 24px; border-radius:8px; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.6rem; letter-spacing:0.15em; }
-        @keyframes fadeIn { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
-    </style>
+@media (max-width:600px){.console{padding:20px 16px 18px;}.readout{display:none;}.wordmark .lg{font-size:1.15rem;}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;}}
+</style>
 </head>
 <body>
-    <canvas id="three-bg"></canvas>
+<canvas id="three-bg"></canvas>
 
-    <div class="main-wrap">
-        <header class="site-header">
-            <div class="site-title">Sophia's Ocean Realm</div>
-            <div class="site-sub">MARINE RESEARCH STATION · ACTIVE</div>
-        </header>
+<main class="console">
 
-        <!-- YOUTUBE: Red Ball 4 Speedrun -->
-        <div class="panel">
-            <div class="panel-title">🎮 Speed Lab — Red Ball 4 Speedrun</div>
-            <div class="yt-wrap">
-                <iframe src="https://www.youtube.com/embed/eNXWywIowsQ" title="Red Ball 4 Speedrun" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-        </div>
-
-        <!-- TRIVIA -->
-        <div class="panel">
-            <div class="panel-title">🔬 Deep-Sea Intelligence Briefing</div>
-            <div class="trivia-progress" id="tri-progress">Question 1 / 5</div>
-            <div class="trivia-question" id="tri-question">Loading...</div>
-            <div class="trivia-options" id="tri-options"></div>
-            <div class="trivia-result" id="tri-result"></div>
-            <button class="trivia-next" id="tri-next" onclick="nextQuestion()">NEXT QUESTION ›</button>
-        </div>
-
-        <!-- SVG COLORING BOOK -->
-        <div class="panel">
-            <div class="panel-title">🎨 Coral Reef Field Canvas</div>
-            <div class="color-hint" id="soph-hint">Select a depth code, then click the matching region</div>
-            <div class="color-controls" id="soph-palette"></div>
-            <div class="svg-container">
-                <svg class="coloring-book" viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" id="soph-svg">
-
-                    <!-- 1: Deep ocean -->
-                    <rect class="zone" data-zone="1" x="0" y="0" width="480" height="360" fill="#0d1b2a"/>
-
-                    <!-- 2: Seafloor sand -->
-                    <path class="zone" data-zone="2" d="M0,308 Q120,292 240,302 Q360,312 480,298 L480,360 L0,360 Z" fill="#2a2418"/>
-
-                    <!-- 7: Kelp strands (left + right) -->
-                    <path class="zone" data-zone="7" d="M36,308 Q22,270 34,238 Q44,210 32,180 Q26,164 40,150 Q52,166 46,182 Q38,210 48,238 Q58,270 50,308 Z" fill="#123021"/>
-                    <path class="zone" data-zone="7" d="M444,308 Q458,272 446,242 Q436,214 448,186 Q454,170 442,156 Q430,172 436,188 Q444,214 434,242 Q424,272 432,308 Z" fill="#123021"/>
-
-                    <!-- 5: Purple sea fan -->
-                    <path class="zone" data-zone="5" d="M148,306 Q112,270 116,236 Q124,244 130,258 Q128,232 140,224 Q146,240 148,256 Q150,232 160,224 Q170,232 168,256 Q174,238 184,238 Q180,272 148,306 Z" fill="#241830"/>
-
-                    <!-- 3: Brain coral -->
-                    <path class="zone" data-zone="3" d="M40,306 Q34,282 46,272 Q42,258 58,256 Q60,244 76,250 Q86,244 92,258 Q104,260 100,276 Q110,286 100,300 Q96,308 40,306 Z" fill="#3a1a24"/>
-
-                    <!-- 4: Staghorn coral -->
-                    <path class="zone" data-zone="4" d="M392,306 Q388,280 396,268 L390,250 Q396,244 402,250 L404,266 Q410,250 418,252 Q420,262 414,270 Q424,266 428,274 Q424,284 414,284 Q420,298 410,300 Q404,308 392,306 Z" fill="#3a2410"/>
-
-                    <!-- 6: Tube sponges -->
-                    <path class="zone" data-zone="6" d="M312,306 L312,280 Q312,270 321,270 Q330,270 330,280 L330,306 Z" fill="#3a1614"/>
-                    <path class="zone" data-zone="6" d="M330,306 L330,272 Q330,262 340,262 Q350,262 350,272 L350,306 Z" fill="#3a1614"/>
-                    <path class="zone" data-zone="6" d="M352,306 L352,266 Q352,254 362,254 Q372,254 372,266 L372,306 Z" fill="#3a1614"/>
-
-                    <!-- 8: Sea anemone -->
-                    <path class="zone" data-zone="8" d="M206,306 Q202,286 214,282 Q210,270 220,270 L222,258 L226,270 Q234,268 232,282 Q244,286 240,306 Z" fill="#3a1830"/>
-
-                    <!-- 15: Starfish -->
-                    <polygon class="zone" data-zone="15" points="110,308 115,322 130,322 118,331 123,345 110,336 97,345 102,331 90,322 105,322" fill="#3a1414"/>
-
-                    <!-- 9: Clownfish body + tail + fin -->
-                    <ellipse class="zone" data-zone="9" cx="175" cy="152" rx="52" ry="30" fill="#3a2a10"/>
-                    <polygon class="zone" data-zone="9" points="128,152 96,132 102,152 96,172" fill="#3a2a10"/>
-                    <polygon class="zone" data-zone="9" points="170,124 150,106 132,126" fill="#3a2a10"/>
-
-                    <!-- 10: Clownfish white stripes -->
-                    <path class="zone" data-zone="10" d="M156,126 Q150,152 158,178 Q168,178 164,152 Q168,126 156,126 Z" fill="#5a5a5a"/>
-                    <path class="zone" data-zone="10" d="M192,130 Q186,152 194,174 Q204,174 200,152 Q204,130 192,130 Z" fill="#5a5a5a"/>
-
-                    <!-- clownfish eye (decorative) -->
-                    <circle cx="150" cy="146" r="5" fill="#050d18" pointer-events="none"/>
-                    <circle cx="151" cy="145" r="2" fill="#00d2d3" opacity="0.8" pointer-events="none"/>
-
-                    <!-- 11: Blue tang body -->
-                    <ellipse class="zone" data-zone="11" cx="322" cy="146" rx="40" ry="28" fill="#101c2e"/>
-
-                    <!-- 12: Blue tang tail + fin -->
-                    <polygon class="zone" data-zone="12" points="360,146 388,128 384,146 388,164" fill="#2e2a12"/>
-                    <polygon class="zone" data-zone="12" points="322,120 314,106 332,116" fill="#2e2a12"/>
-
-                    <!-- blue tang eye (decorative) -->
-                    <circle cx="300" cy="140" r="4.5" fill="#050d18" pointer-events="none"/>
-                    <circle cx="301" cy="139" r="2" fill="#ffffff" opacity="0.7" pointer-events="none"/>
-
-                    <!-- 13: Sea turtle shell -->
-                    <ellipse class="zone" data-zone="13" cx="402" cy="80" rx="32" ry="24" fill="#22301a"/>
-                    <path d="M402,56 L402,104 M372,80 L432,80 M382,62 L422,98 M422,62 L382,98" stroke="#0d1b2a" stroke-width="1.4" fill="none" pointer-events="none" opacity="0.45"/>
-
-                    <!-- 14: Sea turtle skin (head + flippers) -->
-                    <ellipse class="zone" data-zone="14" cx="432" cy="58" rx="12" ry="9" fill="#12352e"/>
-                    <polygon class="zone" data-zone="14" points="376,66 352,50 368,76" fill="#12352e"/>
-                    <polygon class="zone" data-zone="14" points="384,98 362,112 382,104" fill="#12352e"/>
-                    <polygon class="zone" data-zone="14" points="424,100 438,116 430,100" fill="#12352e"/>
-
-                    <!-- 16: Bubbles -->
-                    <circle class="zone" data-zone="16" cx="300" cy="112" r="7" fill="#122436"/>
-                    <circle class="zone" data-zone="16" cx="314" cy="94" r="5" fill="#122436"/>
-                    <circle class="zone" data-zone="16" cx="322" cy="108" r="4" fill="#122436"/>
-                    <circle class="zone" data-zone="16" cx="292" cy="128" r="4.5" fill="#122436"/>
-
-                    <!-- NUMBER LABELS (hidden on fill) -->
-                    <text class="zone-label" data-for="1"  x="20"  y="20">1</text>
-                    <text class="zone-label" data-for="2"  x="240" y="336">2</text>
-                    <text class="zone-label" data-for="3"  x="70"  y="284">3</text>
-                    <text class="zone-label" data-for="4"  x="406" y="280">4</text>
-                    <text class="zone-label" data-for="5"  x="148" y="264">5</text>
-                    <text class="zone-label" data-for="6"  x="340" y="292">6</text>
-                    <text class="zone-label" data-for="7"  x="40"  y="210">7</text>
-                    <text class="zone-label" data-for="8"  x="223" y="294">8</text>
-                    <text class="zone-label" data-for="9"  x="190" y="154">9</text>
-                    <text class="zone-label" data-for="10" x="158" y="154">10</text>
-                    <text class="zone-label" data-for="11" x="326" y="150">11</text>
-                    <text class="zone-label" data-for="12" x="372" y="146">12</text>
-                    <text class="zone-label" data-for="13" x="402" y="82">13</text>
-                    <text class="zone-label" data-for="14" x="446" y="56">14</text>
-                    <text class="zone-label" data-for="15" x="110" y="328">15</text>
-                    <text class="zone-label" data-for="16" x="306" y="112">16</text>
-                </svg>
-            </div>
-            <div class="color-complete" id="soph-complete"></div>
-        </div>
-
-        <button class="return-btn" onclick="window.location.href='index.html'">↩ Return to Portal</button>
+  <div class="head">
+    <div class="brand">
+      <span class="pwr" aria-hidden="true"></span>
+      <span class="wordmark"><span class="lg">SOPHIA</span><span class="sm">OCEAN REALM • STATION 01</span></span>
     </div>
+    <div class="readout">DEPTH 3,810m<br>PRESSURE 381 ATM<br>STATUS <span class="live">ONLINE</span></div>
+  </div>
 
-    <!-- Hidden Easter Egg -->
-    <div id="hidden-crab">🦀</div>
-    <div class="egg-popup" id="crab-popup">
-        <div class="egg-box">
-            <div class="egg-icon">🦀</div>
-            <div class="egg-title">SECRET CRAB CAVE</div>
-            <p class="egg-msg">You found the hidden crab grotto, Sophia! Ask Dad what your secret reward is! 🌊🐠</p>
-            <button class="egg-close" onclick="document.getElementById('crab-popup').classList.remove('show')">← Return to Depths</button>
-        </div>
+  <!-- TRIVIA -->
+  <section class="panel">
+    <div class="p-eyebrow"><span class="led"></span><span class="txt">Deep-Sea Briefing</span></div>
+    <div class="tri-prog" id="tri-prog">Question 1 / 5</div>
+    <div class="tri-q" id="tri-q">Loading…</div>
+    <div class="tri-opts" id="tri-opts"></div>
+    <div class="tri-res" id="tri-res"></div>
+    <button class="tri-next" id="tri-next">NEXT ›</button>
+  </section>
+
+  <!-- COLOR LAB -->
+  <section class="panel">
+    <div class="p-eyebrow"><span class="led"></span><span class="txt">Coral Reef Canvas</span></div>
+    <div class="hint" id="hint">Pick a color code, then tap the matching piece</div>
+    <div class="palette" id="palette"></div>
+    <div class="svg-wrap">
+<svg class="coloring-book" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg" id="soph-svg">
+  <path class="zone" data-zone="1" d="M0,0 L0,128.6 L0,128.6 L16,131.7 L32,134.4 L48,136.5 L64,138.0 L80,138.9 L96,138.9 L112,138.3 L128,137.0 L144,135.0 L160,132.4 L176,129.4 L192,126.1 L208,122.6 L224,119.1 L240,115.7 L256,112.6 L272,109.9 L288,107.7 L304,106.1 L320,105.2 L336,105.0 L352,105.6 L368,106.9 L384,108.8 L400,111.3 L416,114.2 L432,117.5 L448,121.0 L464,124.5 L480,127.9 L496,131.1 L512,133.9 L528,136.1 L544,137.8 L560,138.7 L576,139.0 L592,138.5 L608,137.3 L624,135.5 L640,133.0 L640,0 Z" fill="#13232f"/>
+  <path class="zone" data-zone="2" d="M0,128.6 L0,128.6 L16,131.7 L32,134.4 L48,136.5 L64,138.0 L80,138.9 L96,138.9 L112,138.3 L128,137.0 L144,135.0 L160,132.4 L176,129.4 L192,126.1 L208,122.6 L224,119.1 L240,115.7 L256,112.6 L272,109.9 L288,107.7 L304,106.1 L320,105.2 L336,105.0 L352,105.6 L368,106.9 L384,108.8 L400,111.3 L416,114.2 L432,117.5 L448,121.0 L464,124.5 L480,127.9 L496,131.1 L512,133.9 L528,136.1 L544,137.8 L560,138.7 L576,139.0 L592,138.5 L608,137.3 L624,135.5 L640,133.0 L640,212.9 L624,209.5 L608,206.6 L592,204.3 L576,202.7 L560,202.0 L544,202.3 L528,203.4 L512,205.3 L496,208.0 L480,211.1 L464,214.6 L448,218.2 L432,221.6 L416,224.7 L400,227.2 L384,228.9 L368,229.9 L352,229.9 L336,229.0 L320,227.3 L304,224.8 L288,221.8 L272,218.4 L256,214.8 L240,211.3 L224,208.1 L208,205.4 L192,203.5 L176,202.3 L160,202.0 L144,202.7 L128,204.2 L112,206.5 L96,209.4 L80,212.7 L64,216.2 L48,219.8 L32,223.1 L16,225.9 L0,228.1 Z" fill="#16303c"/>
+  <path class="zone" data-zone="3" d="M0,228.1 L0,228.1 L16,225.9 L32,223.1 L48,219.8 L64,216.2 L80,212.7 L96,209.4 L112,206.5 L128,204.2 L144,202.7 L160,202.0 L176,202.3 L192,203.5 L208,205.4 L224,208.1 L240,211.3 L256,214.8 L272,218.4 L288,221.8 L304,224.8 L320,227.3 L336,229.0 L352,229.9 L368,229.9 L384,228.9 L400,227.2 L416,224.7 L432,221.6 L448,218.2 L464,214.6 L480,211.1 L496,208.0 L512,205.3 L528,203.4 L544,202.3 L560,202.0 L576,202.7 L592,204.3 L608,206.6 L624,209.5 L640,212.9 L640,310.8 L624,307.5 L608,304.2 L592,300.9 L576,297.8 L560,295.0 L544,292.8 L528,291.2 L512,290.2 L496,290.0 L480,290.6 L464,291.8 L448,293.8 L432,296.2 L416,299.2 L400,302.4 L384,305.7 L368,309.0 L352,312.1 L336,314.9 L320,317.2 L304,318.8 L288,319.8 L272,320.0 L256,319.5 L240,318.2 L224,316.3 L208,313.8 L192,310.9 L176,307.7 L160,304.4 L144,301.0 L128,297.9 L112,295.2 L96,292.9 L80,291.2 L64,290.3 L48,290.0 L32,290.5 L16,291.8 L0,293.6 Z" fill="#122a38"/>
+  <path class="zone" data-zone="4" d="M0,293.6 L0,293.6 L16,291.8 L32,290.5 L48,290.0 L64,290.3 L80,291.2 L96,292.9 L112,295.2 L128,297.9 L144,301.0 L160,304.4 L176,307.7 L192,310.9 L208,313.8 L224,316.3 L240,318.2 L256,319.5 L272,320.0 L288,319.8 L304,318.8 L320,317.2 L336,314.9 L352,312.1 L368,309.0 L384,305.7 L400,302.4 L416,299.2 L432,296.2 L448,293.8 L464,291.8 L480,290.6 L496,290.0 L512,290.2 L528,291.2 L544,292.8 L560,295.0 L576,297.8 L592,300.9 L608,304.2 L624,307.5 L640,310.8 L640,365.2 L624,366.2 L608,367.9 L592,370.1 L576,372.8 L560,375.7 L544,378.8 L528,381.9 L512,384.7 L496,387.2 L480,389.1 L464,390.4 L448,391.0 L432,390.8 L416,389.9 L400,388.3 L384,386.1 L368,383.5 L352,380.5 L336,377.4 L320,374.4 L304,371.5 L288,369.0 L272,367.0 L256,365.7 L240,365.0 L224,365.2 L208,366.0 L192,367.5 L176,369.6 L160,372.2 L144,375.2 L128,378.3 L112,381.4 L96,384.3 L80,386.8 L64,388.8 L48,390.2 L32,390.9 L16,390.9 L0,390.1 Z" fill="#0f2230"/>
+  <path class="zone" data-zone="5" d="M0,390.1 L0,390.1 L16,390.9 L32,390.9 L48,390.2 L64,388.8 L80,386.8 L96,384.3 L112,381.4 L128,378.3 L144,375.2 L160,372.2 L176,369.6 L192,367.5 L208,366.0 L224,365.2 L240,365.0 L256,365.7 L272,367.0 L288,369.0 L304,371.5 L320,374.4 L336,377.4 L352,380.5 L368,383.5 L384,386.1 L400,388.3 L416,389.9 L432,390.8 L448,391.0 L464,390.4 L480,389.1 L496,387.2 L512,384.7 L528,381.9 L544,378.8 L560,375.7 L576,372.8 L592,370.1 L608,367.9 L624,366.2 L640,365.2 L640,480 L0,480 Z" fill="#2a2418"/>
+
+  <polygon class="ray" points="120,0 190,0 90,380 40,380" fill="#0a3a4a" opacity="0.18" pointer-events="none"/>
+  <polygon class="ray" points="360,0 410,0 470,378 410,378" fill="#0a3a4a" opacity="0.14" pointer-events="none"/>
+
+  <path class="zone" data-zone="18" d="M42,380 Q26,330 44,296 Q56,270 40,240 Q32,220 50,202 Q62,220 54,240 Q44,270 58,296 Q70,330 60,380 Z" fill="#12301f"/>
+  <path class="zone" data-zone="18" d="M598,380 Q614,332 598,300 Q586,274 602,246 Q610,228 594,212 Q582,228 590,246 Q600,274 588,300 Q578,332 588,380 Z" fill="#12301f"/>
+
+  <path class="zone" data-zone="13" d="M96,382 Q78,372 84,352 Q70,346 78,330 Q66,322 78,310 Q74,296 90,296 Q86,282 100,280 Q114,282 112,298 Q110,312 98,314 Q108,320 100,332 Q112,338 104,352 Q116,360 106,372 Q118,378 96,382 Z" fill="#241830"/>
+  <circle cx="98" cy="292" r="3.5" fill="#050d18" pointer-events="none"/>
+
+  <path class="zone" data-zone="14" d="M150,382 Q138,344 158,332 Q150,314 174,314 Q180,296 202,306 Q216,300 220,320 Q236,324 226,346 Q240,358 224,372 Q216,382 150,382 Z" fill="#3a1a28"/>
+  <path class="zone" data-zone="15" d="M236,380 Q198,342 202,306 Q212,316 220,332 Q216,304 232,296 Q240,314 240,332 Q244,304 256,296 Q270,306 266,332 Q274,310 288,312 Q282,348 250,380 Z" fill="#241830"/>
+  <path class="zone" data-zone="16" d="M470,382 Q462,344 480,330 L472,308 Q480,300 490,308 L492,328 Q504,306 518,310 Q524,326 512,338 Q528,342 518,360 Q526,372 510,374 Q504,382 470,382 Z" fill="#3a2410"/>
+  <path class="zone" data-zone="17" d="M410,382 L410,352 Q410,340 421,340 Q432,340 432,352 L432,382 Z" fill="#3a1614"/>
+  <path class="zone" data-zone="17" d="M434,382 L434,344 Q434,330 445,330 Q456,330 456,344 L456,382 Z" fill="#3a1614"/>
+  <path class="zone" data-zone="17" d="M388,382 L388,358 Q388,348 397,348 Q406,348 406,358 L406,382 Z" fill="#3a1614"/>
+
+  <path class="zone" data-zone="19" d="M292,382 Q286,356 300,350 Q294,336 306,334 L308,320 L312,334 Q326,332 322,350 Q338,356 330,382 Z" fill="#3a1830"/>
+
+  <polygon class="zone" data-zone="20" points="120,398 128,420 152,420 132,434 140,458 120,444 100,458 108,434 88,420 112,420" fill="#3a1414"/>
+
+  <!-- small tang fish upper right -->
+  <polygon class="zone" data-zone="12" points="560,150 596,130 592,150 596,172" fill="#2e2a12"/>
+  <ellipse class="zone" data-zone="11" cx="524" cy="150" rx="40" ry="27" fill="#101c2e"/>
+  <polygon class="zone" data-zone="11" points="524,124 516,110 534,120" fill="#101c2e"/>
+  <circle cx="503" cy="145" r="4.5" fill="#050d18" pointer-events="none"/>
+  <circle cx="504" cy="144" r="2" fill="#fff" opacity="0.7" pointer-events="none"/>
+
+  <!-- HERO fish center -->
+  <polygon class="zone" data-zone="10" points="228,244 160,200 180,244 160,290" fill="#3a1010"/>
+  <path class="zone" data-zone="9" d="M320,180 Q352,140 396,152 Q374,172 378,186 Q348,180 320,186 Z" fill="#3a2e08"/>
+  <path class="zone" data-zone="9" d="M320,300 Q354,336 392,322 Q372,308 374,296 Q346,304 320,296 Z" fill="#3a2e08"/>
+  <ellipse class="zone" data-zone="6" cx="338" cy="242" rx="106" ry="66" fill="#3a2a10"/>
+  <path class="zone" data-zone="7" d="M246,256 Q320,308 428,268 Q384,308 320,308 Q272,304 246,256 Z" fill="#3a3222"/>
+  <path class="zone" data-zone="8" d="M288,184 Q274,242 288,300 Q306,300 300,242 Q306,184 288,184 Z" fill="#565656"/>
+  <path class="zone" data-zone="8" d="M344,180 Q330,242 344,304 Q364,304 356,242 Q364,180 344,180 Z" fill="#565656"/>
+  <path class="zone" data-zone="8" d="M400,190 Q388,242 400,294 Q418,294 412,242 Q418,190 400,190 Z" fill="#565656"/>
+  <circle cx="266" cy="228" r="10" fill="#050d18" pointer-events="none"/>
+  <circle cx="269" cy="225" r="4" fill="#00d2d3" opacity="0.85" pointer-events="none"/>
+
+  <circle class="zone" data-zone="21" cx="450" cy="150" r="12" fill="#122436"/>
+  <circle class="zone" data-zone="21" cx="472" cy="120" r="8" fill="#122436"/>
+  <circle class="zone" data-zone="21" cx="486" cy="146" r="6" fill="#122436"/>
+  <circle class="zone" data-zone="21" cx="440" cy="176" r="5" fill="#122436"/>
+
+  <text class="zone-label" data-for="1" x="30" y="24">1</text>
+  <text class="zone-label" data-for="2" x="320" y="168">2</text>
+  <text class="zone-label" data-for="3" x="120" y="262">3</text>
+  <text class="zone-label" data-for="4" x="540" y="340">4</text>
+  <text class="zone-label" data-for="5" x="320" y="448">5</text>
+  <text class="zone-label" data-for="6" x="362" y="242">6</text>
+  <text class="zone-label" data-for="7" x="338" y="290">7</text>
+  <text class="zone-label" data-for="8" x="344" y="242">8</text>
+  <text class="zone-label" data-for="9" x="360" y="162">9</text>
+  <text class="zone-label" data-for="10" x="186" y="244">10</text>
+  <text class="zone-label" data-for="11" x="528" y="152">11</text>
+  <text class="zone-label" data-for="12" x="580" y="150">12</text>
+  <text class="zone-label" data-for="13" x="97" y="336">13</text>
+  <text class="zone-label" data-for="14" x="186" y="348">14</text>
+  <text class="zone-label" data-for="15" x="240" y="344">15</text>
+  <text class="zone-label" data-for="16" x="494" y="352">16</text>
+  <text class="zone-label" data-for="17" x="445" y="364">17</text>
+  <text class="zone-label" data-for="18" x="48" y="290">18</text>
+  <text class="zone-label" data-for="19" x="310" y="366">19</text>
+  <text class="zone-label" data-for="20" x="120" y="428">20</text>
+  <text class="zone-label" data-for="21" x="450" y="152">21</text>
+</svg>
     </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="done" id="done"></div>
+    <button class="reset" id="reset">↺ Start Over</button>
+  </section>
 
-    <button class="sound-btn" id="sound-btn" onclick="toggleSound()">◎ AMBIENT: OFF</button>
+  <!-- VIDEO (small, bottom) -->
+  <section class="panel">
+    <div class="p-eyebrow"><span class="led"></span><span class="txt">Speed Lab • Red Ball 4</span></div>
+    <div style="max-width:440px;margin:0 auto;">
+      <div class="yt-wrap">
+        <iframe src="https://www.youtube.com/embed/eNXWywIowsQ" title="Red Ball 4 Speedrun" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </section>
 
-    <script>
-    // ══════════════════════════════════════════════
-    // THREE.JS BIOLUMINESCENT PARTICLE BACKGROUND
-    // ══════════════════════════════════════════════
-    (function() {
-        const canvas = document.getElementById('three-bg');
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x000000, 0);
+  <a class="return" href="index.html">
+    <span class="rled" aria-hidden="true"></span>
+    <span class="rtxt">‹ RETURN TO PORTAL</span>
+  </a>
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 60;
+</main>
 
-        const N = 900;
-        const geo = new THREE.BufferGeometry();
-        const pos = new Float32Array(N * 3);
-        const col = new Float32Array(N * 3);
-        const vel = new Float32Array(N * 3);
+<button class="sound" id="sound">◎ AMBIENT: OFF</button>
+<div id="crab" aria-hidden="true">🦀</div>
 
-        for(let i = 0; i < N; i++) {
-            pos[i*3]   = (Math.random() - 0.5) * 200;
-            pos[i*3+1] = (Math.random() - 0.5) * 160;
-            pos[i*3+2] = (Math.random() - 0.5) * 80;
-            vel[i*3]   = (Math.random() - 0.5) * 0.015;
-            vel[i*3+1] = 0.02 + Math.random() * 0.06;
-            vel[i*3+2] = (Math.random() - 0.5) * 0.008;
+<div class="pop" id="crab-pop">
+  <div class="pop-card">
+    <div class="pop-ico">🦀</div>
+    <div class="pop-t">SECRET CRAB CAVE</div>
+    <p class="pop-m">You found the hidden crab grotto, Sophia! Ask Dad what your secret reward is.</p>
+    <button class="pop-x" onclick="document.getElementById('crab-pop').classList.remove('show')">‹ Back to the Depths</button>
+  </div>
+</div>
 
-            const t = Math.random();
-            if(t < 0.4) {        col[i*3]=0;   col[i*3+1]=0.82; col[i*3+2]=0.83; } // cyan
-            else if(t < 0.65) {  col[i*3]=0;   col[i*3+1]=1;    col[i*3+2]=0.53; } // bio-green
-            else if(t < 0.82) {  col[i*3]=0.3; col[i*3+1]=0.5;  col[i*3+2]=1;    } // blue
-            else {               col[i*3]=0.5; col[i*3+1]=0.9;  col[i*3+2]=1;    } // light blue
-        }
-        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        const mat = new THREE.PointsMaterial({ size: 0.4, vertexColors: true, transparent: true, opacity: 0.55, sizeAttenuation: true });
-        const pts = new THREE.Points(geo, mat);
-        scene.add(pts);
+/* ---- THREE.JS bioluminescent field ---- */
+(function(){
+  const cv=document.getElementById('three-bg');
+  const rn=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+  rn.setPixelRatio(devicePixelRatio); rn.setSize(innerWidth,innerHeight); rn.setClearColor(0x000000,0);
+  const sc=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000); cam.position.z=60;
+  const N=reduce?0:800, geo=new THREE.BufferGeometry(), pos=new Float32Array(N*3), col=new Float32Array(N*3), vel=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()-0.5)*200; pos[i*3+1]=(Math.random()-0.5)*160; pos[i*3+2]=(Math.random()-0.5)*80;
+    vel[i*3]=(Math.random()-0.5)*0.015; vel[i*3+1]=0.02+Math.random()*0.06; vel[i*3+2]=(Math.random()-0.5)*0.008;
+    const t=Math.random();
+    if(t<0.5){col[i*3]=0;col[i*3+1]=0.9;col[i*3+2]=0.88;} else if(t<0.8){col[i*3]=0.18;col[i*3+1]=1;col[i*3+2]=0.66;} else {col[i*3]=0.4;col[i*3+1]=0.8;col[i*3+2]=1;}
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:0.5,vertexColors:true,transparent:true,opacity:0.5,sizeAttenuation:true})); sc.add(pts);
+  addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();rn.setSize(innerWidth,innerHeight);});
+  (function tick(){requestAnimationFrame(tick);const p=geo.attributes.position.array;
+    for(let i=0;i<N;i++){p[i*3]+=vel[i*3];p[i*3+1]+=vel[i*3+1];p[i*3+2]+=vel[i*3+2];if(p[i*3+1]>80)p[i*3+1]=-80;}
+    geo.attributes.position.needsUpdate=true; pts.rotation.y+=0.0003; rn.render(sc,cam);})();
+})();
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+/* ---- TRIVIA ---- */
+const QS=[
+ {q:"What is the deepest point in all of Earth's oceans?",a:["Challenger Deep (Mariana Trench)","Puerto Rico Trench","Java Trench"],c:0},
+ {q:"About what percentage of Earth's oxygen is produced by the ocean?",a:["About 50 percent","About 10 percent","About 90 percent"],c:0},
+ {q:"Which jellyfish can revert to its juvenile stage — basically biologically immortal?",a:["Turritopsis dohrnii","Moon jellyfish","Box jellyfish"],c:0},
+ {q:"What is the largest animal known to have ever existed on Earth?",a:["Blue whale","Megalodon","Giant squid"],c:0},
+ {q:"Which ocean creature has three hearts and blue blood?",a:["Octopus","Sea turtle","Horseshoe crab"],c:0}
+];
+let qi=0,sc2=0;
+function loadQ(){const q=QS[qi];
+  document.getElementById('tri-prog').textContent=`Question ${qi+1} / ${QS.length}  •  Score ${sc2}`;
+  document.getElementById('tri-q').textContent=q.q;
+  const r=document.getElementById('tri-res');r.textContent='';r.className='tri-res';
+  document.getElementById('tri-next').style.display='none';
+  const box=document.getElementById('tri-opts');box.innerHTML='';
+  q.a.forEach((opt,i)=>{const b=document.createElement('button');b.className='tri-btn';b.textContent=opt;
+    b.onclick=()=>{document.querySelectorAll('.tri-btn').forEach(x=>x.onclick=null);
+      if(i===q.c){b.classList.add('correct');r.textContent='✓ Correct! Nice one, Sophia.';r.className='tri-res ok';sc2++;}
+      else{b.classList.add('wrong');document.querySelectorAll('.tri-btn')[q.c].classList.add('correct');r.textContent='✗ Not quite — answer: '+q.a[q.c];r.className='tri-res err';}
+      if(qi<QS.length-1)document.getElementById('tri-next').style.display='inline-block';
+      else setTimeout(()=>{r.textContent=`🎓 Complete — final score ${sc2} / ${QS.length}`;r.className='tri-res ok';},1100);
+    };box.appendChild(b);});}
+document.getElementById('tri-next').onclick=()=>{qi++;if(qi<QS.length)loadQ();};
+loadQ();
 
-        (function tick() {
-            requestAnimationFrame(tick);
-            const p = geo.attributes.position.array;
-            for(let i = 0; i < N; i++) {
-                p[i*3]   += vel[i*3];
-                p[i*3+1] += vel[i*3+1];
-                p[i*3+2] += vel[i*3+2];
-                if(p[i*3+1] > 80) p[i*3+1] = -80;
-            }
-            geo.attributes.position.needsUpdate = true;
-            pts.rotation.y += 0.0003;
-            renderer.render(scene, camera);
-        })();
-    })();
+/* ---- COLOR LAB ---- */
+const PAL=[null,
+ {c:'#6fe0ff',n:'Surface Light'},{c:'#2fb6dd',n:'Shallow Water'},{c:'#1a7fa8',n:'Mid Water'},{c:'#0d4a6b',n:'Deep Water'},
+ {c:'#e6c67a',n:'Sand'},{c:'#ff8c1a',n:'Fish Body'},{c:'#ffd9a0',n:'Fish Belly'},{c:'#ffffff',n:'Stripes'},
+ {c:'#ffd34d',n:'Fins'},{c:'#ff5e5e',n:'Tail'},{c:'#2e78ff',n:'Blue Tang'},{c:'#f4cf3f',n:'Tang Tail'},
+ {c:'#f6b93b',n:'Seahorse'},{c:'#ff7eb6',n:'Pink Coral'},{c:'#a06cd5',n:'Sea Fan'},{c:'#ff9e40',n:'Staghorn'},
+ {c:'#e0483a',n:'Tube Sponges'},{c:'#2fbf71',n:'Seaweed'},{c:'#ff5fa2',n:'Anemone'},{c:'#ff5a5a',n:'Starfish'},{c:'#bfefff',n:'Bubbles'}];
+const TOTAL=21; let sel=1,done=0; const filled={};
+const palEl=document.getElementById('palette');
+PAL.slice(1).forEach((p,i)=>{const s=document.createElement('div');s.className='swatch'+(i===0?' active':'');s.style.background=p.c;s.textContent=i+1;s.title=p.n;
+  s.onclick=()=>{sel=i+1;document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');document.getElementById('hint').textContent='Selected: '+p.n+' ['+(i+1)+']';};
+  palEl.appendChild(s);});
+document.querySelectorAll('#soph-svg .zone').forEach(el=>{el.onclick=()=>{const t=parseInt(el.dataset.zone);
+  if(sel===t){document.querySelectorAll('#soph-svg .zone[data-zone="'+t+'"]').forEach(z=>{z.style.fill=PAL[t].c;z.classList.add('filled');});
+    document.querySelectorAll('#soph-svg .zone-label[data-for="'+t+'"]').forEach(l=>l.style.opacity='0');
+    if(!filled[t]){filled[t]=true;done++;document.getElementById('bar').style.width=(done/TOTAL*100)+'%';
+      if(done>=TOTAL)document.getElementById('done').textContent='✦ REEF FULLY MAPPED — OUTSTANDING, SOPHIA ✦';}
+  }else{el.style.filter='brightness(2) saturate(0)';setTimeout(()=>el.style.filter='',250);document.getElementById('hint').textContent='That piece is #'+t+' — you have #'+sel+' selected';}
+};});
+document.getElementById('reset').onclick=()=>{done=0;for(const k in filled)delete filled[k];document.getElementById('bar').style.width='0';document.getElementById('done').textContent='';
+  document.querySelectorAll('#soph-svg .zone').forEach(z=>{z.style.fill='';z.classList.remove('filled');});
+  document.querySelectorAll('#soph-svg .zone-label').forEach(l=>l.style.opacity='');};
 
-    // ══════════════════════════════════════════════
-    // TRIVIA
-    // ══════════════════════════════════════════════
-    const questions = [
-        { q: "What is the deepest point in all of Earth's oceans?",
-          a: ["Challenger Deep (Mariana Trench)", "Puerto Rico Trench", "Java Trench"], c: 0 },
-        { q: "Approximately what percentage of Earth's oxygen is produced by the ocean?",
-          a: ["About 50 percent", "About 10 percent", "About 90 percent"], c: 0 },
-        { q: "Which jellyfish is considered biologically immortal — able to revert back to its juvenile state?",
-          a: ["Turritopsis dohrnii", "Moon Jellyfish", "Box Jellyfish"], c: 0 },
-        { q: "What is the largest animal ever known to have existed on Earth?",
-          a: ["Blue Whale", "Megalodon", "Giant Squid"], c: 0 },
-        { q: "What ocean creature has THREE hearts and blue blood?",
-          a: ["Octopus", "Sea Turtle", "Horseshoe Crab"], c: 0 }
-    ];
-    let qIdx = 0, score = 0;
+/* ---- AMBIENT AUDIO ---- */
+let ac=null,on=false,dg=null;
+function build(){ac=new (window.AudioContext||window.webkitAudioContext)();dg=ac.createGain();dg.gain.value=0;dg.connect(ac.destination);
+  const o=ac.createOscillator();o.type='sine';o.frequency.value=48;const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=180;o.connect(f);f.connect(dg);o.start();
+  (function bubble(){if(!on)return;const b=ac.createOscillator(),g=ac.createGain();b.frequency.value=600+Math.random()*600;
+    g.gain.setValueAtTime(0.04,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);b.connect(g);g.connect(ac.destination);b.start();b.stop(ac.currentTime+0.12);setTimeout(bubble,400+Math.random()*2500);})();
+  (function whale(){if(!on)return;const w=ac.createOscillator(),g=ac.createGain();w.frequency.setValueAtTime(110,ac.currentTime);
+    w.frequency.exponentialRampToValueAtTime(165,ac.currentTime+2.5);w.frequency.exponentialRampToValueAtTime(95,ac.currentTime+5);
+    g.gain.setValueAtTime(0.04,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+5);w.connect(g);g.connect(ac.destination);w.start();w.stop(ac.currentTime+5);setTimeout(whale,10000+Math.random()*15000);})();}
+document.getElementById('sound').onclick=function(){if(!ac)build();on=!on;dg.gain.setTargetAtTime(on?0.06:0,ac.currentTime,0.5);
+  this.textContent=on?'◉ AMBIENT: ON':'◎ AMBIENT: OFF';this.classList.toggle('on',on);};
 
-    function loadQ() {
-        const q = questions[qIdx];
-        document.getElementById('tri-progress').textContent = `Question ${qIdx+1} / ${questions.length}  ·  Score: ${score}`;
-        document.getElementById('tri-question').textContent = q.q;
-        document.getElementById('tri-result').textContent = '';
-        document.getElementById('tri-result').className = 'trivia-result';
-        document.getElementById('tri-next').style.display = 'none';
-        const box = document.getElementById('tri-options');
-        box.innerHTML = '';
-        q.a.forEach((opt, i) => {
-            const b = document.createElement('button');
-            b.className = 'trivia-btn'; b.textContent = opt;
-            b.onclick = () => {
-                document.querySelectorAll('.trivia-btn').forEach(x => x.onclick = null);
-                if(i === q.c) {
-                    b.classList.add('correct');
-                    document.getElementById('tri-result').textContent = '✓ Correct! Well done, Sophia!';
-                    document.getElementById('tri-result').className = 'trivia-result ok';
-                    score++;
-                } else {
-                    b.classList.add('wrong');
-                    document.querySelectorAll('.trivia-btn')[q.c].classList.add('correct');
-                    document.getElementById('tri-result').textContent = `✗ Not quite. The answer is: ${q.a[q.c]}`;
-                    document.getElementById('tri-result').className = 'trivia-result err';
-                }
-                if(qIdx < questions.length - 1) document.getElementById('tri-next').style.display = 'inline-block';
-                else {
-                    setTimeout(() => {
-                        document.getElementById('tri-result').textContent = `🎓 Complete! Final score: ${score} / ${questions.length}`;
-                        document.getElementById('tri-result').className = 'trivia-result ok';
-                    }, 1200);
-                }
-            };
-            box.appendChild(b);
-        });
-    }
-    function nextQuestion() { qIdx++; if(qIdx < questions.length) loadQ(); }
-    loadQ();
-
-    // ══════════════════════════════════════════════
-    // SVG COLORING BOOK
-    // ══════════════════════════════════════════════
-    const sophPalette = [
-        null,
-        { color:'#0a2a4a', label:'1',  name:'Deep Ocean' },
-        { color:'#d9b26f', label:'2',  name:'Sand' },
-        { color:'#ff7eb6', label:'3',  name:'Brain Coral' },
-        { color:'#ff9e40', label:'4',  name:'Staghorn Coral' },
-        { color:'#a06cd5', label:'5',  name:'Purple Sea Fan' },
-        { color:'#e05a4a', label:'6',  name:'Tube Sponges' },
-        { color:'#2fbf71', label:'7',  name:'Kelp' },
-        { color:'#ff5fa2', label:'8',  name:'Sea Anemone' },
-        { color:'#ff8a1e', label:'9',  name:'Clownfish' },
-        { color:'#f5f7fa', label:'10', name:'White Stripes' },
-        { color:'#2e78ff', label:'11', name:'Blue Tang' },
-        { color:'#f4cf3f', label:'12', name:'Tang Tail' },
-        { color:'#6f8f3f', label:'13', name:'Turtle Shell' },
-        { color:'#1f9e88', label:'14', name:'Turtle Skin' },
-        { color:'#ff5a5a', label:'15', name:'Starfish' },
-        { color:'#7fd0ff', label:'16', name:'Bubbles' }
-    ];
-    let sophSelected = 1;
-    let sophFilled = 0;
-    const sophTotal = 16;
-
-    const palBox = document.getElementById('soph-palette');
-    sophPalette.slice(1).forEach((p, i) => {
-        const sw = document.createElement('div');
-        sw.className = 'color-swatch' + (i===0 ? ' active' : '');
-        sw.style.background = p.color;
-        sw.title = p.name;
-        sw.textContent = p.label;
-        sw.addEventListener('click', () => {
-            sophSelected = i+1;
-            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-            sw.classList.add('active');
-            document.getElementById('soph-hint').textContent = `Selected: ${p.name} [${p.label}] — click matching zone`;
-        });
-        palBox.appendChild(sw);
-    });
-
-    const zonesColored = {};
-    document.querySelectorAll('#soph-svg .zone').forEach(el => {
-        el.addEventListener('click', () => {
-            const target = parseInt(el.dataset.zone);
-            if(sophSelected === target) {
-                const pal = sophPalette[target];
-                // Fill ALL elements with matching zone number
-                document.querySelectorAll(`#soph-svg .zone[data-zone="${target}"]`).forEach(z => {
-                    z.style.fill = pal.color;
-                    z.classList.add('filled');
-                });
-                // Remove number labels for this zone
-                document.querySelectorAll(`#soph-svg .zone-label[data-for="${target}"]`).forEach(l => l.style.opacity='0');
-                if(!zonesColored[target]) {
-                    zonesColored[target] = true;
-                    sophFilled++;
-                    if(sophFilled >= sophTotal) {
-                        document.getElementById('soph-complete').textContent = '✦ REEF FULLY MAPPED — OUTSTANDING WORK, SOPHIA ✦';
-                    }
-                }
-            } else {
-                // Brief wrong flash
-                el.style.filter = 'brightness(2) saturate(0)';
-                setTimeout(() => el.style.filter = '', 250);
-                document.getElementById('soph-hint').textContent = `Zone ${target} needs code ${target} — not code ${sophSelected}`;
-            }
-        });
-    });
-
-    // ══════════════════════════════════════════════
-    // AMBIENT SOUND (Web Audio API)
-    // ══════════════════════════════════════════════
-    let audioCtx = null, soundOn = false;
-    let droneNode = null, droneGain = null;
-
-    function buildAudio() {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        droneGain = audioCtx.createGain(); droneGain.gain.value = 0;
-        droneGain.connect(audioCtx.destination);
-
-        droneNode = audioCtx.createOscillator();
-        droneNode.type = 'sine'; droneNode.frequency.value = 48;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass'; filter.frequency.value = 180;
-        droneNode.connect(filter); filter.connect(droneGain);
-        droneNode.start();
-
-        function bubble() {
-            if(!soundOn) return;
-            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.frequency.value = 600 + Math.random() * 600;
-            g.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-            o.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 0.12);
-            setTimeout(bubble, 400 + Math.random() * 2500);
-        }
-
-        function whaleSong() {
-            if(!soundOn) return;
-            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.frequency.setValueAtTime(110, audioCtx.currentTime);
-            o.frequency.exponentialRampToValueAtTime(165, audioCtx.currentTime + 2.5);
-            o.frequency.exponentialRampToValueAtTime(95, audioCtx.currentTime + 5);
-            g.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 5);
-            o.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 5);
-            setTimeout(whaleSong, 10000 + Math.random() * 15000);
-        }
-        bubble(); whaleSong();
-    }
-
-    function toggleSound() {
-        if(!audioCtx) buildAudio();
-        soundOn = !soundOn;
-        droneGain.gain.setTargetAtTime(soundOn ? 0.06 : 0, audioCtx.currentTime, 0.5);
-        const btn = document.getElementById('sound-btn');
-        btn.textContent = soundOn ? '◉ AMBIENT: ON' : '◎ AMBIENT: OFF';
-        btn.classList.toggle('on', soundOn);
-    }
-
-    // ══════════════════════════════════════════════
-    // EASTER EGG — HIDDEN CRAB
-    // ══════════════════════════════════════════════
-    let crabClicks = 0;
-    document.getElementById('hidden-crab').addEventListener('click', () => {
-        if(++crabClicks >= 3) {
-            document.getElementById('crab-popup').classList.add('show');
-            crabClicks = 0;
-        }
-    });
-    </script>
+/* ---- CRAB EGG (3 taps) ---- */
+let cc=0;document.getElementById('crab').onclick=()=>{if(++cc>=3){document.getElementById('crab-pop').classList.add('show');cc=0;}};
+</script>
 </body>
 </html>
