@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Rajdhani:wght@500;600;700&family=Permanent+Marker&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #05080a; cursor: grab; }
+body.dragging { cursor: grabbing; }
+canvas { display: block; }
+
+#hud { position: fixed; inset: 0; pointer-events: none; font-family: 'Rajdhani', sans-serif; }
+
+.bracket { position: absolute; width: 34px; height: 34px; border-color: #6fdcd6; opacity: 0.55; }
+.bracket.tl { top: 22px; left: 22px; border-top: 2px solid; border-left: 2px solid; }
+.bracket.tr { top: 22px; right: 22px; border-top: 2px solid; border-right: 2px solid; }
+.bracket.bl { bottom: 22px; left: 22px; border-bottom: 2px solid; border-left: 2px solid; }
+.bracket.br { bottom: 22px; right: 22px; border-bottom: 2px solid; border-right: 2px solid; }
+
+.reticle { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px;
+  border-radius: 50%; border: 1px solid rgba(0,229,224,0.7); }
+.reticle::before, .reticle::after { content: ""; position: absolute; background: rgba(0,229,224,0.5); }
+.reticle::before { width: 1px; height: 14px; left: 3.5px; top: -18px; }
+.reticle::after { width: 14px; height: 1px; top: 3.5px; left: -18px; }
+
+.topline { position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; letter-spacing: 5px; color: #7fae4a; text-transform: uppercase; opacity: 0.8; }
+.topline span { color: #00e5e0; }
+
+.scan { position: fixed; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 1px, transparent 3px);
+  opacity: 0.3; mix-blend-mode: overlay; }
+
+.node-label { position: absolute; transform: translate(-50%, -50%); font-family: 'Teko', sans-serif;
+  font-weight: 500; letter-spacing: 3px; font-size: 16px; text-transform: uppercase;
+  color: #f2f7e8; text-shadow: 0 1px 3px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.8);
+  white-space: nowrap; padding: 4px 10px; background: rgba(6,10,7,0.5); border-radius: 3px;
+  pointer-events: none; transition: opacity 0.15s; }
+.node-label.center { color: #baf7f4; font-size: 22px; }
+.node-label .sub { display: block; font-size: 10px; letter-spacing: 3px; margin-top: 2px; font-weight: 600; }
+
+.status { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; letter-spacing: 3px; color: #5f7a3a; opacity: 0.9; }
+.status .live { color: #00e5e0; }
+
+.hint { position: absolute; top: 54px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; letter-spacing: 2px; color: #4a6030; opacity: 0.75; text-align: center; }
+
+.confirm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, 26px);
+  font-family: 'Rajdhani', sans-serif; font-weight: 600; letter-spacing: 3px; font-size: 13px;
+  text-transform: uppercase; color: #00e5e0; text-shadow: 0 0 10px rgba(0,229,224,0.6);
+  opacity: 0; transition: opacity 0.25s; white-space: nowrap; }
+.confirm.show { opacity: 1; }
+
+/* ---- interior: the graffiti layer, revealed once you land ---- */
+.interior { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 42px),
+    radial-gradient(ellipse at 30% 20%, rgba(150,180,40,0.10), transparent 55%),
+    #0d1410;
+  opacity: 0; pointer-events: none; transition: opacity 0.5s ease; z-index: 20; }
+.interior.open { opacity: 1; pointer-events: auto; }
+
+.interior-inner { text-align: center; }
+
+.interior-tag { font-family: 'Permanent Marker', cursive; font-size: 68px; line-height: 1.1;
+  color: #9fd93f; text-shadow:
+    2px 2px 0 #1f4a0d, -1px -1px 0 #1f4a0d,
+    0 0 24px rgba(0,229,224,0.25);
+  transform: rotate(-1.5deg); text-transform: uppercase; }
+
+.interior-sub { margin-top: 18px; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+  letter-spacing: 3px; font-size: 13px; text-transform: uppercase; color: #6b8a3e; }
+
+.interior-exit { margin-top: 46px; display: inline-block; font-family: 'Rajdhani', sans-serif;
+  font-weight: 600; letter-spacing: 3px; font-size: 13px; text-transform: uppercase;
+  color: #00e5e0; border: 1px solid rgba(0,229,224,0.4); padding: 9px 22px; border-radius: 2px;
+  cursor: pointer; transition: background 0.2s; }
+.interior-exit:hover { background: rgba(0,229,224,0.08); }
