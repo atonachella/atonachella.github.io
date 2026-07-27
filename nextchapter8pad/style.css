@@ -1,0 +1,417 @@
+/* ==========================================================
+   NOVA-8 — Design tokens
+   ========================================================== */
+:root {
+  --bg-void:        #05050a;
+  --bg-panel:       #0e0e17;
+  --bg-panel-raise: #14141f;
+  --bg-lane:        #0a0a12;
+
+  --line-hair:      #23232f;
+  --line-bright:    #35354a;
+
+  --text-bright:    #eef2f8;
+  --text-mid:       #8891a6;
+  --text-dim:       #4d5468;
+
+  --neon-cyan:      #16f2e0;
+  --neon-cyan-dim:  #0d8f86;
+  --neon-magenta:   #ff2ec4;
+  --neon-magenta-dim: #99146f;
+  --neon-amber:     #ffb020;
+  --neon-amber-dim: #8a5f10;
+  --neon-red:       #ff3b4e;
+
+  --font-display:   'Orbitron', sans-serif;
+  --font-mono:       'Share Tech Mono', monospace;
+
+  --radius-unit:    18px;
+  --radius-control: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(22,242,224,0.06), transparent 55%),
+    radial-gradient(ellipse at 90% 110%, rgba(255,46,196,0.05), transparent 55%),
+    var(--bg-void);
+  font-family: var(--font-mono);
+  color: var(--text-bright);
+}
+
+/* ==========================================================
+   UNIT SHELL
+   ========================================================== */
+.unit {
+  width: 100%;
+  max-width: 1080px;
+  background: linear-gradient(180deg, var(--bg-panel-raise), var(--bg-panel) 40%);
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius-unit);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6),
+    0 30px 60px -20px rgba(0,0,0,0.8),
+    0 0 90px -30px rgba(22,242,224,0.15);
+  padding: 22px 26px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.unit::before {
+  /* faint top sheen to sell the hardware-panel feel */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent 20%);
+  pointer-events: none;
+}
+
+/* ==========================================================
+   HEADER
+   ========================================================== */
+.unit-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line-hair);
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--text-bright);
+  text-shadow: 0 0 14px rgba(22,242,224,0.55);
+}
+
+.brand-dash { color: var(--neon-magenta); }
+
+.brand-tag {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+}
+
+.header-lights { display: flex; gap: 8px; padding-bottom: 4px; }
+
+.pilot-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neon-amber-dim);
+}
+
+.pilot-light.on {
+  background: var(--neon-amber);
+  box-shadow: 0 0 8px 2px rgba(255,176,32,0.8);
+}
+
+/* ==========================================================
+   PAD ROW — 8 voice-select pads, horizontal
+   ========================================================== */
+.pad-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pad {
+  border: 1px solid var(--line-bright);
+  background: linear-gradient(180deg, #191926, #101019);
+  border-radius: var(--radius-control);
+  color: var(--text-mid);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 16px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 60ms ease, box-shadow 120ms ease, border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.pad-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--neon-cyan-dim);
+}
+
+.pad:hover {
+  border-color: var(--neon-cyan-dim);
+  color: var(--text-bright);
+}
+
+/* momentary press flash (voice actually sounds) */
+.pad:active,
+.pad.triggered {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 0 16px 1px rgba(22,242,224,0.45);
+}
+
+.pad.triggered .pad-led {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 8px 2px rgba(22,242,224,0.9);
+}
+
+/* persistent state: this pad's pattern is what the sequencer below is editing */
+.pad.selected {
+  border-color: var(--neon-magenta);
+  color: var(--text-bright);
+  background: linear-gradient(180deg, #23172a, #150f19);
+  box-shadow: 0 0 14px -2px rgba(255,46,196,0.5);
+}
+
+.pad.selected .pad-led {
+  background: var(--neon-magenta);
+  box-shadow: 0 0 8px 2px rgba(255,46,196,0.8);
+}
+
+/* ==========================================================
+   SEQUENCER — single shared 16-step lane
+   ========================================================== */
+.sequencer {
+  margin-bottom: 20px;
+}
+
+.sequencer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  justify-content: space-between;
+}
+
+.sequencer-header .ctrl-label,
+.sequencer-header .editing-voice {
+  margin-right: -2px;
+}
+
+.btn-clear {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  background: var(--bg-panel);
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius-control);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.btn-clear:hover {
+  color: var(--neon-red);
+  border-color: var(--neon-red);
+  box-shadow: 0 0 10px -2px rgba(255,59,78,0.5);
+}
+
+.editing-voice {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--neon-magenta);
+  text-shadow: 0 0 8px rgba(255,46,196,0.6);
+}
+
+.step-lane {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 6px;
+  background: var(--bg-lane);
+  border: 1px solid var(--line-hair);
+  border-radius: var(--radius-control);
+  padding: 14px 10px;
+}
+
+/* placeholder cell styling (JS will populate real .step buttons later) */
+.step-lane:empty::before {
+  content: "STEP LANE — 16 STEPS (populated by sequencer.js)";
+  grid-column: 1 / -1;
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 6px 0;
+}
+
+.step {
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--line-hair);
+  border-radius: 4px;
+  background: #14141d;
+  cursor: pointer;
+}
+
+.step.beat-marker { border-color: var(--line-bright); }
+.step.active { background: var(--neon-magenta-dim); border-color: var(--neon-magenta); }
+.step.playhead { box-shadow: 0 0 10px 2px rgba(22,242,224,0.7); border-color: var(--neon-cyan); }
+
+/* ==========================================================
+   TRANSPORT
+   ========================================================== */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  background: var(--bg-lane);
+  border: 1px solid var(--line-hair);
+  border-radius: var(--radius-control);
+}
+
+.transport-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ctrl-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
+
+.btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-bright);
+  background: linear-gradient(180deg, #191926, #101019);
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius-control);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: box-shadow 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.btn-icon { font-size: 10px; }
+
+.btn-play:hover,
+.btn-play[aria-pressed="true"] {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 14px -2px rgba(22,242,224,0.6);
+}
+
+.btn-stop:hover {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+  box-shadow: 0 0 14px -2px rgba(255,59,78,0.5);
+}
+
+input[type="range"] {
+  width: 120px;
+  accent-color: var(--neon-cyan);
+}
+
+.tempo-readout {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(22,242,224,0.6);
+  min-width: 60px;
+}
+
+.unit-sub {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-left: 3px;
+  text-shadow: none;
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+
+.seg-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-mid);
+  background: var(--bg-panel);
+  border: none;
+  border-right: 1px solid var(--line-bright);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.seg-btn:last-child { border-right: none; }
+
+.seg-btn.active {
+  background: rgba(22,242,224,0.12);
+  color: var(--neon-cyan);
+}
+
+.midi-indicators { display: flex; gap: 6px; }
+
+.midi-chip {
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--line-bright);
+  color: var(--text-dim);
+}
+
+.midi-chip.connected {
+  color: var(--neon-magenta);
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 10px -2px rgba(255,46,196,0.6);
+}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+.unit-footer {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+@media (max-width: 720px) {
+  .pad-row { grid-template-columns: repeat(4, 1fr); }
+  .pad-label { font-size: 9px; }
+  .transport { gap: 14px; }
+}
+
+/* ==========================================================
+   ACCESSIBILITY
+   ========================================================== */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

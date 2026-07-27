@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA-8 // Digital Drum Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="unit">
+
+    <!-- ============ HEADER ============ -->
+    <header class="unit-header">
+      <div class="brand">
+        <span class="brand-name">NOVA<span class="brand-dash">-</span>8</span>
+        <span class="brand-tag">DIGITAL RHYTHM PROCESSOR</span>
+      </div>
+      <div class="header-lights" aria-hidden="true">
+        <span class="pilot-light on"></span>
+        <span class="pilot-light"></span>
+        <span class="pilot-light"></span>
+      </div>
+    </header>
+
+    <!-- ============ MAIN PANEL ============ -->
+    <main class="panel">
+
+      <!-- Pad row: 8 voice-select pads, horizontal -->
+      <section class="pad-row" aria-label="Drum voice pads">
+        <button class="pad selected" data-voice="kick">
+          <span class="pad-led"></span>
+          <span class="pad-label">KICK</span>
+        </button>
+        <button class="pad" data-voice="snare">
+          <span class="pad-led"></span>
+          <span class="pad-label">SNARE</span>
+        </button>
+        <button class="pad" data-voice="clap">
+          <span class="pad-led"></span>
+          <span class="pad-label">CLAP</span>
+        </button>
+        <button class="pad" data-voice="rim">
+          <span class="pad-led"></span>
+          <span class="pad-label">RIM</span>
+        </button>
+        <button class="pad" data-voice="closedhat">
+          <span class="pad-led"></span>
+          <span class="pad-label">CL HAT</span>
+        </button>
+        <button class="pad" data-voice="openhat">
+          <span class="pad-led"></span>
+          <span class="pad-label">OP HAT</span>
+        </button>
+        <button class="pad" data-voice="tom">
+          <span class="pad-led"></span>
+          <span class="pad-label">TOM</span>
+        </button>
+        <button class="pad" data-voice="crash">
+          <span class="pad-led"></span>
+          <span class="pad-label">CRASH</span>
+        </button>
+      </section>
+
+      <!-- Single shared sequencer — edits whichever pad is currently selected -->
+      <section class="sequencer" aria-label="Step sequencer">
+        <div class="sequencer-header">
+          <span class="ctrl-label">EDITING VOICE</span>
+          <span class="editing-voice" id="editingVoice">KICK</span>
+          <button class="btn btn-clear" id="clearBtn" type="button">CLEAR</button>
+        </div>
+        <div class="step-lane" id="stepLane">
+          <!-- 16 steps injected by sequencer.js -->
+        </div>
+      </section>
+
+      <!-- ============ TRANSPORT ============ -->
+      <section class="transport" aria-label="Transport controls">
+
+        <div class="transport-group playback">
+          <button class="btn btn-play" id="playBtn" aria-pressed="false">
+            <span class="btn-icon">&#9658;</span> PLAY
+          </button>
+          <button class="btn btn-stop" id="stopBtn">
+            <span class="btn-icon">&#9632;</span> STOP
+          </button>
+        </div>
+
+        <div class="transport-group tempo">
+          <label for="tempoRange" class="ctrl-label">TEMPO</label>
+          <input type="range" id="tempoRange" min="60" max="180" value="96" step="1">
+          <span class="tempo-readout" id="tempoValue">096<span class="unit-sub">BPM</span></span>
+        </div>
+
+        <div class="transport-group loop-length">
+          <span class="ctrl-label">PATTERN LENGTH</span>
+          <div class="segmented" role="group" aria-label="Loop length in bars">
+            <button class="seg-btn active" data-bars="1">1 BAR</button>
+            <button class="seg-btn" data-bars="2">2 BAR</button>
+            <button class="seg-btn" data-bars="4">4 BAR</button>
+          </div>
+        </div>
+
+        <div class="transport-group midi-status">
+          <span class="ctrl-label">MIDI</span>
+          <div class="midi-indicators">
+            <span class="midi-chip" id="midiInChip">IN</span>
+            <span class="midi-chip" id="midiOutChip">OUT</span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="unit-footer">
+      <span>NOVA-8 &mdash; SYNTHESIZED VOICE ENGINE &mdash; MIDI I/O READY</span>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
