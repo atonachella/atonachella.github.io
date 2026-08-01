@@ -1,6 +1,6 @@
 # NOVA-8 — Digital Rhythm Processor
 
-**Live Demo:** [https://atonachella.github.io/nextchapter8pad/](https://atonachella.github.io/nextchapter8pad/)
+**Live Demo:** [https://atonachella.github.io/nextchapter8pad/index.html](https://atonachella.github.io/nextchapter8pad/index.html)
 
 A browser-based emulation of a classic 8-pad drum machine, built entirely in HTML, CSS, and JavaScript, with no external audio samples or frameworks.
 
